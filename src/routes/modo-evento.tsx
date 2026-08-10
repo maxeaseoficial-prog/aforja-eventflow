@@ -20,18 +20,18 @@ export const Route = createFileRoute("/modo-evento")({
 });
 
 function EventModePage() {
-  const { event, schedule, openingChecklist, contingencies, staff, updateScheduleItem, toggleGroupItem } = useForja();
+  const { event, schedule, opening, contingencies, staff, updateScheduleItem, toggleGroupItem } = useForja();
   const countdown = useCountdown(event.date);
   const [tab, setTab] = useState<"abertura" | "emergencia" | "equipe">("abertura");
 
   const currentIndex = Math.max(
     0,
-    schedule.findIndex((item) => item.status !== "concluido"),
+    schedule.findIndex((item: { status: string }) => item.status !== "concluido"),
   );
   const current = schedule[currentIndex];
   const next = schedule[currentIndex + 1];
-  const openDone = openingChecklist.items.filter((i) => i.done).length;
-  const openPct = Math.round((openDone / openingChecklist.items.length) * 100);
+  const openDone = opening.items.filter((i) => i.done).length;
+  const openPct = Math.round((openDone / opening.items.length) * 100);
 
   return (
     <div className="min-h-screen bg-background px-4 py-5 sm:px-8">
@@ -50,7 +50,7 @@ function EventModePage() {
           <h1 className="truncate font-display text-xl font-black tracking-tight sm:text-2xl">{event.name}</h1>
         </div>
         <span className="shrink-0 rounded-xl border border-primary/30 bg-primary-soft px-3 py-1.5 font-display text-sm font-bold text-primary tabular-nums">
-          {countdown.past ? "AO VIVO" : `${countdown.days}d ${countdown.hours}h`}
+          {countdown.passed ? "AO VIVO" : `${countdown.days}d ${countdown.hours}h`}
         </span>
       </header>
 
@@ -136,18 +136,18 @@ function EventModePage() {
           <div className="surface-card animate-fade-up p-5">
             <div className="flex items-center justify-between">
               <p className="font-display text-base font-bold">
-                {openDone}/{openingChecklist.items.length} prontos
+                {openDone}/{opening.items.length} prontos
               </p>
               <span className="font-display text-lg font-black text-primary tabular-nums">{openPct}%</span>
             </div>
             <ProgressBar value={openPct} tone={openPct === 100 ? "success" : "primary"} className="mt-3 h-2.5" />
             <div className="mt-4 sm:columns-2 lg:columns-3">
-              {openingChecklist.items.map((item) => (
+              {opening.items.map((item) => (
                 <ChecklistItem
                   key={item.id}
                   label={item.label}
                   done={item.done}
-                  onToggle={() => toggleGroupItem("openingChecklist", item.id)}
+                  onToggle={() => toggleGroupItem("opening", item.id)}
                 />
               ))}
             </div>
