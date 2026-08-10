@@ -9,27 +9,76 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShellRouteRouteImport } from './routes/_shell/route'
+import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const ShellRouteRoute = ShellRouteRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShellIndexRoute = ShellIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof ShellIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof ShellIndexRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_shell': typeof ShellRouteRouteWithChildren
+  '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to: '/'
+  id: '__root__' | '/_shell' | '/_shell/'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  ShellRouteRoute: typeof ShellRouteRouteWithChildren
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/_shell': {
+      id: '/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_shell/': {
+      id: '/_shell/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ShellIndexRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+  }
+}
+
+interface ShellRouteRouteChildren {
+  ShellIndexRoute: typeof ShellIndexRoute
+}
+
+const ShellRouteRouteChildren: ShellRouteRouteChildren = {
+  ShellIndexRoute: ShellIndexRoute,
+}
+
+const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
+  ShellRouteRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  ShellRouteRoute: ShellRouteRouteWithChildren,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
