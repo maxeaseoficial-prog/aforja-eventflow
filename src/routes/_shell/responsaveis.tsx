@@ -146,7 +146,10 @@ function ResponsiblesPage() {
             </Button>
             <Button
               onClick={() => {
-                if (newArea.trim().length < 2) return toast.error("Informe o nome da área.");
+                if (newArea.trim().length < 2) {
+                  toast.error("Informe o nome da área.");
+                  return;
+                }
                 addResponsible({
                   id: `r-${Date.now()}`,
                   area: newArea.trim(),
