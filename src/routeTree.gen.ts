@@ -9,61 +9,354 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShellRouteRouteImport } from './routes/_shell/route'
+import { Route as ModoEventoRouteImport } from './routes/modo-evento'
+import { Route as ShellIndexRouteImport } from './routes/_shell/index'
+import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
+import { Route as ShellConfiguracoesRouteImport } from './routes/_shell/configuracoes'
+import { Route as ShellContingenciasRouteImport } from './routes/_shell/contingencias'
+import { Route as ShellEstruturaRouteImport } from './routes/_shell/estrutura'
+import { Route as ShellExperienciaRouteImport } from './routes/_shell/experiencia'
+import { Route as ShellMidiaRouteImport } from './routes/_shell/midia'
+import { Route as ShellPalestrantesRouteImport } from './routes/_shell/palestrantes'
+import { Route as ShellPosEventoRouteImport } from './routes/_shell/pos-evento'
+import { Route as ShellProgramacaoRouteImport } from './routes/_shell/programacao'
+import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsaveis'
+import { Route as ShellStaffRouteImport } from './routes/_shell/staff'
+import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
-const IndexRoute = IndexRouteImport.update({
+const ShellRouteRoute = ShellRouteRouteImport.update({
+  id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModoEventoRoute = ModoEventoRouteImport.update({
+  id: '/modo-evento',
+  path: '/modo-evento',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShellIndexRoute = ShellIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellComprasRoute = ShellComprasRouteImport.update({
+  id: '/compras',
+  path: '/compras',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellConfiguracoesRoute = ShellConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellContingenciasRoute = ShellContingenciasRouteImport.update({
+  id: '/contingencias',
+  path: '/contingencias',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellEstruturaRoute = ShellEstruturaRouteImport.update({
+  id: '/estrutura',
+  path: '/estrutura',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellExperienciaRoute = ShellExperienciaRouteImport.update({
+  id: '/experiencia',
+  path: '/experiencia',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellMidiaRoute = ShellMidiaRouteImport.update({
+  id: '/midia',
+  path: '/midia',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellPalestrantesRoute = ShellPalestrantesRouteImport.update({
+  id: '/palestrantes',
+  path: '/palestrantes',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellPosEventoRoute = ShellPosEventoRouteImport.update({
+  id: '/pos-evento',
+  path: '/pos-evento',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellProgramacaoRoute = ShellProgramacaoRouteImport.update({
+  id: '/programacao',
+  path: '/programacao',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellResponsaveisRoute = ShellResponsaveisRouteImport.update({
+  id: '/responsaveis',
+  path: '/responsaveis',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellStaffRoute = ShellStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellTarefasRoute = ShellTarefasRouteImport.update({
+  id: '/tarefas',
+  path: '/tarefas',
+  getParentRoute: () => ShellRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof ShellIndexRoute
+  '/modo-evento': typeof ModoEventoRoute
+  '/compras': typeof ShellComprasRoute
+  '/configuracoes': typeof ShellConfiguracoesRoute
+  '/contingencias': typeof ShellContingenciasRoute
+  '/estrutura': typeof ShellEstruturaRoute
+  '/experiencia': typeof ShellExperienciaRoute
+  '/midia': typeof ShellMidiaRoute
+  '/palestrantes': typeof ShellPalestrantesRoute
+  '/pos-evento': typeof ShellPosEventoRoute
+  '/programacao': typeof ShellProgramacaoRoute
+  '/responsaveis': typeof ShellResponsaveisRoute
+  '/staff': typeof ShellStaffRoute
+  '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/modo-evento': typeof ModoEventoRoute
+  '/compras': typeof ShellComprasRoute
+  '/configuracoes': typeof ShellConfiguracoesRoute
+  '/contingencias': typeof ShellContingenciasRoute
+  '/estrutura': typeof ShellEstruturaRoute
+  '/experiencia': typeof ShellExperienciaRoute
+  '/midia': typeof ShellMidiaRoute
+  '/palestrantes': typeof ShellPalestrantesRoute
+  '/pos-evento': typeof ShellPosEventoRoute
+  '/programacao': typeof ShellProgramacaoRoute
+  '/responsaveis': typeof ShellResponsaveisRoute
+  '/staff': typeof ShellStaffRoute
+  '/tarefas': typeof ShellTarefasRoute
+  '/': typeof ShellIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_shell': typeof ShellRouteRouteWithChildren
+  '/modo-evento': typeof ModoEventoRoute
+  '/_shell/compras': typeof ShellComprasRoute
+  '/_shell/configuracoes': typeof ShellConfiguracoesRoute
+  '/_shell/contingencias': typeof ShellContingenciasRoute
+  '/_shell/estrutura': typeof ShellEstruturaRoute
+  '/_shell/experiencia': typeof ShellExperienciaRoute
+  '/_shell/midia': typeof ShellMidiaRoute
+  '/_shell/palestrantes': typeof ShellPalestrantesRoute
+  '/_shell/pos-evento': typeof ShellPosEventoRoute
+  '/_shell/programacao': typeof ShellProgramacaoRoute
+  '/_shell/responsaveis': typeof ShellResponsaveisRoute
+  '/_shell/staff': typeof ShellStaffRoute
+  '/_shell/tarefas': typeof ShellTarefasRoute
+  '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/modo-evento'
+    | '/compras'
+    | '/configuracoes'
+    | '/contingencias'
+    | '/estrutura'
+    | '/experiencia'
+    | '/midia'
+    | '/palestrantes'
+    | '/pos-evento'
+    | '/programacao'
+    | '/responsaveis'
+    | '/staff'
+    | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/modo-evento'
+    | '/compras'
+    | '/configuracoes'
+    | '/contingencias'
+    | '/estrutura'
+    | '/experiencia'
+    | '/midia'
+    | '/palestrantes'
+    | '/pos-evento'
+    | '/programacao'
+    | '/responsaveis'
+    | '/staff'
+    | '/tarefas'
+    | '/'
+  id:
+    | '__root__'
+    | '/_shell'
+    | '/modo-evento'
+    | '/_shell/compras'
+    | '/_shell/configuracoes'
+    | '/_shell/contingencias'
+    | '/_shell/estrutura'
+    | '/_shell/experiencia'
+    | '/_shell/midia'
+    | '/_shell/palestrantes'
+    | '/_shell/pos-evento'
+    | '/_shell/programacao'
+    | '/_shell/responsaveis'
+    | '/_shell/staff'
+    | '/_shell/tarefas'
+    | '/_shell/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  ShellRouteRoute: typeof ShellRouteRouteWithChildren
+  ModoEventoRoute: typeof ModoEventoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_shell': {
+      id: '/_shell'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/modo-evento': {
+      id: '/modo-evento'
+      path: '/modo-evento'
+      fullPath: '/modo-evento'
+      preLoaderRoute: typeof ModoEventoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_shell/': {
+      id: '/_shell/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ShellIndexRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/compras': {
+      id: '/_shell/compras'
+      path: '/compras'
+      fullPath: '/compras'
+      preLoaderRoute: typeof ShellComprasRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/configuracoes': {
+      id: '/_shell/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ShellConfiguracoesRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/contingencias': {
+      id: '/_shell/contingencias'
+      path: '/contingencias'
+      fullPath: '/contingencias'
+      preLoaderRoute: typeof ShellContingenciasRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/estrutura': {
+      id: '/_shell/estrutura'
+      path: '/estrutura'
+      fullPath: '/estrutura'
+      preLoaderRoute: typeof ShellEstruturaRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/experiencia': {
+      id: '/_shell/experiencia'
+      path: '/experiencia'
+      fullPath: '/experiencia'
+      preLoaderRoute: typeof ShellExperienciaRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/midia': {
+      id: '/_shell/midia'
+      path: '/midia'
+      fullPath: '/midia'
+      preLoaderRoute: typeof ShellMidiaRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/palestrantes': {
+      id: '/_shell/palestrantes'
+      path: '/palestrantes'
+      fullPath: '/palestrantes'
+      preLoaderRoute: typeof ShellPalestrantesRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/pos-evento': {
+      id: '/_shell/pos-evento'
+      path: '/pos-evento'
+      fullPath: '/pos-evento'
+      preLoaderRoute: typeof ShellPosEventoRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/programacao': {
+      id: '/_shell/programacao'
+      path: '/programacao'
+      fullPath: '/programacao'
+      preLoaderRoute: typeof ShellProgramacaoRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/responsaveis': {
+      id: '/_shell/responsaveis'
+      path: '/responsaveis'
+      fullPath: '/responsaveis'
+      preLoaderRoute: typeof ShellResponsaveisRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/staff': {
+      id: '/_shell/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof ShellStaffRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/tarefas': {
+      id: '/_shell/tarefas'
+      path: '/tarefas'
+      fullPath: '/tarefas'
+      preLoaderRoute: typeof ShellTarefasRouteImport
+      parentRoute: typeof ShellRouteRoute
     }
   }
 }
 
+interface ShellRouteRouteChildren {
+  ShellComprasRoute: typeof ShellComprasRoute
+  ShellConfiguracoesRoute: typeof ShellConfiguracoesRoute
+  ShellContingenciasRoute: typeof ShellContingenciasRoute
+  ShellEstruturaRoute: typeof ShellEstruturaRoute
+  ShellExperienciaRoute: typeof ShellExperienciaRoute
+  ShellMidiaRoute: typeof ShellMidiaRoute
+  ShellPalestrantesRoute: typeof ShellPalestrantesRoute
+  ShellPosEventoRoute: typeof ShellPosEventoRoute
+  ShellProgramacaoRoute: typeof ShellProgramacaoRoute
+  ShellResponsaveisRoute: typeof ShellResponsaveisRoute
+  ShellStaffRoute: typeof ShellStaffRoute
+  ShellTarefasRoute: typeof ShellTarefasRoute
+  ShellIndexRoute: typeof ShellIndexRoute
+}
+
+const ShellRouteRouteChildren: ShellRouteRouteChildren = {
+  ShellComprasRoute: ShellComprasRoute,
+  ShellConfiguracoesRoute: ShellConfiguracoesRoute,
+  ShellContingenciasRoute: ShellContingenciasRoute,
+  ShellEstruturaRoute: ShellEstruturaRoute,
+  ShellExperienciaRoute: ShellExperienciaRoute,
+  ShellMidiaRoute: ShellMidiaRoute,
+  ShellPalestrantesRoute: ShellPalestrantesRoute,
+  ShellPosEventoRoute: ShellPosEventoRoute,
+  ShellProgramacaoRoute: ShellProgramacaoRoute,
+  ShellResponsaveisRoute: ShellResponsaveisRoute,
+  ShellStaffRoute: ShellStaffRoute,
+  ShellTarefasRoute: ShellTarefasRoute,
+  ShellIndexRoute: ShellIndexRoute,
+}
+
+const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
+  ShellRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  ShellRouteRoute: ShellRouteRouteWithChildren,
+  ModoEventoRoute: ModoEventoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
