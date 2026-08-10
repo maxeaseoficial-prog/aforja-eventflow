@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
+import { Route as ShellPalestrantesRouteImport } from './routes/_shell/palestrantes'
 import { Route as ShellProgramacaoRouteImport } from './routes/_shell/programacao'
 import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsaveis'
+import { Route as ShellStaffRouteImport } from './routes/_shell/staff'
 import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
 const ShellRouteRoute = ShellRouteRouteImport.update({
@@ -30,6 +32,11 @@ const ShellComprasRoute = ShellComprasRouteImport.update({
   path: '/compras',
   getParentRoute: () => ShellRouteRoute,
 } as any)
+const ShellPalestrantesRoute = ShellPalestrantesRouteImport.update({
+  id: '/palestrantes',
+  path: '/palestrantes',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
 const ShellProgramacaoRoute = ShellProgramacaoRouteImport.update({
   id: '/programacao',
   path: '/programacao',
@@ -38,6 +45,11 @@ const ShellProgramacaoRoute = ShellProgramacaoRouteImport.update({
 const ShellResponsaveisRoute = ShellResponsaveisRouteImport.update({
   id: '/responsaveis',
   path: '/responsaveis',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellStaffRoute = ShellStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellTarefasRoute = ShellTarefasRouteImport.update({
@@ -49,14 +61,18 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/compras': typeof ShellComprasRoute
+  '/palestrantes': typeof ShellPalestrantesRoute
   '/programacao': typeof ShellProgramacaoRoute
   '/responsaveis': typeof ShellResponsaveisRoute
+  '/staff': typeof ShellStaffRoute
   '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
   '/compras': typeof ShellComprasRoute
+  '/palestrantes': typeof ShellPalestrantesRoute
   '/programacao': typeof ShellProgramacaoRoute
   '/responsaveis': typeof ShellResponsaveisRoute
+  '/staff': typeof ShellStaffRoute
   '/tarefas': typeof ShellTarefasRoute
   '/': typeof ShellIndexRoute
 }
@@ -64,22 +80,40 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/compras': typeof ShellComprasRoute
+  '/_shell/palestrantes': typeof ShellPalestrantesRoute
   '/_shell/programacao': typeof ShellProgramacaoRoute
   '/_shell/responsaveis': typeof ShellResponsaveisRoute
+  '/_shell/staff': typeof ShellStaffRoute
   '/_shell/tarefas': typeof ShellTarefasRoute
   '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/compras' | '/programacao' | '/responsaveis' | '/tarefas'
+  fullPaths:
+    | '/'
+    | '/compras'
+    | '/palestrantes'
+    | '/programacao'
+    | '/responsaveis'
+    | '/staff'
+    | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/compras' | '/programacao' | '/responsaveis' | '/tarefas' | '/'
+  to:
+    | '/compras'
+    | '/palestrantes'
+    | '/programacao'
+    | '/responsaveis'
+    | '/staff'
+    | '/tarefas'
+    | '/'
   id:
     | '__root__'
     | '/_shell'
     | '/_shell/compras'
+    | '/_shell/palestrantes'
     | '/_shell/programacao'
     | '/_shell/responsaveis'
+    | '/_shell/staff'
     | '/_shell/tarefas'
     | '/_shell/'
   fileRoutesById: FileRoutesById
@@ -111,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellComprasRouteImport
       parentRoute: typeof ShellRouteRoute
     }
+    '/_shell/palestrantes': {
+      id: '/_shell/palestrantes'
+      path: '/palestrantes'
+      fullPath: '/palestrantes'
+      preLoaderRoute: typeof ShellPalestrantesRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
     '/_shell/programacao': {
       id: '/_shell/programacao'
       path: '/programacao'
@@ -125,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellResponsaveisRouteImport
       parentRoute: typeof ShellRouteRoute
     }
+    '/_shell/staff': {
+      id: '/_shell/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof ShellStaffRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
     '/_shell/tarefas': {
       id: '/_shell/tarefas'
       path: '/tarefas'
@@ -137,16 +185,20 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteRouteChildren {
   ShellComprasRoute: typeof ShellComprasRoute
+  ShellPalestrantesRoute: typeof ShellPalestrantesRoute
   ShellProgramacaoRoute: typeof ShellProgramacaoRoute
   ShellResponsaveisRoute: typeof ShellResponsaveisRoute
+  ShellStaffRoute: typeof ShellStaffRoute
   ShellTarefasRoute: typeof ShellTarefasRoute
   ShellIndexRoute: typeof ShellIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellComprasRoute: ShellComprasRoute,
+  ShellPalestrantesRoute: ShellPalestrantesRoute,
   ShellProgramacaoRoute: ShellProgramacaoRoute,
   ShellResponsaveisRoute: ShellResponsaveisRoute,
+  ShellStaffRoute: ShellStaffRoute,
   ShellTarefasRoute: ShellTarefasRoute,
   ShellIndexRoute: ShellIndexRoute,
 }
