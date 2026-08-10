@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
+import { Route as ShellContingenciasRouteImport } from './routes/_shell/contingencias'
 import { Route as ShellEstruturaRouteImport } from './routes/_shell/estrutura'
+import { Route as ShellExperienciaRouteImport } from './routes/_shell/experiencia'
 import { Route as ShellMidiaRouteImport } from './routes/_shell/midia'
 import { Route as ShellPalestrantesRouteImport } from './routes/_shell/palestrantes'
 import { Route as ShellProgramacaoRouteImport } from './routes/_shell/programacao'
@@ -34,9 +36,19 @@ const ShellComprasRoute = ShellComprasRouteImport.update({
   path: '/compras',
   getParentRoute: () => ShellRouteRoute,
 } as any)
+const ShellContingenciasRoute = ShellContingenciasRouteImport.update({
+  id: '/contingencias',
+  path: '/contingencias',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
 const ShellEstruturaRoute = ShellEstruturaRouteImport.update({
   id: '/estrutura',
   path: '/estrutura',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellExperienciaRoute = ShellExperienciaRouteImport.update({
+  id: '/experiencia',
+  path: '/experiencia',
   getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellMidiaRoute = ShellMidiaRouteImport.update({
@@ -73,7 +85,9 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/compras': typeof ShellComprasRoute
+  '/contingencias': typeof ShellContingenciasRoute
   '/estrutura': typeof ShellEstruturaRoute
+  '/experiencia': typeof ShellExperienciaRoute
   '/midia': typeof ShellMidiaRoute
   '/palestrantes': typeof ShellPalestrantesRoute
   '/programacao': typeof ShellProgramacaoRoute
@@ -83,7 +97,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/compras': typeof ShellComprasRoute
+  '/contingencias': typeof ShellContingenciasRoute
   '/estrutura': typeof ShellEstruturaRoute
+  '/experiencia': typeof ShellExperienciaRoute
   '/midia': typeof ShellMidiaRoute
   '/palestrantes': typeof ShellPalestrantesRoute
   '/programacao': typeof ShellProgramacaoRoute
@@ -96,7 +112,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteRouteWithChildren
   '/_shell/compras': typeof ShellComprasRoute
+  '/_shell/contingencias': typeof ShellContingenciasRoute
   '/_shell/estrutura': typeof ShellEstruturaRoute
+  '/_shell/experiencia': typeof ShellExperienciaRoute
   '/_shell/midia': typeof ShellMidiaRoute
   '/_shell/palestrantes': typeof ShellPalestrantesRoute
   '/_shell/programacao': typeof ShellProgramacaoRoute
@@ -110,7 +128,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/compras'
+    | '/contingencias'
     | '/estrutura'
+    | '/experiencia'
     | '/midia'
     | '/palestrantes'
     | '/programacao'
@@ -120,7 +140,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/compras'
+    | '/contingencias'
     | '/estrutura'
+    | '/experiencia'
     | '/midia'
     | '/palestrantes'
     | '/programacao'
@@ -132,7 +154,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_shell'
     | '/_shell/compras'
+    | '/_shell/contingencias'
     | '/_shell/estrutura'
+    | '/_shell/experiencia'
     | '/_shell/midia'
     | '/_shell/palestrantes'
     | '/_shell/programacao'
@@ -169,11 +193,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellComprasRouteImport
       parentRoute: typeof ShellRouteRoute
     }
+    '/_shell/contingencias': {
+      id: '/_shell/contingencias'
+      path: '/contingencias'
+      fullPath: '/contingencias'
+      preLoaderRoute: typeof ShellContingenciasRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
     '/_shell/estrutura': {
       id: '/_shell/estrutura'
       path: '/estrutura'
       fullPath: '/estrutura'
       preLoaderRoute: typeof ShellEstruturaRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/experiencia': {
+      id: '/_shell/experiencia'
+      path: '/experiencia'
+      fullPath: '/experiencia'
+      preLoaderRoute: typeof ShellExperienciaRouteImport
       parentRoute: typeof ShellRouteRoute
     }
     '/_shell/midia': {
@@ -223,7 +261,9 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteRouteChildren {
   ShellComprasRoute: typeof ShellComprasRoute
+  ShellContingenciasRoute: typeof ShellContingenciasRoute
   ShellEstruturaRoute: typeof ShellEstruturaRoute
+  ShellExperienciaRoute: typeof ShellExperienciaRoute
   ShellMidiaRoute: typeof ShellMidiaRoute
   ShellPalestrantesRoute: typeof ShellPalestrantesRoute
   ShellProgramacaoRoute: typeof ShellProgramacaoRoute
@@ -235,7 +275,9 @@ interface ShellRouteRouteChildren {
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellComprasRoute: ShellComprasRoute,
+  ShellContingenciasRoute: ShellContingenciasRoute,
   ShellEstruturaRoute: ShellEstruturaRoute,
+  ShellExperienciaRoute: ShellExperienciaRoute,
   ShellMidiaRoute: ShellMidiaRoute,
   ShellPalestrantesRoute: ShellPalestrantesRoute,
   ShellProgramacaoRoute: ShellProgramacaoRoute,
