@@ -123,10 +123,10 @@ export function Panel({
   className,
   children,
 }: {
-  title?: string;
-  description?: string;
-  action?: ReactNode;
-  className?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
+  className?: string | undefined;
   children: ReactNode;
 }) {
   return (
