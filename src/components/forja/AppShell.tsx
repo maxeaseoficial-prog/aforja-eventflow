@@ -16,13 +16,16 @@ import { cn } from "@/lib/utils";
 function Brand() {
   return (
     <Link to="/" className="flex items-center gap-3 px-2 py-1">
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary-soft text-primary">
-        <Flame className="size-4.5" />
-      </span>
-      <span className="min-w-0">
-        <span className="block font-display text-sm font-extrabold tracking-[0.18em]">A FORJA</span>
-        <span className="block text-[10px] font-medium tracking-[0.16em] text-muted-foreground">
-          EVENT COMMAND CENTER
+      <img
+        src={forjaLogo.url}
+        alt="A Forja"
+        className="h-8 w-auto max-w-[140px] shrink-0 object-contain drop-shadow-[0_0_18px_hsl(var(--primary)/0.25)]"
+      />
+      <span className="min-w-0 border-l border-border/60 pl-3">
+        <span className="block text-[10px] font-medium leading-tight tracking-[0.16em] text-muted-foreground">
+          EVENT
+          <br />
+          COMMAND CENTER
         </span>
       </span>
     </Link>
