@@ -39,7 +39,7 @@ export function GlobalSearch({
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title="Busca global" description="Buscar em toda a Forja">
+    <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput placeholder="Buscar tarefas, pessoas, compras, programação..." />
       <CommandList className="max-h-[60vh]">
         <CommandEmpty>Nada encontrado.</CommandEmpty>
