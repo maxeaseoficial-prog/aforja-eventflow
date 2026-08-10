@@ -2,6 +2,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Bell, Flame, Menu, Plus, Radio, Search } from "lucide-react";
 import { useState } from "react";
 
+import forjaLogo from "@/assets/forja-logo.png.asset.json";
 import { GlobalSearch } from "@/components/forja/GlobalSearch";
 import { NewTaskSheet } from "@/components/forja/NewTaskSheet";
 import { NAV_ITEMS, findNavItem } from "@/components/forja/nav";
