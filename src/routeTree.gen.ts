@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
+import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsaveis'
+import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
@@ -21,24 +23,45 @@ const ShellIndexRoute = ShellIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShellRouteRoute,
 } as any)
+const ShellResponsaveisRoute = ShellResponsaveisRouteImport.update({
+  id: '/responsaveis',
+  path: '/responsaveis',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
+const ShellTarefasRoute = ShellTarefasRouteImport.update({
+  id: '/tarefas',
+  path: '/tarefas',
+  getParentRoute: () => ShellRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
+  '/responsaveis': typeof ShellResponsaveisRoute
+  '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
+  '/responsaveis': typeof ShellResponsaveisRoute
+  '/tarefas': typeof ShellTarefasRoute
   '/': typeof ShellIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteRouteWithChildren
+  '/_shell/responsaveis': typeof ShellResponsaveisRoute
+  '/_shell/tarefas': typeof ShellTarefasRoute
   '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/responsaveis' | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_shell' | '/_shell/'
+  to: '/responsaveis' | '/tarefas' | '/'
+  id:
+    | '__root__'
+    | '/_shell'
+    | '/_shell/responsaveis'
+    | '/_shell/tarefas'
+    | '/_shell/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,14 +84,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellIndexRouteImport
       parentRoute: typeof ShellRouteRoute
     }
+    '/_shell/responsaveis': {
+      id: '/_shell/responsaveis'
+      path: '/responsaveis'
+      fullPath: '/responsaveis'
+      preLoaderRoute: typeof ShellResponsaveisRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
+    '/_shell/tarefas': {
+      id: '/_shell/tarefas'
+      path: '/tarefas'
+      fullPath: '/tarefas'
+      preLoaderRoute: typeof ShellTarefasRouteImport
+      parentRoute: typeof ShellRouteRoute
+    }
   }
 }
 
 interface ShellRouteRouteChildren {
+  ShellResponsaveisRoute: typeof ShellResponsaveisRoute
+  ShellTarefasRoute: typeof ShellTarefasRoute
   ShellIndexRoute: typeof ShellIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
+  ShellResponsaveisRoute: ShellResponsaveisRoute,
+  ShellTarefasRoute: ShellTarefasRoute,
   ShellIndexRoute: ShellIndexRoute,
 }
 
