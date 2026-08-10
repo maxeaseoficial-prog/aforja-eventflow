@@ -37,10 +37,13 @@ function SettingsPage() {
   const { event, updateEvent, resetAll } = useForja();
   const [form, setForm] = useState({
     name: event.name,
-    date: event.date,
-    startTime: event.startTime,
+    edition: event.edition,
+    date: event.date.slice(0, 10),
+    doorsAt: event.doorsAt,
     venue: event.venue,
-    city: event.city,
+    address: event.address,
+    whatsapp: event.whatsapp,
+    instagram: event.instagram,
     budget: String(event.budget),
     expectedGuests: String(event.expectedGuests),
   });
@@ -51,10 +54,13 @@ function SettingsPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           {[
             { key: "name" as const, label: "Nome do evento", type: "text" },
+            { key: "edition" as const, label: "Edição", type: "text" },
             { key: "date" as const, label: "Data", type: "date" },
-            { key: "startTime" as const, label: "Horário de início", type: "time" },
+            { key: "doorsAt" as const, label: "Abertura das portas", type: "time" },
             { key: "venue" as const, label: "Local", type: "text" },
-            { key: "city" as const, label: "Cidade", type: "text" },
+            { key: "address" as const, label: "Endereço", type: "text" },
+            { key: "whatsapp" as const, label: "WhatsApp oficial", type: "text" },
+            { key: "instagram" as const, label: "Instagram", type: "text" },
             { key: "budget" as const, label: "Orçamento (R$)", type: "number" },
             { key: "expectedGuests" as const, label: "Público esperado", type: "number" },
           ].map((field) => (
@@ -81,10 +87,13 @@ function SettingsPage() {
               }
               updateEvent({
                 name: form.name.trim(),
-                date: form.date,
-                startTime: form.startTime,
+                edition: form.edition.trim(),
+                date: `${form.date}T${form.doorsAt || "19:00"}:00-03:00`,
+                doorsAt: form.doorsAt,
                 venue: form.venue.trim(),
-                city: form.city.trim(),
+                address: form.address.trim(),
+                whatsapp: form.whatsapp.trim(),
+                instagram: form.instagram.trim(),
                 budget: Number(form.budget) || 0,
                 expectedGuests: Number(form.expectedGuests) || 0,
               });
@@ -98,6 +107,7 @@ function SettingsPage() {
           </span>
         </div>
       </Panel>
+
 
       <Panel title="Dados" description="Tudo é salvo no seu navegador e pronto para migrar para o banco de dados">
         <p className="text-sm text-muted-foreground">
