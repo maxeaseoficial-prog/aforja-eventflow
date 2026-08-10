@@ -26,7 +26,7 @@ function EventModePage() {
 
   const currentIndex = Math.max(
     0,
-    schedule.findIndex((item: { status: string }) => item.status !== "concluido"),
+    schedule.findIndex((item) => item.status !== "concluido"),
   );
   const current = schedule[currentIndex];
   const next = schedule[currentIndex + 1];
