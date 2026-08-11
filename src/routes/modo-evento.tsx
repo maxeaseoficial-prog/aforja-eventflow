@@ -55,7 +55,7 @@ function EventModePage() {
       </header>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-2">
-        <div className="animate-fade-up rounded-2xl border border-primary/40 bg-primary-soft p-6 shadow-glow">
+        <div className="animate-fade-up rounded-2xl border border-primary/40 bg-primary-soft p-6 shadow-[0_0_40px_-10px_oklch(0.79_0.12_85/0.2)]">
           <p className="label-caps text-primary">Acontecendo agora</p>
           {current ? (
             <>
