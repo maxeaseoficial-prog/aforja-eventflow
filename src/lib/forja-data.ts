@@ -126,6 +126,7 @@ export const seedTasks: Task[] = [];
 export interface Responsible {
   id: string;
   area: string;
+  description?: string;
   name: string | null;
   role: string;
   whatsapp: string;
