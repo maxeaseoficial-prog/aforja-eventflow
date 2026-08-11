@@ -489,7 +489,10 @@ function Flow({
               variant="destructive" 
               size="sm" 
               className="font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-2xl animate-pop"
-              onClick={() => setEdgeToDelete(edges.find(e => e.selected)!)}
+              onClick={() => {
+                const selectedEdge = edges.find(e => e.selected);
+                if (selectedEdge) setEdgeToDelete(selectedEdge);
+              }}
             >
               <Trash2 className="size-3.5 mr-2" /> Remover Ligação
             </Button>
