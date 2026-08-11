@@ -81,25 +81,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     // Protected routes check
     if (location.pathname !== "/login") {
       try {
-        const sessionStr = sessionStorage.getItem("forja-auth-session");
-        let authenticated = false;
-        if (sessionStr) {
-          const session = JSON.parse(sessionStr);
-          authenticated = !!session?.state?.isAuthenticated;
-        }
+        if (typeof window !== "undefined") {
+          const sessionStr = sessionStorage.getItem("forja-auth-session");
+          let authenticated = false;
+          if (sessionStr) {
+            const session = JSON.parse(sessionStr);
+            authenticated = !!session?.state?.isAuthenticated;
+          }
 
-        if (!authenticated) {
-          throw redirect({
-            to: "/login",
-            search: {
-              redirect: location.href,
-            },
-          });
+          if (!authenticated) {
+            throw redirect({
+              to: "/login",
+              search: {
+                redirect: location.href,
+              },
+            });
+          }
         }
       } catch (e: any) {
         if (e.name === "Redirect") throw e;
-        // If storage is unavailable or corrupt, force login
-        throw redirect({ to: "/login" });
       }
     }
   },
