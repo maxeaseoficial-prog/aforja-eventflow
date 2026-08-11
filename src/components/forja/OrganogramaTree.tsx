@@ -198,24 +198,26 @@ function Flow({
         minZoom={0.2}
         maxZoom={2}
         className="forja-flow"
+        style={{ width: '100%', height: '100%' }}
       >
         <Background color="#E6BC63" style={{ opacity: 0.05 }} gap={20} size={1} />
         
         <Panel position="bottom-right" className="flex gap-2 p-4 animate-fade-up">
           <div className="flex bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-2xl items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => zoomOut()} className="size-8 text-muted-foreground hover:text-primary">
+            <Button variant="ghost" size="icon" type="button" onClick={() => zoomOut()} className="size-8 text-muted-foreground hover:text-primary">
               <ZoomOut className="size-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => fitView({ duration: 800 })} className="h-8 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground hover:text-primary px-2">
+            <Button variant="ghost" size="sm" type="button" onClick={() => fitView({ duration: 800 })} className="h-8 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground hover:text-primary px-2">
               Ajustar
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => zoomIn()} className="size-8 text-muted-foreground hover:text-primary">
+            <Button variant="ghost" size="icon" type="button" onClick={() => zoomIn()} className="size-8 text-muted-foreground hover:text-primary">
               <ZoomIn className="size-4" />
             </Button>
             <div className="w-px h-4 bg-border mx-1" />
             <Button 
               variant="ghost" 
               size="icon" 
+              type="button"
               onClick={() => setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 800 })}
               className="size-8 text-muted-foreground hover:text-primary"
             >
