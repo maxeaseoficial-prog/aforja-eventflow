@@ -191,6 +191,7 @@ function ResponsiblesPage() {
 
       <EditResponsibleDialog
         responsible={editing}
+        allResponsibles={responsibles}
         onClose={() => setEditing(null)}
         onSave={(patch) => {
           if (!editing) return;
