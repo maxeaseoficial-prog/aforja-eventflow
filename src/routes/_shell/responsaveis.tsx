@@ -37,20 +37,14 @@ function ResponsiblesPage() {
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newSector, setNewSector] = useState("Outro");
+  const [newParentId, setNewParentId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Responsible | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
 
-  const hierarchy = useMemo(() => {
-    if (responsibles.length === 0) return null;
-    const root = responsibles.find(r => r.area.toLowerCase().includes("coordenação") || r.area.toLowerCase().includes("geral")) || responsibles[0];
-    if (!root) return null;
-    
-    const others = responsibles.filter(r => r.id !== root.id);
-    return { root, children: others };
-  }, [responsibles]);
 
   return (
     <div className="space-y-6">
