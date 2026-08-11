@@ -110,15 +110,6 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      // Migration logic
-      if (!window.localStorage.getItem(MIGRATION_KEY)) {
-        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
-        window.localStorage.removeItem(STORAGE_KEY);
-        window.localStorage.setItem(MIGRATION_KEY, "done");
-        // We don't need to load anything, initialState is already set
-        return;
-      }
-
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const savedData = JSON.parse(raw) as Partial<ForjaState>;
@@ -133,6 +124,9 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
         setState({ ...initialState, ...savedData });
       }
+
+      // NO DESTRUCTIVE MIGRATION HERE.
+      // If we need to set a key, we do it without clearing others.
     } catch {
       /* ignore corrupt cache */
     }
