@@ -44,25 +44,27 @@ function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <Panel title="Distribuição por área">
-        <div className="flex flex-wrap gap-2">
-          {byArea.map((entry) => (
-            <button
-              key={entry.name}
-              type="button"
-              onClick={() => setArea(area === entry.name ? "todas" : entry.name)}
-              className={
-                "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors duration-200 " +
-                (area === entry.name
-                  ? "border-primary/30 bg-primary-soft text-primary"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground")
-              }
-            >
-              {entry.name} · {entry.count}
-            </button>
-          ))}
-        </div>
-      </Panel>
+      {byArea.length > 0 && (
+        <Panel title="Distribuição por área">
+          <div className="flex flex-wrap gap-2">
+            {byArea.map((entry) => (
+              <button
+                key={entry.name}
+                type="button"
+                onClick={() => setArea(area === entry.name ? "todas" : entry.name)}
+                className={
+                  "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors duration-200 " +
+                  (area === entry.name
+                    ? "border-primary/30 bg-primary-soft text-primary"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground")
+                }
+              >
+                {entry.name} · {entry.count}
+              </button>
+            ))}
+          </div>
+        </Panel>
+      )}
 
       <div className="grid gap-2 sm:grid-cols-3">
         <Input placeholder="Buscar pessoa..." maxLength={60} value={search} onChange={(e) => setSearch(e.target.value)} />
