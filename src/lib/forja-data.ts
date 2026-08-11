@@ -346,55 +346,7 @@ const group = (id: string, title: string, labels: string[], doneCount = 0, subti
   items: labels.map((label, i) => ({ id: `${id}-${i}`, label, done: i < doneCount })),
 });
 
-export const seedMediaChecklists: ChecklistGroup[] = [
-  group(
-    "storymaker",
-    "Storymaker",
-    [
-      "Preparação",
-      "Bastidores",
-      "Equipe",
-      "Chegada dos convidados",
-      "Credenciamento",
-      "Ambiente cheio",
-      "Abertura",
-      "Cada palestrante",
-      "Reações da plateia",
-      "Frases fortes",
-      "Coffee Break",
-      "Networking",
-      "Bastidores (final)",
-      "Encerramento",
-      "Depoimentos",
-      "Foto final",
-    ],
-    4,
-    "Cenas obrigatórias em tempo real",
-  ),
-  group(
-    "videomaker",
-    "Videomaker",
-    [
-      "Fachada",
-      "Local",
-      "Detalhes",
-      "Decoração",
-      "Público entrando",
-      "Close convidados",
-      "Palestrantes",
-      "Plateia",
-      "Aplausos",
-      "Networking",
-      "Brindes",
-      "Bastidores",
-      "Encerramento",
-    ],
-    3,
-    "Planos de captação",
-  ),
-  group("fotografo", "Fotógrafo", ["Retratos palestrantes", "Plateia", "Equipe", "Detalhes", "Foto oficial", "Bastidores"], 2),
-  group("social", "Social Media", ["Stories ao vivo", "Repost convidados", "Post agradecimento", "Cobertura tempo real"], 1),
-];
+export const seedMediaChecklists: ChecklistGroup[] = [];
 
 export interface Deliverable {
   id: string;
@@ -463,43 +415,15 @@ export const seedContingencies: Contingency[] = CONTINGENCY_SEED.map(
 export const seedPostEvent: ChecklistGroup = group(
   "pos-evento",
   "Checklist pós-evento",
-  [
-    "Fotos organizadas",
-    "Vídeos organizados",
-    "Aftermovie",
-    "Reels",
-    "Depoimentos",
-    "Mensagem de agradecimento",
-    "Pesquisa de satisfação",
-    "Publicações",
-    "Marcar participantes",
-    "Marcar palestrantes",
-    "Lista próxima edição",
-    "Reunião interna",
-    "Registro de problemas",
-    "Registro de melhorias",
-  ],
+  [],
   0,
 );
 
 export const seedOpeningChecklist: ChecklistGroup = group(
   "abertura",
   "Checklist de abertura",
-  [
-    "Som testado",
-    "Microfones testados",
-    "Telão funcionando",
-    "Slides carregados",
-    "Iluminação pronta",
-    "Internet funcionando",
-    "Staff posicionado",
-    "Recepção pronta",
-    "Coffee organizado",
-    "Palestrantes presentes",
-    "Mídia posicionada",
-    "Portas liberadas",
-  ],
-  10,
+  [],
+  0,
 );
 
 export interface Learning {
