@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network } from "lucide-react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { useForja } from "@/components/forja/store";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
 
 export const Route = createFileRoute("/_shell/responsaveis")({
@@ -26,18 +27,53 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles } = useForja();
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
+  const [view, setView] = useState<"grid" | "organograma">("grid");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
 
+  const hierarchy = useMemo(() => {
+    if (responsibles.length === 0) return null;
+    const root = responsibles.find(r => r.area.toLowerCase().includes("coordenação") || r.area.toLowerCase().includes("geral")) || responsibles[0];
+    if (!root) return null;
+    
+    const others = responsibles.filter(r => r.id !== root.id);
+    return { root, children: others };
+  }, [responsibles]);
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border bg-card p-0.5">
+            <button
+              type="button"
+              onClick={() => setView("grid")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                view === "grid" ? "bg-primary-soft text-primary" : "text-muted-foreground"
+              )}
+            >
+              <LayoutGrid className="size-3.5" /> Grade
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("organograma")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                view === "organograma" ? "bg-primary-soft text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Network className="size-3.5" /> Organograma
+            </button>
+          </div>
+        </div>
+        
         <div className="flex min-w-0 flex-wrap gap-2">
           {(["todos", "confirmado", "pendente", "indefinido"] as const).map((option) => (
             <button
@@ -55,10 +91,24 @@ function ResponsiblesPage() {
             </button>
           ))}
         </div>
-        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">Nova área</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {responsibles.length > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              className="gap-1.5"
+              onClick={() => {
+                if (confirm("Deseja apagar todos os responsáveis?")) clearResponsibles();
+              }}
+            >
+              <XCircle className="size-4" /> Apagar todos
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nova área</span>
+          </Button>
+        </div>
       </div>
 
       {undefinedCount > 0 && (
@@ -68,14 +118,14 @@ function ResponsiblesPage() {
         </div>
       )}
 
-      {list.length === 0 ? (
+      {responsibles.length === 0 ? (
         <EmptyState
           icon={UserPlus}
-          title="Nenhuma área nesse filtro"
-          description="Ajuste o filtro ou crie uma nova área de responsabilidade."
+          title="Nenhuma área definida"
+          description="Comece definindo as áreas e responsáveis do evento."
           action={<Button onClick={() => setNewAreaOpen(true)}>+ Nova área</Button>}
         />
-      ) : (
+      ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((responsible) => (
             <article
@@ -114,9 +164,52 @@ function ResponsiblesPage() {
                   {responsible.name ? "Editar" : "Adicionar responsável"}
                 </Button>
                 <WhatsappButton number={responsible.whatsapp} />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ml-auto text-muted-foreground hover:text-destructive"
+                  onClick={() => {
+                    if (confirm(`Excluir a área "${responsible.area}"?`)) removeResponsible(responsible.id);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
             </article>
           ))}
+        </div>
+      ) : (
+        <div className="forja-scroll -mx-4 overflow-x-auto pb-8 sm:mx-0">
+          <div className="organogram-container">
+            {hierarchy && (
+              <>
+                <div className="organogram-node">
+                  <OrganogramCard 
+                    responsible={hierarchy.root} 
+                    onEdit={() => setEditing(hierarchy.root)}
+                    onDelete={() => removeResponsible(hierarchy.root.id)}
+                  />
+                  {hierarchy.children.length > 0 && <div className="organogram-line-v" />}
+                </div>
+
+                {hierarchy.children.length > 0 && (
+                  <div className="organogram-row">
+                    <div className="organogram-line-h" />
+                    {hierarchy.children.map((child) => (
+                      <div key={child.id} className="organogram-node flex flex-col items-center">
+                        <div className="organogram-line-v-top" />
+                        <OrganogramCard 
+                          responsible={child}
+                          onEdit={() => setEditing(child)}
+                          onDelete={() => removeResponsible(child.id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -269,5 +362,41 @@ function EditResponsibleDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function OrganogramCard({ 
+  responsible, 
+  onEdit, 
+  onDelete 
+}: { 
+  responsible: Responsible; 
+  onEdit: () => void; 
+  onDelete: () => void;
+}) {
+  return (
+    <div className="surface-card w-56 p-4 shadow-card">
+      <div className="flex flex-col items-center text-center">
+        <Avatar name={responsible.name} size="md" />
+        <div className="mt-3 min-w-0 w-full">
+          <p className="label-caps text-[9px]">{responsible.area}</p>
+          <h3 className="mt-1 truncate font-display text-sm font-bold">
+            {responsible.name || "NÃO DEFINIDO"}
+          </h3>
+          <p className="truncate text-[10px] text-muted-foreground">{responsible.role}</p>
+        </div>
+        
+        <div className="mt-4 flex items-center justify-center gap-2 border-t border-border w-full pt-3">
+          <Button size="icon" variant="ghost" className="size-7" onClick={onEdit}>
+            <Pencil className="size-3.5" />
+          </Button>
+          <Button size="icon" variant="ghost" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => {
+            if(confirm(`Excluir a área "${responsible.area}"?`)) onDelete();
+          }}>
+            <Trash2 className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

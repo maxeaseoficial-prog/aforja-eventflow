@@ -76,6 +76,7 @@ interface ForjaContextValue extends ForjaState {
   moveTask: (id: string, status: TaskStatus) => void;
   updateResponsible: (id: string, patch: Partial<Responsible>) => void;
   addResponsible: (responsible: Responsible) => void;
+  removeResponsible: (id: string) => void;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   addPurchase: (purchase: Purchase) => void;
   removePurchase: (id: string) => void;
@@ -90,8 +91,10 @@ interface ForjaContextValue extends ForjaState {
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
   addLearning: (learning: Learning) => void;
-  updateEvent: (patch: Partial<EventConfig>) => void;
-  resetAll: () => void;
+    updateEvent: (patch: Partial<EventConfig>) => void;
+    clearTasks: () => void;
+    clearResponsibles: () => void;
+    resetAll: () => void;
 }
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
@@ -135,6 +138,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, responsibles: patchList(s.responsibles, id, patch) })),
       addResponsible: (responsible) =>
         setState((s) => ({ ...s, responsibles: [...s.responsibles, responsible] })),
+      removeResponsible: (id) =>
+        setState((s) => ({ ...s, responsibles: s.responsibles.filter((r) => r.id !== id) })),
       updatePurchase: (id, patch) =>
         setState((s) => ({ ...s, purchases: patchList(s.purchases, id, patch) })),
       addPurchase: (purchase) => setState((s) => ({ ...s, purchases: [purchase, ...s.purchases] })),
@@ -180,6 +185,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
       addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
+      clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
+      clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
       resetAll: () => setState(initialState),
     };
   }, [state]);
