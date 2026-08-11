@@ -83,6 +83,8 @@ interface ForjaContextValue extends ForjaState {
   removePurchase: (id: string) => void;
   updateScheduleItem: (id: string, patch: Partial<ScheduleItem>) => void;
   reorderSchedule: (fromId: string, toId: string) => void;
+  addSpeaker: (speaker: Speaker) => void;
+  removeSpeaker: (id: string) => void;
   updateSpeaker: (id: string, patch: Partial<Speaker>) => void;
   toggleSpeakerStep: (id: string, index: number) => void;
   updateStaff: (id: string, patch: Partial<StaffMember>) => void;
@@ -201,6 +203,8 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
           list.splice(to, 0, moved);
           return { ...s, schedule: list };
         }),
+      addSpeaker: (speaker) => setState((s) => ({ ...s, speakers: [...s.speakers, speaker] })),
+      removeSpeaker: (id) => setState((s) => ({ ...s, speakers: s.speakers.filter((sp) => sp.id !== id) })),
       updateSpeaker: (id, patch) =>
         setState((s) => ({ ...s, speakers: patchList(s.speakers, id, patch) })),
       toggleSpeakerStep: (id, index) =>
