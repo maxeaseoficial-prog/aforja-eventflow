@@ -109,7 +109,8 @@ function DateTimeModal({ isOpen, onClose, onSave, initialDate = "", initialTime 
 }
 
 function CountdownBlock() {
-  const { event = { date: "", name: "" }, updateEvent } = useForja();
+  const { event, updateEvent } = useForja();
+  if (!event) return null;
   const metrics = useForjaMetrics();
   const countdown = useCountdown(event.date);
   const [isModalOpen, setIsModalOpen] = useState(false);
