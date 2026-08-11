@@ -150,7 +150,7 @@ function PurchasesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left">
-                    {["Item", "Qtd", "Previsto", "Real", "Responsável", "Link", "Fornecedor", "Prazo", "Status", ""].map(
+                    {["Item", "Qtd", "Previsto", "Real", "Responsável", "Fornecedor", "Prazo", "Status", ""].map(
                       (head) => (
                         <th key={head} className="label-caps pb-3 pr-4 font-bold">
                           {head}
@@ -184,18 +184,6 @@ function PurchasesPage() {
                       </td>
                       <td className="py-3 pr-4">
                         {purchase.owner ?? <span className="text-destructive">Não definido</span>}
-                      </td>
-                      <td className="py-3 pr-4">
-                        {purchase.link ? (
-                          <a 
-                            href={purchase.link} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-primary hover:underline"
-                          >
-                            Link
-                          </a>
-                        ) : "—"}
                       </td>
                       <td className="py-3 pr-4 text-muted-foreground">{purchase.supplier || "—"}</td>
                       <td className="py-3 pr-4 text-muted-foreground">{formatDate(purchase.dueDate)}</td>
