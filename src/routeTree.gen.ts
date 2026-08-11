@@ -9,10 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ModoEventoRouteImport } from './routes/modo-evento'
+import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
 import { Route as ShellConfiguracoesRouteImport } from './routes/_shell/configuracoes'
 import { Route as ShellContingenciasRouteImport } from './routes/_shell/contingencias'
@@ -25,11 +25,6 @@ import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsav
 import { Route as ShellStaffRouteImport } from './routes/_shell/staff'
 import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
   getParentRoute: () => rootRouteImport,
@@ -43,6 +38,11 @@ const ModoEventoRoute = ModoEventoRouteImport.update({
   id: '/modo-evento',
   path: '/modo-evento',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ShellIndexRoute = ShellIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellComprasRoute = ShellComprasRouteImport.update({
   id: '/compras',
@@ -101,7 +101,7 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof ShellIndexRoute
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
@@ -117,7 +117,6 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
@@ -131,10 +130,10 @@ export interface FileRoutesByTo {
   '/responsaveis': typeof ShellResponsaveisRoute
   '/staff': typeof ShellStaffRoute
   '/tarefas': typeof ShellTarefasRoute
+  '/': typeof ShellIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
@@ -149,6 +148,7 @@ export interface FileRoutesById {
   '/_shell/responsaveis': typeof ShellResponsaveisRoute
   '/_shell/staff': typeof ShellStaffRoute
   '/_shell/tarefas': typeof ShellTarefasRoute
+  '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -169,7 +169,6 @@ export interface FileRouteTypes {
     | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/login'
     | '/modo-evento'
     | '/compras'
@@ -183,9 +182,9 @@ export interface FileRouteTypes {
     | '/responsaveis'
     | '/staff'
     | '/tarefas'
+    | '/'
   id:
     | '__root__'
-    | '/'
     | '/_shell'
     | '/login'
     | '/modo-evento'
@@ -200,10 +199,10 @@ export interface FileRouteTypes {
     | '/_shell/responsaveis'
     | '/_shell/staff'
     | '/_shell/tarefas'
+    | '/_shell/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   ModoEventoRoute: typeof ModoEventoRoute
@@ -211,13 +210,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_shell': {
       id: '/_shell'
       path: ''
@@ -238,6 +230,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/modo-evento'
       preLoaderRoute: typeof ModoEventoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_shell/': {
+      id: '/_shell/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ShellIndexRouteImport
+      parentRoute: typeof ShellRouteRoute
     }
     '/_shell/compras': {
       id: '/_shell/compras'
@@ -331,6 +330,7 @@ interface ShellRouteRouteChildren {
   ShellResponsaveisRoute: typeof ShellResponsaveisRoute
   ShellStaffRoute: typeof ShellStaffRoute
   ShellTarefasRoute: typeof ShellTarefasRoute
+  ShellIndexRoute: typeof ShellIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
@@ -345,6 +345,7 @@ const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellResponsaveisRoute: ShellResponsaveisRoute,
   ShellStaffRoute: ShellStaffRoute,
   ShellTarefasRoute: ShellTarefasRoute,
+  ShellIndexRoute: ShellIndexRoute,
 }
 
 const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
@@ -352,7 +353,6 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   ShellRouteRoute: ShellRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   ModoEventoRoute: ModoEventoRoute,
@@ -360,3 +360,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
