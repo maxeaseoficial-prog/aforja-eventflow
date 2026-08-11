@@ -32,7 +32,7 @@ function Brand() {
         </span>
       </Link>
       <div className="px-1 text-[9px] font-medium tracking-widest text-muted-foreground/30">
-        FORJA-CLEAN-V2
+        FORJA-CLEAN-V3
       </div>
     </div>
   );
