@@ -16,14 +16,14 @@ import { cn } from "@/lib/utils";
 
 function Brand() {
   return (
-    <Link to="/" className="flex items-center gap-3 px-2 py-1">
+    <Link to="/" className="flex items-center gap-4 py-2">
       <img
         src={forjaLogo.url}
         alt="A Forja"
-        className="h-8 w-auto max-w-[140px] shrink-0 object-contain drop-shadow-[0_0_18px_hsl(var(--primary)/0.25)]"
+        className="h-12 w-auto max-w-[180px] shrink-0 object-contain drop-shadow-[0_0_24px_oklch(var(--primary)/0.2)]"
       />
-      <span className="min-w-0 border-l border-border/60 pl-3">
-        <span className="block text-[10px] font-medium leading-tight tracking-[0.16em] text-muted-foreground">
+      <span className="min-w-0 border-l border-border/60 pl-4 py-1">
+        <span className="block text-[11px] font-bold leading-tight tracking-[0.2em] text-muted-foreground">
           EVENT
           <br />
           COMMAND CENTER
@@ -149,7 +149,7 @@ export function AppShell() {
       />
 
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
-        <div className="border-b border-sidebar-border px-3 py-4">
+        <div className="border-b border-sidebar-border px-4 py-6">
           <Brand />
         </div>
         <NavList />

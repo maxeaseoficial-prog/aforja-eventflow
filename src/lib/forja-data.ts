@@ -121,26 +121,7 @@ const t = (
   checklist: [],
 });
 
-export const seedTasks: Task[] = [
-  t("t1", "Finalizar palestra de abertura", "Palestra", "Henrique", "2026-08-12", "alta", "em-andamento", "Roteiro + slides finais da abertura."),
-  t("t2", "Fechar contrato de som", "Som", "João Silva", "2026-08-10", "urgente", "aguardando"),
-  t("t3", "Definir roteiro do storymaker", "Mídia", "Bianca", "2026-08-08", "alta", "nao-iniciado"),
-  t("t4", "Comprar crachás do staff", "Compras", "Marina", "2026-08-09", "media", "em-andamento"),
-  t("t5", "Testar projetor e telão", "Estrutura", "Carlos", "2026-08-20", "alta", "nao-iniciado"),
-  t("t6", "Briefing geral do staff", "Staff", "Marina", "2026-08-25", "media", "nao-iniciado"),
-  t("t7", "Contratar coffee break", "Coffee Break", "Paula", "2026-08-14", "alta", "cotando" as unknown as TaskStatus),
-  t("t8", "Fechar identidade visual dos reels", "Marketing", "Bianca", "2026-08-06", "media", "concluido"),
-  t("t9", "Confirmar palestrante convidado", "Palestra", "Henrique", "2026-08-07", "urgente", "problema"),
-  t("t10", "Montar planilha de credenciamento", "Recepção", "Letícia", "2026-08-18", "media", "em-andamento"),
-  t("t11", "Definir música de entrada", "Som", "João Silva", "2026-08-22", "baixa", "nao-iniciado"),
-  t("t12", "Organizar brindes dos palestrantes", "Compras", "Marina", "2026-08-19", "media", "concluido"),
-  t("t13", "Revisar apresentações recebidas", "Palestra", "Henrique", "2026-08-24", "alta", "nao-iniciado"),
-  t("t14", "Definir plano B de internet", "Estrutura", "Carlos", "2026-08-16", "urgente", "em-andamento"),
-  t("t15", "Programar posts pré-evento", "Marketing", "Bianca", "2026-08-13", "media", "aguardando"),
-  t("t16", "Fechar iluminação de palco", "Iluminação", "Rafael", "2026-08-11", "alta", "em-andamento"),
-  t("t17", "Checklist de sinalização", "Estrutura", "Letícia", "2026-08-21", "baixa", "nao-iniciado"),
-  t("t18", "Escala final do staff", "Staff", "Marina", "2026-08-23", "alta", "nao-iniciado"),
-];
+export const seedTasks: Task[] = [];
 const coffeeTask = seedTasks.find((task) => task.id === "t7");
 if (coffeeTask) coffeeTask.status = "em-andamento";
 
@@ -174,35 +155,7 @@ const AREAS = [
   "Videomaker",
 ];
 
-const RESP_SEED: Array<[string, string | null, string, PersonStatus]> = [
-  ["Coordenação Geral", "Henrique Alves", "Coordenador geral", "confirmado"],
-  ["Som", "João Silva", "Técnico de áudio", "confirmado"],
-  ["Iluminação", "Rafael Costa", "Operador de luz", "confirmado"],
-  ["Telão / Projeção", "Carlos Mendes", "Operador de vídeo", "pendente"],
-  ["Equipe de Mídia", "Bianca Rocha", "Coordenadora de mídia", "confirmado"],
-  ["Storymaker", "Duda Lima", "Storymaker", "confirmado"],
-  ["Recepção", "Letícia Souza", "Líder de recepção", "confirmado"],
-  ["Credenciamento", "Letícia Souza", "Líder de credenciamento", "pendente"],
-  ["Coffee Break", "Paula Neves", "Responsável coffee", "confirmado"],
-  ["Palco / Bastidores", "Carlos Mendes", "Palco", "confirmado"],
-  ["Palestrantes", "Henrique Alves", "Relacionamento", "confirmado"],
-  ["Staff", "Marina Dias", "Coordenadora de staff", "confirmado"],
-  ["Segurança", null, "—", "indefinido"],
-  ["Limpeza", null, "—", "indefinido"],
-  ["Brindes", "Marina Dias", "Brindes", "pendente"],
-  ["Fotografia", "Tiago Prado", "Fotógrafo", "confirmado"],
-  ["Videomaker", null, "—", "indefinido"],
-];
-
-export const seedResponsibles: Responsible[] = RESP_SEED.map(([area, name, role, status], i) => ({
-  id: `r${i + 1}`,
-  area,
-  name,
-  role,
-  whatsapp: name ? `55429${(88800000 + i * 1234).toString()}` : "",
-  status,
-  notes: "",
-}));
+export const seedResponsibles: Responsible[] = [];
 
 export const responsibleAreas = AREAS;
 
@@ -249,22 +202,7 @@ const PURCHASE_SEED: Array<[string, number, number, number | null, string | null
   ["Primeiros socorros", 1, 180, null, null, "precisa-comprar"],
 ];
 
-export const seedPurchases: Purchase[] = PURCHASE_SEED.map(
-  ([item, quantity, estimated, actual, owner, status], i) => ({
-    id: `p${i + 1}`,
-    item,
-    category: item.split(" ")[0] ?? item,
-    quantity,
-    estimated,
-    actual,
-    owner,
-    whatsapp: owner ? "5542999990000" : "",
-    supplier: status === "precisa-comprar" ? "" : "Fornecedor local",
-    dueDate: `2026-08-${String(8 + (i % 18)).padStart(2, "0")}`,
-    status,
-    notes: "",
-  }),
-);
+export const seedPurchases: Purchase[] = [];
 
 export interface ScheduleItem {
   id: string;
@@ -293,18 +231,7 @@ const SCHEDULE_SEED: Array<[string, string, string, string, string, string]> = [
   ["22:00", "Encerramento", "Agradecimentos e foto final", "Henrique Alves", "20 min", "Palco"],
 ];
 
-export const seedSchedule: ScheduleItem[] = SCHEDULE_SEED.map(
-  ([time, title, description, owner, duration, place], i) => ({
-  id: `s${i + 1}`,
-  time,
-  title,
-  description,
-  owner,
-  duration,
-  place,
-  status: i < 3 ? "concluido" : ("nao-iniciado" as TaskStatus),
-  notes: "",
-}));
+export const seedSchedule: ScheduleItem[] = [];
 
 export const SPEAKER_CHECKLIST = [
   "Confirmado",
@@ -362,11 +289,7 @@ const speaker = (
   checklist: SPEAKER_CHECKLIST.map((_, i) => i < done),
 });
 
-export const seedSpeakers: Speaker[] = [
-  speaker("sp1", "João Silva", "Liderança", "Forjando Liderança", "19:15", "18:15", "confirmado", 11),
-  speaker("sp2", "Marcos Vieira", "Performance", "Pressão e Performance", "20:00", "18:45", "confirmado", 8),
-  speaker("sp3", "Ana Prado", "Transformação", "O Metal e o Fogo", "21:10", "19:30", "pendente", 5),
-];
+export const seedSpeakers: Speaker[] = [];
 
 export interface StaffMember {
   id: string;
@@ -409,18 +332,7 @@ const STAFF_SEED: Array<[string, string, string, string, string, PersonStatus]> 
   ["Otávio Lins", "Iluminação", "Assistente de luz", "Rafael Costa", "17:00", "confirmado"],
 ];
 
-export const seedStaff: StaffMember[] = STAFF_SEED.map(
-  ([name, area, role, reportsTo, arrival, status], i) => ({
-  id: `st${i + 1}`,
-  name,
-  whatsapp: "5542999990000",
-  area,
-  role,
-  reportsTo,
-  arrival,
-  status: status as PersonStatus,
-  notes: "",
-}));
+export const seedStaff: StaffMember[] = [];
 
 export interface ChecklistGroup {
   id: string;
