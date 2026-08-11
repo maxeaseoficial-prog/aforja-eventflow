@@ -56,7 +56,7 @@ function PurchasesPage() {
   const [owner, setOwner] = useState("todos");
   const [deleting, setDeleting] = useState<Purchase | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  const [form, setForm] = useState({ item: "", quantity: "1", estimated: "0" });
+  const [form, setForm] = useState({ item: "", quantity: "1", estimated: "0", link: "" });
 
   const owners = Array.from(new Set(purchases.map((p) => p.owner).filter(Boolean) as string[]));
 
@@ -150,7 +150,7 @@ function PurchasesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left">
-                    {["Item", "Qtd", "Previsto", "Real", "Responsável", "Fornecedor", "Prazo", "Status", ""].map(
+                    {["Item", "Qtd", "Previsto", "Real", "Responsável", "Link", "Fornecedor", "Prazo", "Status", ""].map(
                       (head) => (
                         <th key={head} className="label-caps pb-3 pr-4 font-bold">
                           {head}
@@ -170,6 +170,18 @@ function PurchasesPage() {
                       </td>
                       <td className="py-3 pr-4">
                         {purchase.owner ?? <span className="text-destructive">Não definido</span>}
+                      </td>
+                      <td className="py-3 pr-4">
+                        {purchase.link ? (
+                          <a 
+                            href={purchase.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-primary hover:underline"
+                          >
+                            Link
+                          </a>
+                        ) : "—"}
                       </td>
                       <td className="py-3 pr-4 text-muted-foreground">{purchase.supplier || "—"}</td>
                       <td className="py-3 pr-4 text-muted-foreground">{formatDate(purchase.dueDate)}</td>
@@ -288,6 +300,16 @@ function PurchasesPage() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="plink">Link do item</Label>
+              <Input
+                id="plink"
+                placeholder="https://..."
+                value={form.link}
+                onChange={(e) => setForm({ ...form, link: e.target.value })}
+              />
+            </div>
+          </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setNewOpen(false)}>
@@ -312,9 +334,10 @@ function PurchasesPage() {
                   dueDate: new Date().toISOString().slice(0, 10),
                   status: "precisa-comprar",
                   notes: "",
+                  link: form.link,
                 });
                 toast.success("Item adicionado");
-                setForm({ item: "", quantity: "1", estimated: "0" });
+                setForm({ item: "", quantity: "1", estimated: "0", link: "" });
                 setNewOpen(false);
               }}
             >

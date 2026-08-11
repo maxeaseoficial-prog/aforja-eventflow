@@ -227,6 +227,10 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
         setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
       updateContingency: (id, patch) =>
         setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
+      addContingency: (contingency) =>
+        setState((s) => ({ ...s, contingencies: [...s.contingencies, contingency] })),
+      removeContingency: (id) =>
+        setState((s) => ({ ...s, contingencies: s.contingencies.filter((c) => c.id !== id) })),
       addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
       clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
