@@ -182,38 +182,11 @@ function ResponsiblesPage() {
           ))}
         </div>
       ) : (
-        <div className="forja-scroll -mx-4 overflow-x-auto pb-8 sm:mx-0">
-          <div className="organogram-container">
-            {hierarchy && (
-              <>
-                <div className="organogram-node">
-                  <OrganogramCard 
-                    responsible={hierarchy.root} 
-                    onEdit={() => setEditing(hierarchy.root)}
-                    onDelete={() => setDeleting(hierarchy.root)}
-                  />
-                  {hierarchy.children.length > 0 && <div className="organogram-line-v" />}
-                </div>
-
-                {hierarchy.children.length > 0 && (
-                  <div className="organogram-row">
-                    <div className="organogram-line-h" />
-                    {hierarchy.children.map((child) => (
-                      <div key={child.id} className="organogram-node flex flex-col items-center">
-                        <div className="organogram-line-v-top" />
-                        <OrganogramCard 
-                          responsible={child}
-                          onEdit={() => setEditing(child)}
-                          onDelete={() => setDeleting(child)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        <OrganogramaTree 
+          responsibles={responsibles} 
+          onEdit={setEditing} 
+          onDelete={setDeleting} 
+        />
       )}
 
       <EditResponsibleDialog
