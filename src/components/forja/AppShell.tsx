@@ -16,20 +16,25 @@ import { cn } from "@/lib/utils";
 
 function Brand() {
   return (
-    <Link to="/" className="flex items-center gap-4 py-2">
-      <img
-        src={forjaLogo.url}
-        alt="A Forja"
-        className="h-12 w-auto max-w-[180px] shrink-0 object-contain drop-shadow-[0_0_24px_oklch(var(--primary)/0.2)]"
-      />
-      <span className="min-w-0 border-l border-border/60 pl-4 py-1">
-        <span className="block text-[11px] font-bold leading-tight tracking-[0.2em] text-muted-foreground">
-          EVENT
-          <br />
-          COMMAND CENTER
+    <div className="flex flex-col gap-4 py-2">
+      <Link to="/" className="flex items-center gap-4">
+        <img
+          src={forjaLogo.url}
+          alt="A Forja"
+          className="h-12 w-auto max-w-[180px] shrink-0 object-contain drop-shadow-[0_0_24px_oklch(var(--primary)/0.2)]"
+        />
+        <span className="min-w-0 border-l border-border/60 pl-4 py-1">
+          <span className="block text-[11px] font-bold leading-tight tracking-[0.2em] text-muted-foreground">
+            EVENT
+            <br />
+            COMMAND CENTER
+          </span>
         </span>
-      </span>
-    </Link>
+      </Link>
+      <div className="px-1 text-[9px] font-medium tracking-widest text-muted-foreground/30">
+        FORJA-CLEAN-V2
+      </div>
+    </div>
   );
 }
 
