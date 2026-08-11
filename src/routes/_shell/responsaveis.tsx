@@ -201,20 +201,37 @@ function ResponsiblesPage() {
       />
 
       <Dialog open={newAreaOpen} onOpenChange={setNewAreaOpen}>
-        <DialogContent className="bg-surface">
+        <DialogContent className="bg-surface sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="font-display">Nova área</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="area">Título da área</Label>
-              <Input
-                id="area"
-                placeholder="Ex: Coordenador de Programação"
-                maxLength={60}
-                value={newArea}
-                onChange={(e) => setNewArea(e.target.value)}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="area">Título da área</Label>
+                <Input
+                  id="area"
+                  placeholder="Ex: Coordenador de Programação"
+                  maxLength={60}
+                  value={newArea}
+                  onChange={(e) => setNewArea(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sector">Setor</Label>
+                <Select value={newSector} onValueChange={setNewSector}>
+                  <SelectTrigger id="sector">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESPONSIBLE_SECTORS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="desc">Subtítulo / Descrição</Label>
@@ -225,6 +242,22 @@ function ResponsiblesPage() {
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parent">Responde para (Opcional)</Label>
+              <Select value={newParentId || "none"} onValueChange={(v) => setNewParentId(v === "none" ? null : v)}>
+                <SelectTrigger id="parent">
+                  <SelectValue placeholder="Selecione um superior" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ninguém (Nível 1)</SelectItem>
+                  {responsibles.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.area} {r.name ? `(${r.name})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -246,10 +279,14 @@ function ResponsiblesPage() {
                   whatsapp: "",
                   status: "indefinido",
                   notes: "",
+                  sector: newSector,
+                  parentId: newParentId,
                 });
                 toast.success("Área criada");
                 setNewArea("");
                 setNewDescription("");
+                setNewSector("Outro");
+                setNewParentId(null);
                 setNewAreaOpen(false);
               }}
             >
