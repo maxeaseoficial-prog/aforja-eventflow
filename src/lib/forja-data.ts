@@ -172,33 +172,7 @@ export interface Purchase {
   notes: string;
 }
 
-const PURCHASE_SEED: Array<[string, number, number, number | null, string | null, PurchaseStatus]> = [
-  ["Crachás staff", 30, 210, 198, "Marina Dias", "comprado"],
-  ["Crachás convidados", 240, 480, null, "Marina Dias", "cotando"],
-  ["Cordões", 270, 405, 405, "Marina Dias", "recebido"],
-  ["Pulseiras", 240, 180, null, null, "precisa-comprar"],
-  ["Brindes palestrantes", 6, 900, 870, "Henrique Alves", "comprado"],
-  ["Sacolas", 240, 720, null, null, "precisa-comprar"],
-  ["Kits de boas-vindas", 240, 960, null, "Letícia Souza", "cotando"],
-  ["Água (fardos)", 12, 180, 180, "Paula Neves", "recebido"],
-  ["Café", 8, 320, 320, "Paula Neves", "comprado"],
-  ["Copos", 500, 120, null, "Paula Neves", "precisa-comprar"],
-  ["Guardanapos", 1000, 60, 58, "Paula Neves", "comprado"],
-  ["Alimentos coffee", 1, 1400, null, "Paula Neves", "cotando"],
-  ["Canetas", 240, 190, null, null, "precisa-comprar"],
-  ["Cadernos", 240, 640, null, "Marina Dias", "cotando"],
-  ["Fita adesiva", 10, 70, 66, "Carlos Mendes", "comprado"],
-  ["Extensões", 8, 240, 240, "Carlos Mendes", "recebido"],
-  ["Filtros de linha", 6, 210, null, "Carlos Mendes", "cotando"],
-  ["Pilhas", 20, 120, 115, "João Silva", "comprado"],
-  ["Cabos (HDMI/XLR)", 10, 350, null, "Carlos Mendes", "precisa-comprar"],
-  ["Materiais de sinalização", 15, 300, null, "Letícia Souza", "cotando"],
-  ["Decoração", 1, 800, null, null, "precisa-comprar"],
-  ["Carregadores", 4, 160, 152, "Bianca Rocha", "comprado"],
-  ["Power banks", 3, 270, null, "Bianca Rocha", "cotando"],
-  ["Adaptadores USB-C / HDMI", 5, 250, 244, "Carlos Mendes", "comprado"],
-  ["Primeiros socorros", 1, 180, null, null, "precisa-comprar"],
-];
+const PURCHASE_SEED: Array<[string, number, number, number | null, string | null, PurchaseStatus]> = [];
 
 export const seedPurchases: Purchase[] = [];
 
@@ -214,20 +188,7 @@ export interface ScheduleItem {
   notes: string;
 }
 
-const SCHEDULE_SEED: Array<[string, string, string, string, string, string]> = [
-  ["17:00", "Equipe chega", "Chegada de toda a equipe e conferência inicial", "Marina Dias", "30 min", "Hall"],
-  ["17:30", "Teste de áudio", "Microfones, caixas e mesa", "João Silva", "30 min", "Palco"],
-  ["18:00", "Briefing do Staff", "Alinhamento de funções e posições", "Marina Dias", "30 min", "Foyer"],
-  ["18:30", "Abertura das portas", "Recepção e credenciamento ativos", "Letícia Souza", "30 min", "Entrada"],
-  ["19:00", "Início oficial", "Boas-vindas", "Henrique Alves", "5 min", "Palco"],
-  ["19:05", "Vídeo de abertura", "Aftermovie teaser", "Bianca Rocha", "5 min", "Telão"],
-  ["19:10", "Apresentador", "Condução do evento", "Henrique Alves", "5 min", "Palco"],
-  ["19:15", "Primeira palestra", "João Silva — Forjando Liderança", "Carlos Mendes", "45 min", "Palco"],
-  ["20:00", "Segunda palestra", "Marcos Vieira — Pressão e Performance", "Carlos Mendes", "45 min", "Palco"],
-  ["20:45", "Coffee Break", "Networking e coffee", "Paula Neves", "25 min", "Foyer"],
-  ["21:10", "Retorno", "Retomada da programação", "Henrique Alves", "50 min", "Palco"],
-  ["22:00", "Encerramento", "Agradecimentos e foto final", "Henrique Alves", "20 min", "Palco"],
-];
+const SCHEDULE_SEED: Array<[string, string, string, string, string, string]> = [];
 
 export const seedSchedule: ScheduleItem[] = [];
 
@@ -315,20 +276,7 @@ export const STAFF_AREAS = [
   "Suporte",
 ];
 
-const STAFF_SEED: Array<[string, string, string, string, string, PersonStatus]> = [
-  ["Camila Ruiz", "Recepção", "Recepcionista", "Letícia Souza", "17:30", "confirmado"],
-  ["Diego Matos", "Credenciamento", "Operador", "Letícia Souza", "17:30", "confirmado"],
-  ["Fernanda Lopes", "Credenciamento", "Operadora", "Letícia Souza", "17:30", "pendente"],
-  ["Gustavo Reis", "Palco", "Assistente de palco", "Carlos Mendes", "17:00", "confirmado"],
-  ["Helena Braga", "Mídia", "Assistente de mídia", "Bianca Rocha", "17:00", "confirmado"],
-  ["Igor Santana", "Som", "Assistente de áudio", "João Silva", "17:00", "confirmado"],
-  ["Júlia Freitas", "Coffee Break", "Apoio coffee", "Paula Neves", "19:30", "pendente"],
-  ["Kaio Barros", "Segurança", "Portaria", "—", "17:30", "indefinido"],
-  ["Lara Antunes", "Organização", "Apoio geral", "Marina Dias", "17:00", "confirmado"],
-  ["Mateus Vidal", "Limpeza", "Apoio", "—", "22:00", "indefinido"],
-  ["Nina Coelho", "Suporte", "Volante", "Marina Dias", "17:30", "confirmado"],
-  ["Otávio Lins", "Iluminação", "Assistente de luz", "Rafael Costa", "17:00", "confirmado"],
-];
+const STAFF_SEED: Array<[string, string, string, string, string, PersonStatus]> = [];
 
 export const seedStaff: StaffMember[] = [];
 
@@ -388,29 +336,7 @@ export interface Contingency {
   notes: string;
 }
 
-const CONTINGENCY_SEED: Array<[string, string, string, string]> = [
-  ["Microfone parar", "Trocar imediatamente pelo microfone reserva", "João Silva", "Microfone com fio no palco"],
-  ["Projetor parar", "Alternar saída para painel LED", "Carlos Mendes", "Palestra sem slides + narração"],
-  ["Internet cair", "Ativar roteador 5G reserva", "Carlos Mendes", "Hotspot do celular da coordenação"],
-  ["Palestrante atrasar", "Antecipar próxima palestra", "Henrique Alves", "Bloco de networking guiado"],
-  ["Palestrante faltar", "Ativar palestrante reserva", "Henrique Alves", "Painel com mediador"],
-  ["Energia cair", "Acionar equipe do local e gerador", "Carlos Mendes", "Iluminação de emergência + som portátil"],
-  ["Evento atrasar", "Reduzir intervalos e blocos", "Marina Dias", "Cortar 10 min do coffee"],
-  ["Convidado passar mal", "Acionar primeiros socorros", "Marina Dias", "Contato SAMU + sala reservada"],
-  ["Problema com alimentação", "Contato imediato com fornecedor", "Paula Neves", "Compra emergencial local"],
-  ["Problema no credenciamento", "Passar para lista manual impressa", "Letícia Souza", "Entrada por confirmação no celular"],
-];
-
-export const seedContingencies: Contingency[] = CONTINGENCY_SEED.map(
-  ([problem, action, owner, planB], i) => ({
-  id: `c${i + 1}`,
-  problem,
-  action,
-  owner,
-  whatsapp: "5542999990000",
-  planB,
-  notes: "",
-}));
+export const seedContingencies: Contingency[] = [];
 
 export const seedPostEvent: ChecklistGroup = group(
   "pos-evento",
@@ -436,12 +362,7 @@ export interface Learning {
 
 export const seedLearnings: Learning[] = [];
 
-export const seedNotifications = [
-  { id: "n1", text: "4 tarefas vencem hoje", tone: "warning" as const },
-  { id: "n2", text: "Compra 'Sacolas' está atrasada", tone: "destructive" as const },
-  { id: "n3", text: "Ana Prado ainda não confirmou", tone: "warning" as const },
-  { id: "n4", text: "3 áreas sem responsável definido", tone: "destructive" as const },
-];
+export const seedNotifications = [];
 
 export const brl = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
