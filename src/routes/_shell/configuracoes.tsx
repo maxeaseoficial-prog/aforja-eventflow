@@ -88,7 +88,7 @@ function SettingsPage() {
               updateEvent({
                 name: form.name.trim(),
                 edition: form.edition.trim(),
-                date: `${form.date}T${form.doorsAt || "19:00"}:00-03:00`,
+                date: form.date ? `${form.date}T${form.doorsAt || "19:00"}:00` : "",
                 doorsAt: form.doorsAt,
                 venue: form.venue.trim(),
                 address: form.address.trim(),

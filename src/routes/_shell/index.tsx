@@ -4,11 +4,16 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock,
+  Edit,
   MapPin,
   Radio,
   ShoppingCart,
+  Trash2,
   Users,
+  Timer,
+  Plus,
 } from "lucide-react";
+import { useState } from "react";
 
 import { useForja, useForjaMetrics } from "@/components/forja/store";
 import {
@@ -23,6 +28,7 @@ import {
   StatusBadge,
 } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useCountdown } from "@/hooks/use-countdown";
 import { brl, formatDate } from "@/lib/forja-data";
 
@@ -45,87 +51,247 @@ export const Route = createFileRoute("/_shell/")({
   component: Dashboard,
 });
 
+function DateTimeModal({ isOpen, onClose, onSave, initialDate = "", initialTime = "" }: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onSave: (date: string, time: string) => void;
+  initialDate?: string | undefined;
+  initialTime?: string | undefined;
+}) {
+  const [date, setDate] = useState(initialDate);
+  const [time, setTime] = useState(initialTime);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 text-foreground">
+      <div className="w-full max-w-md surface-card p-6 shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="size-10 rounded-lg bg-primary-soft flex items-center justify-center text-primary">
+            <Timer className="size-6" />
+          </div>
+          <div>
+            <h3 className="text-xl font-display font-bold">Agendar Evento</h3>
+            <p className="text-sm text-muted-foreground">Defina a data e o horário para o cronômetro.</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="label-caps text-[11px] text-muted-foreground">Data do Evento</label>
+            <Input 
+              type="date" 
+              value={date} 
+              onChange={(e) => setDate(e.target.value)} 
+              className="bg-surface border-border-strong h-11"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="label-caps text-[11px] text-muted-foreground">Horário de Início</label>
+            <Input 
+              type="time" 
+              value={time} 
+              onChange={(e) => setTime(e.target.value)} 
+              className="bg-surface border-border-strong h-11"
+            />
+          </div>
+        </div>
+
+        <div className="mt-8 flex gap-3">
+          <Button variant="ghost" onClick={onClose} className="flex-1">Cancelar</Button>
+          <Button onClick={() => onSave(date, time)} className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-bold">
+            Salvar e iniciar contagem
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CountdownBlock() {
-  const { event } = useForja();
+  const { event, updateEvent } = useForja();
+  if (!event) return null;
   const metrics = useForjaMetrics();
   const countdown = useCountdown(event.date);
-  const eventDate = new Date(event.date).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const hasDate = !!event.date;
+  const eventDateObj = hasDate ? new Date(event.date) : null;
+
+  const handleSave = (date: string, time: string) => {
+    if (!date) return;
+    const dateTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+    updateEvent({ date: dateTime });
+    setIsModalOpen(false);
+  };
+
+  const removeDate = () => {
+    if (confirm("Deseja remover a data do evento e parar a contagem?")) {
+      updateEvent({ date: "" });
+    }
+  };
+
+  if (!hasDate) {
+    return (
+      <section className="surface-card animate-fade-up relative overflow-hidden p-8 shadow-card flex flex-col items-center justify-center text-center py-16">
+        <div className="size-16 rounded-full bg-primary-soft flex items-center justify-center text-primary mb-6 animate-pulse">
+          <CalendarDays className="size-8" />
+        </div>
+        <h2 className="text-3xl font-display font-bold mb-2">Contagem Regressiva</h2>
+        <p className="text-muted-foreground mb-8 max-w-sm">
+          Defina a data e o horário do evento para iniciar a contagem regressiva em tempo real.
+        </p>
+        <Button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-primary hover:bg-primary-hover text-primary-foreground px-8 py-6 text-lg font-bold rounded-xl gap-3 shadow-lg shadow-primary/20"
+        >
+          <Plus className="size-5" />
+          Registrar data e hora do evento
+        </Button>
+        <DateTimeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} />
+      </section>
+    );
+  }
 
   const units = [
     { value: countdown.days, label: "DIAS" },
     { value: countdown.hours, label: "HORAS" },
     { value: countdown.minutes, label: "MINUTOS" },
+    { value: countdown.seconds, label: "SEGUNDOS" },
   ];
 
+  const displayDate = hasDate && eventDateObj ? eventDateObj.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }) : "";
+
+  const displayTime = hasDate && eventDateObj ? eventDateObj.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  }) : "";
+
   return (
-    <section className="surface-card animate-fade-up relative overflow-hidden p-6 shadow-card sm:p-8">
+    <section className="surface-card animate-fade-up relative overflow-hidden p-6 shadow-2xl border-primary/10 group">
+      {/* Background Ember Glow */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full"
-        style={{ background: "radial-gradient(circle, oklch(0.664 0.207 37.5 / 0.16), transparent 65%)" }}
+        className="pointer-events-none absolute -bottom-24 -left-24 size-96 rounded-full opacity-20 blur-3xl transition-opacity group-hover:opacity-30"
+        style={{ background: "radial-gradient(circle, oklch(0.664 0.207 37.5), transparent 70%)" }}
       />
-      <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <div className="min-w-0">
-          <p className="label-caps text-primary">{event.edition}</p>
-          <h2 className="mt-2 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-            {event.name}
-          </h2>
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-2">
-              <CalendarDays className="size-4 text-primary" />
-              {event.date ? (
-                <>
-                  {eventDate} ·{" "}
-                  {new Date(event.date).toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: "America/Sao_Paulo",
-                  })}
-                </>
-              ) : (
-                "Data não definida"
-              )}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <MapPin className="size-4 text-primary" />
-              {event.venue}
-            </span>
-          </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full opacity-20 blur-3xl transition-opacity group-hover:opacity-30"
+        style={{ background: "radial-gradient(circle, oklch(0.664 0.207 37.5), transparent 70%)" }}
+      />
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button asChild variant="outline" className="gap-2 border-primary/30 text-primary hover:bg-primary-soft">
-              <Link to="/modo-evento">
-                <Radio className="size-4" />
-                MODO EVENTO
-              </Link>
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Saúde da Forja:{" "}
-              <strong className="font-display text-foreground">
-                {metrics.health >= 85 ? "Excelente" : metrics.health >= 65 ? "Boa" : "Atenção"} {metrics.health}%
-              </strong>
+      <div className="relative flex flex-col items-center justify-center gap-8 py-8 md:py-12">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-soft text-primary text-[10px] font-bold tracking-[0.2em] mb-2 uppercase">
+            <Radio className="size-3 animate-pulse" />
+            Centro de Comando Operacional
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase italic text-glow">
+            {event.name || "A FORJA"}
+          </h2>
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-muted-foreground font-medium text-sm">
+            <span className="flex items-center gap-2">
+              <CalendarDays className="size-4 text-primary" />
+              {displayDate}
             </span>
+            <span className="flex items-center gap-2">
+              <Clock className="size-4 text-primary" />
+              {displayTime}
+            </span>
+            {event.venue && (
+              <span className="flex items-center gap-2">
+                <MapPin className="size-4 text-primary" />
+                {event.venue}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          {units.map((unit) => (
-            <div
-              key={unit.label}
-              className="rounded-xl border border-border bg-surface px-4 py-4 text-center sm:px-6"
-            >
-              <p className="font-display text-3xl font-extrabold text-primary tabular-nums sm:text-4xl">
-                {event.date ? String(unit.value).padStart(2, "0") : "—"}
-              </p>
-              <p className="label-caps mt-1 text-[10px]">{unit.label}</p>
-            </div>
-          ))}
+        {countdown.passed ? (
+          <div className="text-center animate-bounce py-6">
+             <h3 className="font-display text-5xl md:text-7xl font-black text-primary italic tracking-tighter uppercase">
+              O EVENTO COMEÇOU
+            </h3>
+            <p className="text-muted-foreground mt-4 label-caps tracking-widest">Execução em andamento</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full max-w-4xl px-4">
+            {units.map((unit, idx) => (
+              <div key={unit.label} className="relative flex flex-col items-center">
+                <div className="font-display text-6xl md:text-7xl lg:text-8xl font-black tabular-nums tracking-tighter leading-none flex items-center gap-1">
+                  {String(unit.value).padStart(2, "0")}
+                  {idx < units.length - 1 && (
+                    <span className="hidden md:block text-primary/20 absolute -right-6 lg:-right-8 top-0">:</span>
+                  )}
+                </div>
+                <div className="label-caps mt-2 text-xs text-primary/60 tracking-[0.3em] font-bold">
+                  {unit.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 mt-8">
+          <Button 
+            asChild
+            variant="outline" 
+            className="gap-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 h-10 px-6 rounded-lg font-bold"
+          >
+            <Link to="/modo-evento">
+              <Radio className="size-4" />
+              MODO EVENTO
+            </Link>
+          </Button>
+          
+          <div className="h-6 w-px bg-border/50 mx-2" />
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsModalOpen(true)}
+            className="text-muted-foreground hover:text-primary gap-2"
+          >
+            <Edit className="size-4" />
+            Editar
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={removeDate}
+            className="text-muted-foreground hover:text-destructive gap-2"
+          >
+            <Trash2 className="size-4" />
+            Remover
+          </Button>
         </div>
       </div>
+
+      <div className="absolute bottom-4 right-6 flex items-center gap-2">
+        <span className="text-[10px] label-caps text-muted-foreground/60">Saúde da Forja</span>
+        <div className="w-32 h-1 bg-border rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary shadow-[0_0_8px_rgba(255,77,0,0.5)] transition-all duration-1000" 
+            style={{ width: `${metrics.health}%` }}
+          />
+        </div>
+        <span className="text-[10px] font-bold text-primary">{metrics.health}%</span>
+      </div>
+
+      <DateTimeModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSave} 
+        initialDate={event?.date?.split('T')[0] ?? ""}
+        initialTime={event?.date?.indexOf('T') !== -1 ? event?.date?.split('T')[1]?.slice(0, 5) ?? "" : ""}
+      />
     </section>
   );
 }
