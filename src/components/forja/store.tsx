@@ -89,10 +89,14 @@ interface ForjaContextValue extends ForjaState {
   removeSpeaker: (id: string) => void;
   updateSpeaker: (id: string, patch: Partial<Speaker>) => void;
   toggleSpeakerStep: (id: string, index: number) => void;
+  addStaff: (member: StaffMember) => void;
+  removeStaff: (id: string) => void;
   updateStaff: (id: string, patch: Partial<StaffMember>) => void;
   toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) => void;
   toggleMediaItem: (groupId: string, itemId: string) => void;
-  updateDeliverable: (id: string, patch: Partial<Deliverable>) => void;
+  addMediaDeliverable: (deliverable: Deliverable) => void;
+  removeMediaDeliverable: (id: string) => void;
+  updateMediaDeliverable: (id: string, patch: Partial<Deliverable>) => void;
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
   addContingency: (contingency: Contingency) => void;
@@ -221,15 +225,21 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
               : sp,
           ),
         })),
+      addStaff: (member) => setState((s) => ({ ...s, staff: [...s.staff, member] })),
+      removeStaff: (id) => setState((s) => ({ ...s, staff: s.staff.filter((m) => m.id !== id) })),
       updateStaff: (id, patch) => setState((s) => ({ ...s, staff: patchList(s.staff, id, patch) })),
-      toggleGroupItem: (groupKey, itemId) =>
+      toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) =>
         setState((s) => ({ ...s, [groupKey]: toggleItems(s[groupKey], itemId) })),
-      toggleMediaItem: (groupId, itemId) =>
+      toggleMediaItem: (groupId: string, itemId: string) =>
         setState((s) => ({
           ...s,
           media: s.media.map((g) => (g.id === groupId ? toggleItems(g, itemId) : g)),
         })),
-      updateDeliverable: (id, patch) =>
+      addMediaDeliverable: (deliverable) =>
+        setState((s) => ({ ...s, deliverables: [...s.deliverables, deliverable] })),
+      removeMediaDeliverable: (id) =>
+        setState((s) => ({ ...s, deliverables: s.deliverables.filter((d) => d.id !== id) })),
+      updateMediaDeliverable: (id, patch) =>
         setState((s) => ({ ...s, deliverables: patchList(s.deliverables, id, patch) })),
       updateEquipment: (id, patch) =>
         setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
