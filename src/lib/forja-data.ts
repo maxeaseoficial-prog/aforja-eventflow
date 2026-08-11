@@ -198,6 +198,7 @@ export interface Purchase {
   dueDate: string;
   status: PurchaseStatus;
   notes: string;
+  link?: string;
 }
 
 const PURCHASE_SEED: Array<[string, number, number, number | null, string | null, PurchaseStatus]> = [];
