@@ -16,7 +16,6 @@ import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
 import { Route as ShellConfiguracoesRouteImport } from './routes/_shell/configuracoes'
 import { Route as ShellContingenciasRouteImport } from './routes/_shell/contingencias'
 import { Route as ShellEstruturaRouteImport } from './routes/_shell/estrutura'
-import { Route as ShellExperienciaRouteImport } from './routes/_shell/experiencia'
 import { Route as ShellMidiaRouteImport } from './routes/_shell/midia'
 import { Route as ShellPalestrantesRouteImport } from './routes/_shell/palestrantes'
 import { Route as ShellPosEventoRouteImport } from './routes/_shell/pos-evento'
@@ -57,11 +56,6 @@ const ShellContingenciasRoute = ShellContingenciasRouteImport.update({
 const ShellEstruturaRoute = ShellEstruturaRouteImport.update({
   id: '/estrutura',
   path: '/estrutura',
-  getParentRoute: () => ShellRouteRoute,
-} as any)
-const ShellExperienciaRoute = ShellExperienciaRouteImport.update({
-  id: '/experiencia',
-  path: '/experiencia',
   getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellMidiaRoute = ShellMidiaRouteImport.update({
@@ -107,7 +101,6 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ShellConfiguracoesRoute
   '/contingencias': typeof ShellContingenciasRoute
   '/estrutura': typeof ShellEstruturaRoute
-  '/experiencia': typeof ShellExperienciaRoute
   '/midia': typeof ShellMidiaRoute
   '/palestrantes': typeof ShellPalestrantesRoute
   '/pos-evento': typeof ShellPosEventoRoute
@@ -122,7 +115,6 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ShellConfiguracoesRoute
   '/contingencias': typeof ShellContingenciasRoute
   '/estrutura': typeof ShellEstruturaRoute
-  '/experiencia': typeof ShellExperienciaRoute
   '/midia': typeof ShellMidiaRoute
   '/palestrantes': typeof ShellPalestrantesRoute
   '/pos-evento': typeof ShellPosEventoRoute
@@ -140,7 +132,6 @@ export interface FileRoutesById {
   '/_shell/configuracoes': typeof ShellConfiguracoesRoute
   '/_shell/contingencias': typeof ShellContingenciasRoute
   '/_shell/estrutura': typeof ShellEstruturaRoute
-  '/_shell/experiencia': typeof ShellExperienciaRoute
   '/_shell/midia': typeof ShellMidiaRoute
   '/_shell/palestrantes': typeof ShellPalestrantesRoute
   '/_shell/pos-evento': typeof ShellPosEventoRoute
@@ -159,7 +150,6 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/contingencias'
     | '/estrutura'
-    | '/experiencia'
     | '/midia'
     | '/palestrantes'
     | '/pos-evento'
@@ -174,7 +164,6 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/contingencias'
     | '/estrutura'
-    | '/experiencia'
     | '/midia'
     | '/palestrantes'
     | '/pos-evento'
@@ -191,7 +180,6 @@ export interface FileRouteTypes {
     | '/_shell/configuracoes'
     | '/_shell/contingencias'
     | '/_shell/estrutura'
-    | '/_shell/experiencia'
     | '/_shell/midia'
     | '/_shell/palestrantes'
     | '/_shell/pos-evento'
@@ -258,13 +246,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellEstruturaRouteImport
       parentRoute: typeof ShellRouteRoute
     }
-    '/_shell/experiencia': {
-      id: '/_shell/experiencia'
-      path: '/experiencia'
-      fullPath: '/experiencia'
-      preLoaderRoute: typeof ShellExperienciaRouteImport
-      parentRoute: typeof ShellRouteRoute
-    }
     '/_shell/midia': {
       id: '/_shell/midia'
       path: '/midia'
@@ -322,7 +303,6 @@ interface ShellRouteRouteChildren {
   ShellConfiguracoesRoute: typeof ShellConfiguracoesRoute
   ShellContingenciasRoute: typeof ShellContingenciasRoute
   ShellEstruturaRoute: typeof ShellEstruturaRoute
-  ShellExperienciaRoute: typeof ShellExperienciaRoute
   ShellMidiaRoute: typeof ShellMidiaRoute
   ShellPalestrantesRoute: typeof ShellPalestrantesRoute
   ShellPosEventoRoute: typeof ShellPosEventoRoute
@@ -338,7 +318,6 @@ const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellConfiguracoesRoute: ShellConfiguracoesRoute,
   ShellContingenciasRoute: ShellContingenciasRoute,
   ShellEstruturaRoute: ShellEstruturaRoute,
-  ShellExperienciaRoute: ShellExperienciaRoute,
   ShellMidiaRoute: ShellMidiaRoute,
   ShellPalestrantesRoute: ShellPalestrantesRoute,
   ShellPosEventoRoute: ShellPosEventoRoute,

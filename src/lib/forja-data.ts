@@ -347,13 +347,6 @@ export interface Equipment {
 
 export const seedEquipment: Equipment[] = [];
 
-export const seedExperience: ChecklistGroup = group(
-  "experiencia",
-  "Jornada do convidado",
-  [],
-  0,
-  "Cada ponto de contato do convidado com A Forja",
-);
 
 export interface Contingency {
   id: string;
