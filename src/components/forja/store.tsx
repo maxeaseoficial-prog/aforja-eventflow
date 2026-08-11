@@ -92,6 +92,8 @@ interface ForjaContextValue extends ForjaState {
   updateDeliverable: (id: string, patch: Partial<Deliverable>) => void;
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
+  addContingency: (contingency: Contingency) => void;
+  removeContingency: (id: string) => void;
   addLearning: (learning: Learning) => void;
     updateEvent: (patch: Partial<EventConfig>) => void;
     clearTasks: () => void;
