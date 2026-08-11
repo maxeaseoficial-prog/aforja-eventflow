@@ -35,6 +35,7 @@ import { useCountdown } from "@/hooks/use-countdown";
 import { brl, formatDate } from "@/lib/forja-data";
 
 export const Route = createFileRoute("/")({
+
   head: () => ({
     meta: [
       { title: "Dashboard — FORJA Event Command Center" },
