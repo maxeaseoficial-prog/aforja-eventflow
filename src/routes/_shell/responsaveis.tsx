@@ -33,13 +33,12 @@ function ResponsiblesPage() {
   const [view, setView] = useState<"grid" | "organograma">("grid");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
-  const [dragging, setDragging] = useState<string | null>(null);
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
 
-  // Simple organogram logic: Group by role/level or just a visual tree
   const hierarchy = useMemo(() => {
+    if (responsibles.length === 0) return null;
     const root = responsibles.find(r => r.area.toLowerCase().includes("coordenação") || r.area.toLowerCase().includes("geral")) || responsibles[0];
     if (!root) return null;
     
@@ -119,14 +118,14 @@ function ResponsiblesPage() {
         </div>
       )}
 
-      {list.length === 0 ? (
+      {responsibles.length === 0 ? (
         <EmptyState
           icon={UserPlus}
-          title="Nenhuma área nesse filtro"
-          description="Ajuste o filtro ou crie uma nova área de responsabilidade."
+          title="Nenhuma área definida"
+          description="Comece definindo as áreas e responsáveis do evento."
           action={<Button onClick={() => setNewAreaOpen(true)}>+ Nova área</Button>}
         />
-      ) : (
+      ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((responsible) => (
             <article
@@ -178,6 +177,39 @@ function ResponsiblesPage() {
               </div>
             </article>
           ))}
+        </div>
+      ) : (
+        <div className="forja-scroll -mx-4 overflow-x-auto pb-8 sm:mx-0">
+          <div className="organogram-container">
+            {hierarchy && (
+              <>
+                <div className="organogram-node">
+                  <OrganogramCard 
+                    responsible={hierarchy.root} 
+                    onEdit={() => setEditing(hierarchy.root)}
+                    onDelete={() => removeResponsible(hierarchy.root.id)}
+                  />
+                  {hierarchy.children.length > 0 && <div className="organogram-line-v" />}
+                </div>
+
+                {hierarchy.children.length > 0 && (
+                  <div className="organogram-row">
+                    <div className="organogram-line-h" />
+                    {hierarchy.children.map((child) => (
+                      <div key={child.id} className="organogram-node flex flex-col items-center">
+                        <div className="organogram-line-v-top" />
+                        <OrganogramCard 
+                          responsible={child}
+                          onEdit={() => setEditing(child)}
+                          onDelete={() => removeResponsible(child.id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -323,6 +355,14 @@ function EditResponsibleDialog({
                 status: name.trim() ? status : "indefinido",
                 notes: notes.trim(),
               })
+            }
+          >
+            Salvar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function OrganogramCard({ 
@@ -358,13 +398,5 @@ function OrganogramCard({
         </div>
       </div>
     </div>
-  );
-}
-          >
-            Salvar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
