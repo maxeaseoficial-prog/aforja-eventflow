@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -13,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ForjaProvider } from "@/components/forja/store";
 import { Toaster } from "@/components/ui/sonner";
+
 
 function NotFoundComponent() {
   return (
@@ -75,6 +77,33 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: ({ location }) => {
+    // Protected routes check
+    if (location.pathname !== "/login") {
+      try {
+        const sessionStr = sessionStorage.getItem("forja-auth-session");
+        let authenticated = false;
+        if (sessionStr) {
+          const session = JSON.parse(sessionStr);
+          authenticated = !!session?.state?.isAuthenticated;
+        }
+
+        if (!authenticated) {
+          throw redirect({
+            to: "/login",
+            search: {
+              redirect: location.href,
+            },
+          });
+        }
+      } catch (e: any) {
+        if (e.name === "Redirect") throw e;
+        // If storage is unavailable or corrupt, force login
+        throw redirect({ to: "/login" });
+      }
+    }
+  },
+
   head: () => ({
     meta: [
       { charSet: "utf-8" },
