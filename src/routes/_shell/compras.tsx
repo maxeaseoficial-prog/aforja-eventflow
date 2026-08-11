@@ -162,7 +162,21 @@ function PurchasesPage() {
                 <tbody className="divide-y divide-border">
                   {filtered.map((purchase) => (
                     <tr key={purchase.id} className="transition-colors duration-200 hover:bg-card-hover">
-                      <td className="py-3 pr-4 font-medium">{purchase.item}</td>
+                      <td className="py-3 pr-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{purchase.item}</span>
+                          {purchase.link && (
+                            <a
+                              href={purchase.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-primary hover:underline"
+                            >
+                              Ver item
+                            </a>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-3 pr-4 tabular-nums text-muted-foreground">{purchase.quantity}</td>
                       <td className="py-3 pr-4 tabular-nums text-muted-foreground">{brl(purchase.estimated)}</td>
                       <td className="py-3 pr-4 tabular-nums">
