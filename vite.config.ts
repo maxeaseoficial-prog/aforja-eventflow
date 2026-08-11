@@ -9,8 +9,10 @@ export default defineConfig({
     plugins: [
       VitePWA({
         registerType: "prompt",
+        manifestFilename: "manifest.webmanifest",
         includeAssets: ["favicon.png", "robots.txt", "apple-touch-icon.png"],
         manifest: {
+          id: "/",
           name: "A Forja — Event Command Center",
           short_name: "A Forja",
           description: "Centro de comando operacional do evento A Forja.",

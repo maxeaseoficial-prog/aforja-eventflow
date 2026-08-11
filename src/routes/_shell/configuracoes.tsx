@@ -44,8 +44,68 @@ export const Route = createFileRoute("/_shell/configuracoes")({
 
 function SettingsPage() {
   const { event, updateEvent, resetAll } = useForja();
-  const { deferredPrompt, isInstallable, isInstalled } = usePWAStore();
+  const { deferredPrompt, isInstallable, isInstalled, setDeferredPrompt, checkIsInstalled } = usePWAStore();
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<any>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
+  const runDiagnostics = async () => {
+    setIsValidating(true);
+    const results: any = {
+      https: window.location.protocol === "https:",
+      manifestInHead: !!document.querySelector('link[rel="manifest"]'),
+      swSupported: "serviceWorker" in navigator,
+      standalone: window.matchMedia("(display-mode: standalone)").matches,
+      host: window.location.host,
+    };
+
+    try {
+      const mResp = await fetch("/manifest.webmanifest", { cache: "no-store" });
+      results.manifestStatus = mResp.status;
+      results.manifestOk = mResp.status === 200;
+      if (results.manifestOk) {
+        const mData = await mResp.json();
+        results.manifestData = {
+          name: !!mData.name,
+          short_name: !!mData.short_name,
+          id: !!mData.id,
+          start_url: !!mData.start_url,
+          scope: !!mData.scope,
+          display: !!mData.display,
+          icon192: mData.icons?.some((i: any) => i.sizes === "192x192"),
+          icon512: mData.icons?.some((i: any) => i.sizes === "512x512"),
+        };
+      }
+    } catch (e) {
+      results.manifestOk = false;
+    }
+
+    try {
+      const sResp = await fetch("/sw.js", { cache: "no-store" });
+      results.swFileStatus = sResp.status;
+      results.swFileOk = sResp.status === 200;
+    } catch (e) {
+      results.swFileOk = false;
+    }
+
+    if (results.swSupported) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      results.registrationsCount = regs.length;
+      results.scopes = regs.map(r => r.scope);
+      const reg = await navigator.serviceWorker.getRegistration();
+      results.swRegistered = !!reg;
+      results.swActive = !!reg?.active;
+      results.swState = reg?.active ? "Ativo" : reg?.installing ? "Instalando" : reg?.waiting ? "Aguardando" : "Inativo";
+      results.controlled = !!navigator.serviceWorker.controller;
+      results.swScope = reg?.scope;
+    }
+
+    results.promptState = deferredPrompt ? "Pronto" : "Aguardando";
+    
+    setDiagnostics(results);
+    setIsValidating(false);
+    checkIsInstalled();
+  };
 
   const [form, setForm] = useState({
     name: event.name || "",
@@ -83,6 +143,16 @@ function SettingsPage() {
 
     if (!deferredPrompt) {
       if (!isInstalled) {
+        if (diagnostics?.swActive && !diagnostics?.controlled) {
+           toast.info("Service Worker instalado. Recarregue a página para ativar o controle.");
+           return;
+        }
+        
+        if (diagnostics?.swActive && diagnostics?.controlled) {
+          toast.info("O aplicativo está configurado corretamente. Aguardando o navegador liberar a instalação.");
+          return;
+        }
+
         toast.info("A instalação automática não está disponível neste navegador. Certifique-se de estar usando Chrome ou Edge e aguarde o carregamento do Service Worker.");
       }
       return;
@@ -209,6 +279,91 @@ function SettingsPage() {
             </div>
           </DialogContent>
         </Dialog>
+      </Panel>
+
+      <Panel title="Diagnóstico PWA" description="Verificação técnica da instalação">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">HTTPS</span>
+              <span>{diagnostics?.https ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Manifest no Head</span>
+              <span>{diagnostics?.manifestInHead ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Manifest HTTP 200</span>
+              <span>{diagnostics?.manifestOk ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">SW Suportado</span>
+              <span>{diagnostics?.swSupported ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">sw.js HTTP 200</span>
+              <span>{diagnostics?.swFileOk ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">SW Registrado</span>
+              <span>{diagnostics?.swRegistered ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">SW Ativo</span>
+              <span>{diagnostics?.swActive ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Página Controlada</span>
+              <span>{diagnostics?.controlled ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Modo Standalone</span>
+              <span>{diagnostics?.standalone ? "✓" : "✕"}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Prompt Instalação</span>
+              <span className={deferredPrompt ? "text-green-500 font-bold" : ""}>
+                {diagnostics?.promptState || "Aguardando"}
+              </span>
+            </div>
+          </div>
+
+          {diagnostics && (
+            <div className="rounded-lg bg-muted/30 p-3 text-xs space-y-1 font-mono">
+              <div>Host: {diagnostics.host}</div>
+              <div>Scope: {diagnostics.swScope || "N/A"}</div>
+              <div>Estado: {diagnostics.swState || "N/A"}</div>
+              {diagnostics.manifestData && (
+                <div className="mt-2 pt-2 border-t border-border/30 grid grid-cols-2 gap-1">
+                  <div>Name: {diagnostics.manifestData.name ? "✓" : "✕"}</div>
+                  <div>Short Name: {diagnostics.manifestData.short_name ? "✓" : "✕"}</div>
+                  <div>ID: {diagnostics.manifestData.id ? "✓" : "✕"}</div>
+                  <div>Start URL: {diagnostics.manifestData.start_url ? "✓" : "✕"}</div>
+                  <div>Scope: {diagnostics.manifestData.scope ? "✓" : "✕"}</div>
+                  <div>Display: {diagnostics.manifestData.display ? "✓" : "✕"}</div>
+                  <div>Icon 192: {diagnostics.manifestData.icon192 ? "✓" : "✕"}</div>
+                  <div>Icon 512: {diagnostics.manifestData.icon512 ? "✓" : "✕"}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!diagnostics?.controlled && diagnostics?.swActive && (
+            <p className="text-xs text-amber-500">
+              Service Worker instalado. Recarregue a página para ativar o controle.
+            </p>
+          )}
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={runDiagnostics} 
+            disabled={isValidating}
+            className="w-full sm:w-auto"
+          >
+            {isValidating ? "Validando..." : "Revalidar PWA"}
+          </Button>
+        </div>
       </Panel>
 
 

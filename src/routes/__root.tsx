@@ -134,6 +134,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -184,6 +185,30 @@ function RootComponent() {
     if (isProduction && "serviceWorker" in navigator) {
       import("virtual:pwa-register").then(({ registerSW }) => {
         registerSW({
+          immediate: true,
+          onRegisteredSW(swScriptUrl, registration) {
+            console.log("PWA_SW_REGISTERED", {
+              swScriptUrl,
+              scope: registration?.scope,
+              active: Boolean(registration?.active),
+              installing: Boolean(registration?.installing),
+              waiting: Boolean(registration?.waiting),
+            });
+            
+            // Wait for service worker to be ready
+            navigator.serviceWorker.ready.then((readyReg) => {
+              console.log("PWA_SW_READY", {
+                scope: readyReg.scope,
+                active: Boolean(readyReg.active)
+              });
+            });
+          },
+          onRegisterError(error) {
+            console.error("PWA_SW_REGISTER_ERROR", {
+              name: error?.name,
+              message: error?.message,
+            });
+          },
           onNeedRefresh() {
             setNeedsUpdate(true);
             toast("Uma nova versão da Forja está disponível.", {
