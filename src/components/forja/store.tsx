@@ -179,7 +179,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       setSyncStatus("syncing");
       const cloudData = await getAppState();
       if (!cloudData) {
-        const result = await updateAppState({ state: localState, revision: 0 });
+        const result = await updateAppState({ data: { state: localState, revision: 0 } });
         setCloudRevision(result.revision);
         setSyncStatus("synced");
         return;
@@ -240,7 +240,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       }
       try {
         setSyncStatus("syncing");
-        const result = await updateAppState({ state, revision: cloudRevision });
+        const result = await updateAppState({ data: { state, revision: cloudRevision } });
         setCloudRevision(result.revision);
         setSyncStatus("synced");
       } catch (err) {
