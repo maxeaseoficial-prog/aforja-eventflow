@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { useForja } from "@/components/forja/store";
 import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
-import { Avatar, EmptyState, FieldRow, Panel, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
+import { Avatar, EmptyState, FieldRow, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
+import { RESPONSIBLE_SECTORS } from "@/lib/forja-data";
+import { OrganogramaTree } from "@/components/forja/OrganogramaTree";
 
 export const Route = createFileRoute("/_shell/responsaveis")({
   head: () => ({
@@ -35,20 +37,14 @@ function ResponsiblesPage() {
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newSector, setNewSector] = useState("Outro");
+  const [newParentId, setNewParentId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Responsible | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
 
-  const hierarchy = useMemo(() => {
-    if (responsibles.length === 0) return null;
-    const root = responsibles.find(r => r.area.toLowerCase().includes("coordenação") || r.area.toLowerCase().includes("geral")) || responsibles[0];
-    if (!root) return null;
-    
-    const others = responsibles.filter(r => r.id !== root.id);
-    return { root, children: others };
-  }, [responsibles]);
 
   return (
     <div className="space-y-6">
@@ -186,42 +182,16 @@ function ResponsiblesPage() {
           ))}
         </div>
       ) : (
-        <div className="forja-scroll -mx-4 overflow-x-auto pb-8 sm:mx-0">
-          <div className="organogram-container">
-            {hierarchy && (
-              <>
-                <div className="organogram-node">
-                  <OrganogramCard 
-                    responsible={hierarchy.root} 
-                    onEdit={() => setEditing(hierarchy.root)}
-                    onDelete={() => setDeleting(hierarchy.root)}
-                  />
-                  {hierarchy.children.length > 0 && <div className="organogram-line-v" />}
-                </div>
-
-                {hierarchy.children.length > 0 && (
-                  <div className="organogram-row">
-                    <div className="organogram-line-h" />
-                    {hierarchy.children.map((child) => (
-                      <div key={child.id} className="organogram-node flex flex-col items-center">
-                        <div className="organogram-line-v-top" />
-                        <OrganogramCard 
-                          responsible={child}
-                          onEdit={() => setEditing(child)}
-                          onDelete={() => setDeleting(child)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        <OrganogramaTree 
+          responsibles={responsibles} 
+          onEdit={setEditing} 
+          onDelete={setDeleting} 
+        />
       )}
 
       <EditResponsibleDialog
         responsible={editing}
+        allResponsibles={responsibles}
         onClose={() => setEditing(null)}
         onSave={(patch) => {
           if (!editing) return;
@@ -232,20 +202,37 @@ function ResponsiblesPage() {
       />
 
       <Dialog open={newAreaOpen} onOpenChange={setNewAreaOpen}>
-        <DialogContent className="bg-surface">
+        <DialogContent className="bg-surface sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="font-display">Nova área</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="area">Título da área</Label>
-              <Input
-                id="area"
-                placeholder="Ex: Coordenador de Programação"
-                maxLength={60}
-                value={newArea}
-                onChange={(e) => setNewArea(e.target.value)}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="area">Título da área</Label>
+                <Input
+                  id="area"
+                  placeholder="Ex: Coordenador de Programação"
+                  maxLength={60}
+                  value={newArea}
+                  onChange={(e) => setNewArea(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sector">Setor</Label>
+                <Select value={newSector} onValueChange={setNewSector}>
+                  <SelectTrigger id="sector">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RESPONSIBLE_SECTORS.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="desc">Subtítulo / Descrição</Label>
@@ -256,6 +243,22 @@ function ResponsiblesPage() {
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parent">Responde para (Opcional)</Label>
+              <Select value={newParentId || "none"} onValueChange={(v) => setNewParentId(v === "none" ? null : v)}>
+                <SelectTrigger id="parent">
+                  <SelectValue placeholder="Selecione um superior" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ninguém (Nível 1)</SelectItem>
+                  {responsibles.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.area} {r.name ? `(${r.name})` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
@@ -277,10 +280,14 @@ function ResponsiblesPage() {
                   whatsapp: "",
                   status: "indefinido",
                   notes: "",
+                  sector: newSector,
+                  parentId: newParentId,
                 });
                 toast.success("Área criada");
                 setNewArea("");
                 setNewDescription("");
+                setNewSector("Outro");
+                setNewParentId(null);
                 setNewAreaOpen(false);
               }}
             >
@@ -329,10 +336,12 @@ function EditResponsibleDialog({
   responsible,
   onClose,
   onSave,
+  allResponsibles,
 }: {
   responsible: Responsible | null;
   onClose: () => void;
   onSave: (patch: Partial<Responsible>) => void;
+  allResponsibles: Responsible[];
 }) {
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -341,6 +350,8 @@ function EditResponsibleDialog({
   const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState<PersonStatus>("pendente");
   const [notes, setNotes] = useState("");
+  const [sector, setSector] = useState("Outro");
+  const [parentId, setParentId] = useState<string | null>(null);
   const [loadedId, setLoadedId] = useState<string | null>(null);
 
 
@@ -353,11 +364,15 @@ function EditResponsibleDialog({
     setWhatsapp(responsible.whatsapp);
     setStatus(responsible.status);
     setNotes(responsible.notes);
+    setSector(responsible.sector || "Outro");
+    setParentId(responsible.parentId || null);
   }
+
+  const availableParents = allResponsibles.filter(r => r.id !== responsible?.id);
 
   return (
     <Dialog open={!!responsible} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-surface">
+      <DialogContent className="bg-surface sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-display">Editar Área</DialogTitle>
         </DialogHeader>
@@ -368,9 +383,40 @@ function EditResponsibleDialog({
               <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
-              <Input id="resp-desc" maxLength={100} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Label htmlFor="resp-sector">Setor</Label>
+              <Select value={sector} onValueChange={setSector}>
+                <SelectTrigger id="resp-sector">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RESPONSIBLE_SECTORS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
+            <Input id="resp-desc" maxLength={100} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="resp-parent">Responde para</Label>
+            <Select value={parentId || "none"} onValueChange={(v) => setParentId(v === "none" ? null : v)}>
+              <SelectTrigger id="resp-parent">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Ninguém (Nível 1)</SelectItem>
+                {availableParents.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.area} {r.name ? `(${r.name})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="resp-name">Responsável (Nome)</Label>
@@ -430,6 +476,8 @@ function EditResponsibleDialog({
                 whatsapp: whatsapp.trim(),
                 status: name.trim() ? status : "indefinido",
                 notes: notes.trim(),
+                sector,
+                parentId,
               })
             }
           >
@@ -438,46 +486,5 @@ function EditResponsibleDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function OrganogramCard({ 
-  responsible, 
-  onEdit, 
-  onDelete 
-}: { 
-  responsible: Responsible; 
-  onEdit: () => void; 
-  onDelete: () => void;
-}) {
-  return (
-    <div className="surface-card w-56 p-4 shadow-card">
-      <div className="flex flex-col items-center text-center">
-        <Avatar name={responsible.name} size="md" />
-        <div className="mt-3 min-w-0 w-full">
-          <p className="label-caps text-[9px]">{responsible.area}</p>
-          {responsible.description && (
-            <p className="text-[8px] text-muted-foreground/80 italic line-clamp-2 mt-0.5">
-              {responsible.description}
-            </p>
-          )}
-          <h3 className="mt-2 truncate font-display text-sm font-bold">
-            {responsible.name || "NÃO DEFINIDO"}
-          </h3>
-          <p className="truncate text-[10px] text-muted-foreground">{responsible.role}</p>
-        </div>
-        
-        <div className="mt-4 flex items-center justify-center gap-2 border-t border-border w-full pt-3">
-          <Button size="icon" variant="ghost" className="size-7" onClick={onEdit}>
-            <Pencil className="size-3.5" />
-          </Button>
-          <Button size="icon" variant="ghost" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => {
-            if(confirm(`Excluir a área "${responsible.area}"?`)) onDelete();
-          }}>
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }

@@ -132,6 +132,8 @@ export interface Responsible {
   whatsapp: string;
   status: PersonStatus;
   notes: string;
+  sector?: string;
+  parentId?: string | null;
 }
 
 const AREAS = [
@@ -153,6 +155,29 @@ const AREAS = [
   "Fotografia",
   "Videomaker",
 ];
+
+export const RESPONSIBLE_SECTORS = [
+  "Direção",
+  "Produção",
+  "Palco",
+  "Técnico / Audiovisual",
+  "Recepção",
+  "Credenciamento",
+  "Staff",
+  "Alimentação / Coffee Break",
+  "Infraestrutura",
+  "Segurança",
+  "Saúde",
+  "Limpeza",
+  "Logística",
+  "Compras",
+  "Financeiro",
+  "Marketing / Comunicação",
+  "Mídia",
+  "Experiência",
+  "Pós-evento",
+  "Outro",
+] as const;
 
 export const seedResponsibles: Responsible[] = [];
 

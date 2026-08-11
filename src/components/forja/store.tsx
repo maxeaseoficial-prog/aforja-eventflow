@@ -116,11 +116,62 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       }
 
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setState({ ...initialState, ...(JSON.parse(raw) as Partial<ForjaState>) });
+      if (raw) {
+        const savedData = JSON.parse(raw) as Partial<ForjaState>;
+        
+        // Automated migration for Organogram v4
+        if (savedData.responsibles && savedData.responsibles.length > 0) {
+          const hasHierarchy = savedData.responsibles.some(r => r.sector || r.parentId);
+          if (!hasHierarchy) {
+            savedData.responsibles = migrateResponsibles(savedData.responsibles);
+          }
+        }
+
+        setState({ ...initialState, ...savedData });
+      }
     } catch {
       /* ignore corrupt cache */
     }
   }, []);
+
+function migrateResponsibles(list: Responsible[]): Responsible[] {
+  const rootKeywords = ["diretor", "direção", "coordenação geral", "coordenador geral"];
+  const technicalKeywords = ["som", "iluminação", "vídeo", "projeção", "áudio", "led", "técnico"];
+  const productionKeywords = ["produção", "cerimonial", "logística"];
+  const palcoKeywords = ["palco", "bastidores"];
+  const recepcaoKeywords = ["recepção", "credenciamento"];
+  const midiaKeywords = ["mídia", "fotografia", "videomaker", "storymaker", "marketing", "comunicação"];
+  const infraKeywords = ["limpeza", "segurança", "infraestrutura", "estrutura"];
+  const alimentacaoKeywords = ["coffee", "break", "alimentação", "buffet"];
+
+  // Find root
+  let root = list.find(r => rootKeywords.some(k => r.area.toLowerCase().includes(k)));
+  if (!root && list.length > 0) root = list[0];
+  
+  return list.map(r => {
+    let sector = "Outro";
+    const area = r.area.toLowerCase();
+    
+    if (rootKeywords.some(k => area.includes(k))) sector = "Direção";
+    else if (technicalKeywords.some(k => area.includes(k))) sector = "Técnico / Audiovisual";
+    else if (productionKeywords.some(k => area.includes(k))) sector = "Produção";
+    else if (palcoKeywords.some(k => area.includes(k))) sector = "Palco";
+    else if (recepcaoKeywords.some(k => area.includes(k))) sector = "Recepção";
+    else if (midiaKeywords.some(k => area.includes(k))) sector = "Mídia";
+    else if (infraKeywords.some(k => area.includes(k))) {
+      if (area.includes("segurança")) sector = "Segurança";
+      else if (area.includes("limpeza")) sector = "Limpeza";
+      else sector = "Infraestrutura";
+    }
+    else if (alimentacaoKeywords.some(k => area.includes(k))) sector = "Alimentação / Coffee Break";
+
+    return {
+      ...r,
+      sector,
+      parentId: (root && r.id !== root.id) ? root.id : null
+    };
+  });
+}
 
   useEffect(() => {
     try {
