@@ -272,7 +272,7 @@ function ResponsiblesPage() {
                 addResponsible({
                   id: `r-${Date.now()}`,
                   area: newArea.trim(),
-                  description: newDescription.trim() || undefined,
+                  description: newDescription.trim() || null,
                   name: null,
                   role: "—",
                   whatsapp: "",
@@ -393,7 +393,7 @@ function EditResponsibleDialog({
             onClick={() =>
               onSave({
                 area: area.trim(),
-                description: description.trim() || undefined,
+                description: description.trim() || null,
                 name: name.trim() || null,
                 role: role.trim() || "—",
                 whatsapp: whatsapp.trim(),
