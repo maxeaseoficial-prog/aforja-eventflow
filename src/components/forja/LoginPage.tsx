@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import forjaLogo from "@/assets/forja-logo.png.asset.json";
+import loginLogo from "@/assets/login_logo.png.asset.json";
 import videoAsset from "@/assets/background_login.mp4.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,20 +65,17 @@ export default function LoginPage() {
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-md px-6 animate-fade-in">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-12">
           <img
-            src={forjaLogo.url}
+            src={loginLogo.url}
             alt="A Forja"
-            className="h-20 w-auto object-contain drop-shadow-[0_0_30px_oklch(var(--primary)/0.3)] mb-4"
+            className="h-32 w-auto object-contain drop-shadow-[0_0_30px_rgba(239,68,68,0.3)] mb-4"
           />
-          <h2 className="label-caps tracking-[0.2em] text-primary/80 text-sm">
-            Event Command Center
-          </h2>
         </div>
 
         <div className="relative group">
           {/* Card with glassmorphism */}
-          <div className="absolute -inset-0.5 bg-primary/20 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+          <div className="absolute -inset-0.5 bg-red-600/20 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
           <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl overflow-hidden">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -91,7 +88,7 @@ export default function LoginPage() {
                   placeholder="Digite seu usuário"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="bg-white/5 border-white/10 focus:border-primary/50 text-foreground placeholder:text-muted-foreground/50 h-12"
+                  className="bg-white/5 border-white/10 focus:border-red-500/50 text-foreground placeholder:text-muted-foreground/50 h-12"
                   autoComplete="username"
                   required
                 />
@@ -108,14 +105,14 @@ export default function LoginPage() {
                     placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-white/5 border-white/10 focus:border-primary/50 text-foreground placeholder:text-muted-foreground/50 h-12 pr-10"
+                    className="bg-white/5 border-white/10 focus:border-red-500/50 text-foreground placeholder:text-muted-foreground/50 h-12 pr-10"
                     autoComplete="current-password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-red-500 transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -131,7 +128,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-primary hover:bg-primary-hover text-primary-foreground font-bold tracking-widest transition-all duration-300 shadow-[0_0_20px_oklch(var(--primary)/0.2)] hover:shadow-[0_0_30px_oklch(var(--primary)/0.4)]"
+                className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-bold tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.2)] hover:shadow-[0_0_30px_rgba(220,38,38,0.4)]"
               >
                 {isLoading ? (
                   <Loader2 className="animate-spin" size={20} />
