@@ -67,7 +67,7 @@ export function PurchaseStatusBadge({ status }: { status: PurchaseStatus }) {
   return <span className={cn(badgeBase, purchaseTone[status])}>{PURCHASE_STATUS_LABEL[status]}</span>;
 }
 
-export function PersonStatusBadge({ status }: { status: "confirmado" | "pendente" | "indefinido" }) {
+export function PersonStatusBadge({ status, className }: { status: "confirmado" | "pendente" | "indefinido"; className?: string }) {
   const tone =
     status === "confirmado"
       ? "border-success/25 bg-success/10 text-success"
@@ -76,7 +76,7 @@ export function PersonStatusBadge({ status }: { status: "confirmado" | "pendente
         : "border-destructive/30 bg-destructive/10 text-destructive";
   const label =
     status === "confirmado" ? "Confirmado" : status === "pendente" ? "Pendente" : "Indefinido";
-  return <span className={cn(badgeBase, tone)}>{label}</span>;
+  return <span className={cn(badgeBase, tone, className)}>{label}</span>;
 }
 
 /* ------------------------------ Progress ------------------------------ */
