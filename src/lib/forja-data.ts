@@ -122,8 +122,6 @@ const t = (
 });
 
 export const seedTasks: Task[] = [];
-const coffeeTask = seedTasks.find((task) => task.id === "t7");
-if (coffeeTask) coffeeTask.status = "em-andamento";
 
 export interface Responsible {
   id: string;
@@ -406,24 +404,7 @@ export interface Deliverable {
   status: TaskStatus;
 }
 
-export const seedDeliverables: Deliverable[] = [
-  ["Aftermovie oficial", "Bianca Rocha", "2026-09-10", "nao-iniciado"],
-  ["Reel abertura", "Duda Lima", "2026-09-01", "nao-iniciado"],
-  ["Reel palestrantes", "Duda Lima", "2026-09-03", "nao-iniciado"],
-  ["Reel público", "Duda Lima", "2026-09-04", "nao-iniciado"],
-  ["Reel bastidores", "Duda Lima", "2026-09-05", "nao-iniciado"],
-  ["Reel encerramento", "Bianca Rocha", "2026-09-06", "nao-iniciado"],
-  ["Depoimentos", "Tiago Prado", "2026-09-02", "nao-iniciado"],
-  ["Fotos oficiais", "Tiago Prado", "2026-08-31", "em-andamento"],
-  ["Banco de imagens", "Tiago Prado", "2026-09-12", "nao-iniciado"],
-  ["Conteúdo próxima edição", null, "2026-09-20", "nao-iniciado"],
-].map(([title, owner, dueDate, status], i) => ({
-  id: `d${i + 1}`,
-  title: title as string,
-  owner: owner as string | null,
-  dueDate: dueDate as string,
-  status: status as TaskStatus,
-}));
+export const seedDeliverables: Deliverable[] = [];
 
 export interface Equipment {
   id: string;
@@ -435,60 +416,13 @@ export interface Equipment {
   critical: boolean;
 }
 
-export const seedEquipment: Equipment[] = [
-  ["Caixas de som", "PA principal 2x", "Caixa ativa reserva", "João Silva", "aprovado", true],
-  ["Mesa de áudio", "Mesa digital 16ch", "Mesa analógica 8ch", "João Silva", "aprovado", true],
-  ["Microfone principal", "Microfone sem fio A", "Microfone com fio", "João Silva", "aprovado", true],
-  ["Microfone reserva", "Sem fio B", "Com fio XLR 10m", "João Silva", "pendente", true],
-  ["Microfone lapela", "Lapela sem fio", "Headset", "João Silva", "pendente", false],
-  ["Telão", "Tela 4x3m", "Painel LED", "Carlos Mendes", "pendente", true],
-  ["Projetor", "Projetor 6000 lumens", "Projetor 3500 lumens", "Carlos Mendes", "aprovado", true],
-  ["Painel LED", "Painel 3x2m", "Telão + projetor", "Carlos Mendes", "pendente", false],
-  ["Notebook principal", "MacBook apresentação", "Notebook Windows", "Bianca Rocha", "aprovado", true],
-  ["Notebook reserva", "Notebook Windows", "Tablet + HDMI", "Bianca Rocha", "pendente", false],
-  ["Passador de slides", "Apresentador wireless", "Operador manual", "Carlos Mendes", "aprovado", false],
-  ["Cabo HDMI", "HDMI 10m", "HDMI 5m + extensor", "Carlos Mendes", "aprovado", false],
-  ["Adaptador USB-C", "Hub USB-C", "Adaptador simples", "Carlos Mendes", "aprovado", false],
-  ["Extensões", "4x 10m", "2x 5m", "Carlos Mendes", "aprovado", false],
-  ["Filtros de linha", "3 filtros", "Réguas simples", "Carlos Mendes", "pendente", false],
-  ["Internet", "Fibra do local", "Roteador 5G", "Carlos Mendes", "pendente", true],
-  ["Internet reserva", "Roteador 5G", "Hotspot celular", "Carlos Mendes", "reprovado", true],
-  ["Iluminação de palco", "Par LED 6x", "Refletores fixos", "Rafael Costa", "aprovado", true],
-  ["Iluminação ambiente", "Luz âmbar warm", "Luz do local", "Rafael Costa", "aprovado", false],
-  ["Iluminação de mídia", "Softbox 2x", "Luz de LED portátil", "Rafael Costa", "pendente", false],
-].map(([name, primary, backup, owner, test, critical], i) => ({
-  id: `eq${i + 1}`,
-  name: name as string,
-  primary: primary as string,
-  backup: backup as string,
-  owner: owner as string,
-  test: test as Equipment["test"],
-  critical: critical as boolean,
-}));
+export const seedEquipment: Equipment[] = [];
 
 export const seedExperience: ChecklistGroup = group(
   "experiencia",
   "Jornada do convidado",
-  [
-    "Confirmação da inscrição",
-    "Mensagem 1 dia antes",
-    "Localização enviada",
-    "Estacionamento orientado",
-    "Horário das portas comunicado",
-    "Recepção preparada",
-    "Credenciamento fluido",
-    "Staff identificado",
-    "Música ambiente",
-    "Local para fotos",
-    "Água disponível",
-    "Coffee Break",
-    "Banheiros sinalizados",
-    "Brindes entregues",
-    "Orientação durante o evento",
-    "Encerramento conduzido",
-    "Pesquisa de satisfação",
-  ],
-  8,
+  [],
+  0,
   "Cada ponto de contato do convidado com A Forja",
 );
 
