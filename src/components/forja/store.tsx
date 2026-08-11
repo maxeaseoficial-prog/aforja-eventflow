@@ -89,10 +89,11 @@ interface ForjaContextValue extends ForjaState {
   removeSpeaker: (id: string) => void;
   updateSpeaker: (id: string, patch: Partial<Speaker>) => void;
   toggleSpeakerStep: (id: string, index: number) => void;
+  addStaff: (member: StaffMember) => void;
+  removeStaff: (id: string) => void;
   updateStaff: (id: string, patch: Partial<StaffMember>) => void;
-  toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) => void;
-  toggleMediaItem: (groupId: string, itemId: string) => void;
-  updateDeliverable: (id: string, patch: Partial<Deliverable>) => void;
+  addMediaDeliverable: (deliverable: Deliverable) => void;
+  removeMediaDeliverable: (id: string) => void;
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
   addContingency: (contingency: Contingency) => void;
