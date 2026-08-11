@@ -33,6 +33,7 @@ function ResponsiblesPage() {
   const [view, setView] = useState<"grid" | "organograma">("grid");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
+  const [newDescription, setNewDescription] = useState("");
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
@@ -135,7 +136,14 @@ function ResponsiblesPage() {
               <div className="flex items-start gap-3">
                 <Avatar name={responsible.name} size="lg" />
                 <div className="min-w-0 flex-1">
-                  <p className="label-caps">{responsible.area}</p>
+                  <div className="flex flex-col">
+                    <p className="label-caps">{responsible.area}</p>
+                    {responsible.description && (
+                      <p className="text-[10px] text-muted-foreground/80 leading-tight italic mt-0.5">
+                        {responsible.description}
+                      </p>
+                    )}
+                  </div>
                   {responsible.name ? (
                     <>
                       <h3 className="truncate font-display text-base font-bold">{responsible.name}</h3>
@@ -229,9 +237,27 @@ function ResponsiblesPage() {
           <DialogHeader>
             <DialogTitle className="font-display">Nova área</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="area">Nome da área</Label>
-            <Input id="area" maxLength={60} value={newArea} onChange={(e) => setNewArea(e.target.value)} />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="area">Título da área</Label>
+              <Input
+                id="area"
+                placeholder="Ex: Coordenador de Programação"
+                maxLength={60}
+                value={newArea}
+                onChange={(e) => setNewArea(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="desc">Subtítulo / Descrição</Label>
+              <Input
+                id="desc"
+                placeholder="Ex: controla horários e sequência das atrações."
+                maxLength={100}
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setNewAreaOpen(false)}>
@@ -246,6 +272,7 @@ function ResponsiblesPage() {
                 addResponsible({
                   id: `r-${Date.now()}`,
                   area: newArea.trim(),
+                  description: newDescription.trim() || null,
                   name: null,
                   role: "—",
                   whatsapp: "",
@@ -254,6 +281,7 @@ function ResponsiblesPage() {
                 });
                 toast.success("Área criada");
                 setNewArea("");
+                setNewDescription("");
                 setNewAreaOpen(false);
               }}
             >
@@ -276,14 +304,19 @@ function EditResponsibleDialog({
   onSave: (patch: Partial<Responsible>) => void;
 }) {
   const [name, setName] = useState("");
+  const [area, setArea] = useState("");
+  const [description, setDescription] = useState("");
   const [role, setRole] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState<PersonStatus>("pendente");
   const [notes, setNotes] = useState("");
   const [loadedId, setLoadedId] = useState<string | null>(null);
 
+
   if (responsible && loadedId !== responsible.id) {
     setLoadedId(responsible.id);
+    setArea(responsible.area);
+    setDescription(responsible.description ?? "");
     setName(responsible.name ?? "");
     setRole(responsible.role === "—" ? "" : responsible.role);
     setWhatsapp(responsible.whatsapp);
@@ -295,11 +328,21 @@ function EditResponsibleDialog({
     <Dialog open={!!responsible} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-surface">
         <DialogHeader>
-          <DialogTitle className="font-display">{responsible?.area}</DialogTitle>
+          <DialogTitle className="font-display">Editar Área</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="resp-area">Título da área</Label>
+              <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
+              <Input id="resp-desc" maxLength={100} value={description} onChange={(e) => setDescription(e.target.value)} />
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label htmlFor="resp-name">Nome</Label>
+            <Label htmlFor="resp-name">Responsável (Nome)</Label>
             <Input id="resp-name" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -349,6 +392,8 @@ function EditResponsibleDialog({
           <Button
             onClick={() =>
               onSave({
+                area: area.trim(),
+                description: description.trim() || null,
                 name: name.trim() || null,
                 role: role.trim() || "—",
                 whatsapp: whatsapp.trim(),
@@ -380,7 +425,12 @@ function OrganogramCard({
         <Avatar name={responsible.name} size="md" />
         <div className="mt-3 min-w-0 w-full">
           <p className="label-caps text-[9px]">{responsible.area}</p>
-          <h3 className="mt-1 truncate font-display text-sm font-bold">
+          {responsible.description && (
+            <p className="text-[8px] text-muted-foreground/80 italic line-clamp-2 mt-0.5">
+              {responsible.description}
+            </p>
+          )}
+          <h3 className="mt-2 truncate font-display text-sm font-bold">
             {responsible.name || "NÃO DEFINIDO"}
           </h3>
           <p className="truncate text-[10px] text-muted-foreground">{responsible.role}</p>
