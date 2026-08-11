@@ -148,114 +148,115 @@ function SpeakersPage() {
       </header>
 
       <div className="grid gap-4 xl:grid-cols-2">
-      {speakers.map((speaker) => {
-        const done = speaker.checklist.filter(Boolean).length;
-        const pct = Math.round((done / SPEAKER_CHECKLIST.length) * 100);
-        const expanded = openId === speaker.id;
+        {speakers.map((speaker) => {
+          const done = speaker.checklist.filter(Boolean).length;
+          const pct = Math.round((done / SPEAKER_CHECKLIST.length) * 100);
+          const expanded = openId === speaker.id;
 
-        return (
-          <article key={speaker.id} className="surface-card animate-fade-up p-5 shadow-card">
-            <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
-              <Avatar name={speaker.name} size="lg" />
-              <div className="min-w-0">
-                <h2 className="truncate font-display text-base font-bold">{speaker.name}</h2>
-                <p className="truncate text-sm text-muted-foreground">{speaker.talkTitle}</p>
-                <p className="label-caps mt-1">{speaker.theme}</p>
+          return (
+            <article key={speaker.id} className="surface-card animate-fade-up p-5 shadow-card">
+              <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                <Avatar name={speaker.name} size="lg" />
+                <div className="min-w-0">
+                  <h2 className="truncate font-display text-base font-bold">{speaker.name}</h2>
+                  <p className="truncate text-sm text-muted-foreground">{speaker.talkTitle}</p>
+                  <p className="label-caps mt-1">{speaker.theme}</p>
+                </div>
+                <PersonStatusBadge status={speaker.status} />
+              </header>
+
+              <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+                <FieldRow
+                  label="Palestra"
+                  value={
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="size-3.5 text-primary" />
+                      {speaker.talkTime} · {speaker.duration}
+                    </span>
+                  }
+                />
+                <FieldRow label="Chegada" value={speaker.arrival} />
+                <FieldRow label="WhatsApp" value={speaker.whatsapp.replace(/^55/, "")} />
+                <FieldRow
+                  label="Instagram"
+                  value={
+                    <span className="inline-flex items-center gap-1.5">
+                      <Instagram className="size-3.5" />
+                      {speaker.instagram}
+                    </span>
+                  }
+                />
               </div>
-              <PersonStatusBadge status={speaker.status} />
-            </header>
 
-            <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-              <FieldRow
-                label="Palestra"
-                value={
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="size-3.5 text-primary" />
-                    {speaker.talkTime} · {speaker.duration}
+              <div className="mt-4 space-y-2 border-t border-border pt-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {done} / {SPEAKER_CHECKLIST.length} etapas concluídas
                   </span>
-                }
-              />
-              <FieldRow label="Chegada" value={speaker.arrival} />
-              <FieldRow label="WhatsApp" value={speaker.whatsapp.replace(/^55/, "")} />
-              <FieldRow
-                label="Instagram"
-                value={
-                  <span className="inline-flex items-center gap-1.5">
-                    <Instagram className="size-3.5" />
-                    {speaker.instagram}
-                  </span>
-                }
-              />
-            </div>
-
-            <div className="mt-4 space-y-2 border-t border-border pt-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {done} / {SPEAKER_CHECKLIST.length} etapas concluídas
-                </span>
-                <span className="font-display font-bold text-primary tabular-nums">{pct}%</span>
+                  <span className="font-display font-bold text-primary tabular-nums">{pct}%</span>
+                </div>
+                <ProgressBar value={pct} tone={pct === 100 ? "success" : "primary"} className="h-2" />
               </div>
-              <ProgressBar value={pct} tone={pct === 100 ? "success" : "primary"} className="h-2" />
-            </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <WhatsappButton number={speaker.whatsapp} />
-              <Select
-                value={speaker.status}
-                onValueChange={(v) => updateSpeaker(speaker.id, { status: v as PersonStatus })}
-              >
-                <SelectTrigger className="h-8 w-36 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="confirmado">Confirmado</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="indefinido">Indefinido</SelectItem>
-                </SelectContent>
-              </Select>
-              <ConfirmDeleteDialog
-                title="Excluir Palestrante"
-                description={`Tem certeza que deseja excluir o palestrante ${speaker.name}? Esta ação não pode ser desfeita.`}
-                onConfirm={() => {
-                  removeSpeaker(speaker.id);
-                  toast.success("Palestrante excluído!");
-                }}
-              >
-                <button className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 text-destructive transition-colors hover:bg-destructive/10">
-                  <Trash2 className="size-4" />
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <WhatsappButton number={speaker.whatsapp} />
+                <Select
+                  value={speaker.status}
+                  onValueChange={(v) => updateSpeaker(speaker.id, { status: v as PersonStatus })}
+                >
+                  <SelectTrigger className="h-8 w-36 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="confirmado">Confirmado</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="indefinido">Indefinido</SelectItem>
+                  </SelectContent>
+                </Select>
+                <ConfirmDeleteDialog
+                  title="Excluir Palestrante"
+                  description={`Tem certeza que deseja excluir o palestrante ${speaker.name}? Esta ação não pode ser desfeita.`}
+                  onConfirm={() => {
+                    removeSpeaker(speaker.id);
+                    toast.success("Palestrante excluído!");
+                  }}
+                >
+                  <button className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 text-destructive transition-colors hover:bg-destructive/10">
+                    <Trash2 className="size-4" />
+                  </button>
+                </ConfirmDeleteDialog>
+                <button
+                  type="button"
+                  onClick={() => setOpenId(expanded ? null : speaker.id)}
+                  className="ml-auto rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-border-strong"
+                >
+                  {expanded ? "Ocultar checklist" : "Ver checklist"}
                 </button>
-              </ConfirmDeleteDialog>
-              <button
-                type="button"
-                onClick={() => setOpenId(expanded ? null : speaker.id)}
-                className="ml-auto rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-border-strong"
-              >
-                {expanded ? "Ocultar checklist" : "Ver checklist"}
-              </button>
-            </div>
+              </div>
 
-            <div
-              className={cn(
-                "grid overflow-hidden transition-all duration-300 ease-out",
-                expanded ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-              )}
-            >
-              <div className="min-h-0">
-                <div className="rounded-lg border border-border bg-surface p-2 sm:columns-2">
-                  {SPEAKER_CHECKLIST.map((label, index) => (
-                    <ChecklistItem
-                      key={label}
-                      label={label}
-                      done={speaker.checklist[index] ?? false}
-                      onToggle={() => toggleSpeakerStep(speaker.id, index)}
-                    />
-                  ))}
+              <div
+                className={cn(
+                  "grid overflow-hidden transition-all duration-300 ease-out",
+                  expanded ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                )}
+              >
+                <div className="min-h-0">
+                  <div className="rounded-lg border border-border bg-surface p-2 sm:columns-2">
+                    {SPEAKER_CHECKLIST.map((label, index) => (
+                      <ChecklistItem
+                        key={label}
+                        label={label}
+                        done={speaker.checklist[index] ?? false}
+                        onToggle={() => toggleSpeakerStep(speaker.id, index)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </article>
-        );
-      })}
+            </article>
+          );
+        })}
+      </div>
 
       <Panel title="Como usar" className="xl:col-span-2">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
