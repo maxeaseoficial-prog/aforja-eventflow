@@ -69,17 +69,17 @@ export interface EventConfig {
 }
 
 export const eventConfig: EventConfig = {
-  name: "A FORJA",
-  edition: "Edição 2026",
-  date: "2026-08-28T19:00:00-03:00",
-  doorsAt: "18:30",
-  venue: "Teatro Central — Guarapuava",
-  address: "Rua XV de Novembro, 1200 — Centro",
-  budget: 8000,
-  expectedGuests: 240,
-  whatsapp: "(42) 99999-0000",
-  instagram: "@aforja",
-  notes: "Evento de liderança e transformação. Foco em execução impecável.",
+  name: "",
+  edition: "",
+  date: new Date().toISOString(),
+  doorsAt: "",
+  venue: "",
+  address: "",
+  budget: 0,
+  expectedGuests: 0,
+  whatsapp: "",
+  instagram: "",
+  notes: "",
 };
 
 export interface Task {
