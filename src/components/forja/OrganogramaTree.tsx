@@ -131,7 +131,7 @@ function Flow({
 }) {
   const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
 
-  const { initialNodes, initialEdges } = useMemo(() => {
+  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     const nodes: Node[] = responsibles.map((r) => ({
       id: r.id,
       type: 'responsible',
