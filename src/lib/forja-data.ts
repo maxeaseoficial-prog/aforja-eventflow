@@ -132,6 +132,8 @@ export interface Responsible {
   whatsapp: string;
   status: PersonStatus;
   notes: string;
+  sector?: string;
+  parentId?: string | null;
 }
 
 const AREAS = [
