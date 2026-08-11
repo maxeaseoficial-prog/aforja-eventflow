@@ -310,7 +310,6 @@ function PurchasesPage() {
               />
             </div>
           </div>
-          </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setNewOpen(false)}>
               Cancelar
