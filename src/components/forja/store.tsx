@@ -81,7 +81,9 @@ interface ForjaContextValue extends ForjaState {
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   addPurchase: (purchase: Purchase) => void;
   removePurchase: (id: string) => void;
+  addScheduleItem: (item: ScheduleItem) => void;
   updateScheduleItem: (id: string, patch: Partial<ScheduleItem>) => void;
+  removeScheduleItem: (id: string) => void;
   reorderSchedule: (fromId: string, toId: string) => void;
   addSpeaker: (speaker: Speaker) => void;
   removeSpeaker: (id: string) => void;
@@ -190,8 +192,11 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
       addPurchase: (purchase) => setState((s) => ({ ...s, purchases: [purchase, ...s.purchases] })),
       removePurchase: (id) =>
         setState((s) => ({ ...s, purchases: s.purchases.filter((p) => p.id !== id) })),
+      addScheduleItem: (item) => setState((s) => ({ ...s, schedule: [...s.schedule, item] })),
       updateScheduleItem: (id, patch) =>
         setState((s) => ({ ...s, schedule: patchList(s.schedule, id, patch) })),
+      removeScheduleItem: (id) =>
+        setState((s) => ({ ...s, schedule: s.schedule.filter((item) => item.id !== id) })),
       reorderSchedule: (fromId, toId) =>
         setState((s) => {
           const list = [...s.schedule];
