@@ -119,7 +119,7 @@ function CountdownBlock() {
               className="rounded-xl border border-border bg-surface px-4 py-4 text-center sm:px-6"
             >
               <p className="font-display text-3xl font-extrabold text-primary tabular-nums sm:text-4xl">
-                {String(unit.value).padStart(2, "0")}
+                {event.date ? String(unit.value).padStart(2, "0") : "—"}
               </p>
               <p className="label-caps mt-1 text-[10px]">{unit.label}</p>
             </div>
