@@ -199,7 +199,7 @@ function Flow({
         maxZoom={2}
         className="forja-flow"
       >
-        <Background color="#E6BC63" opacity={0.05} gap={20} size={1} />
+        <Background color="#E6BC63" style={{ opacity: 0.05 }} gap={20} size={1} />
         
         <Panel position="bottom-right" className="flex gap-2 p-4 animate-fade-up">
           <div className="flex bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-2xl items-center gap-1">
