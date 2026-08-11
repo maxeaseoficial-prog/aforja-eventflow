@@ -234,15 +234,15 @@ export function useForjaMetrics() {
       {
         label: "Mídia",
         value: pct(
-          tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length || 2,
-          Math.max(tasks.filter((t) => t.category === "Mídia").length, 3),
+          tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length,
+          tasks.filter((t) => t.category === "Mídia").length,
         ),
       },
       {
         label: "Palestrantes",
         value: pct(
           speakers.reduce((sum, s) => sum + s.checklist.filter(Boolean).length, 0),
-          speakers.length * 14 || 1,
+          speakers.length * 14,
         ),
       },
       {
@@ -252,7 +252,7 @@ export function useForjaMetrics() {
           purchases.length,
         ),
       },
-      { label: "Programação", value: 90 },
+      { label: "Programação", value: 0 },
     ];
 
     const health = Math.max(

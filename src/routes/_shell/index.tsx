@@ -77,12 +77,18 @@ function CountdownBlock() {
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
               <CalendarDays className="size-4 text-primary" />
-              {eventDate} ·{" "}
-              {new Date(event.date).toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-                timeZone: "America/Sao_Paulo",
-              })}
+              {event.date ? (
+                <>
+                  {eventDate} ·{" "}
+                  {new Date(event.date).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: "America/Sao_Paulo",
+                  })}
+                </>
+              ) : (
+                "Data não definida"
+              )}
             </span>
             <span className="inline-flex items-center gap-2">
               <MapPin className="size-4 text-primary" />
@@ -113,7 +119,7 @@ function CountdownBlock() {
               className="rounded-xl border border-border bg-surface px-4 py-4 text-center sm:px-6"
             >
               <p className="font-display text-3xl font-extrabold text-primary tabular-nums sm:text-4xl">
-                {String(unit.value).padStart(2, "0")}
+                {event.date ? String(unit.value).padStart(2, "0") : "—"}
               </p>
               <p className="label-caps mt-1 text-[10px]">{unit.label}</p>
             </div>

@@ -36,16 +36,16 @@ export const Route = createFileRoute("/_shell/configuracoes")({
 function SettingsPage() {
   const { event, updateEvent, resetAll } = useForja();
   const [form, setForm] = useState({
-    name: event.name,
-    edition: event.edition,
-    date: event.date.slice(0, 10),
-    doorsAt: event.doorsAt,
-    venue: event.venue,
-    address: event.address,
-    whatsapp: event.whatsapp,
-    instagram: event.instagram,
-    budget: String(event.budget),
-    expectedGuests: String(event.expectedGuests),
+    name: event.name || "",
+    edition: event.edition || "",
+    date: event.date ? event.date.slice(0, 10) : "",
+    doorsAt: event.doorsAt || "",
+    venue: event.venue || "",
+    address: event.address || "",
+    whatsapp: event.whatsapp || "",
+    instagram: event.instagram || "",
+    budget: String(event.budget || 0),
+    expectedGuests: String(event.expectedGuests || 0),
   });
 
   return (

@@ -71,7 +71,7 @@ export interface EventConfig {
 export const eventConfig: EventConfig = {
   name: "",
   edition: "",
-  date: new Date().toISOString(),
+  date: "",
   doorsAt: "",
   venue: "",
   address: "",
