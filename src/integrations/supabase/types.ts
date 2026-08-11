@@ -14,7 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      forja_app_state: {
+        Row: {
+          id: string
+          revision: number
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          revision?: number
+          state: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          revision?: number
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      forja_state_history: {
+        Row: {
+          created_at: string
+          id: string
+          revision: number
+          state: Json
+          state_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          revision: number
+          state: Json
+          state_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          revision?: number
+          state?: Json
+          state_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forja_state_history_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "forja_app_state"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
