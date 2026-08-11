@@ -108,13 +108,13 @@ interface ForjaContextValue extends ForjaState {
   addContingency: (contingency: Contingency) => void;
   removeContingency: (id: string) => void;
   addLearning: (learning: Learning) => void;
-    updateEvent: (patch: Partial<EventConfig>) => void;
-    clearTasks: () => void;
-    clearResponsibles: () => void;
-    resetAll: () => void;
-    updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
-    addConnection: (sourceId: string, targetId: string) => void;
-    removeConnection: (edgeId: string) => void;
+  updateEvent: (patch: Partial<EventConfig>) => void;
+  clearTasks: () => void;
+  clearResponsibles: () => void;
+  resetAll: () => void;
+  updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
+  addConnection: (sourceId: string, targetId: string) => void;
+  removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
@@ -123,156 +123,8 @@ interface ForjaContextValue extends ForjaState {
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
 
-  const [state, setState] = useState<ForjaState>(initialState);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>("initial");
-  const [cloudRevision, setCloudRevision] = useState(0);
-  const saveTimeoutRef = useRef<Timer | null>(null);
-  const isInitialLoad = useRef(true);
-
-  // 1. Initial Local Hydration & Backup
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        // Create backup if not exists
-        if (!window.localStorage.getItem(BACKUP_KEY)) {
-          window.localStorage.setItem(BACKUP_KEY, raw);
-          console.log("Local backup created before cloud sync.");
-        }
-
-        const savedData = JSON.parse(raw) as Partial<ForjaState>;
-        
-        // Automated migration for Organogram v5
-        if (savedData.responsibles && savedData.responsibles.length > 0) {
-          const needsMultiConnMigration = savedData.responsibles.some(r => r.parentId && (!r.connections || r.connections.length === 0));
-          if (needsMultiConnMigration) {
-            savedData.responsibles = migrateResponsiblesToMulti(savedData.responsibles);
-          }
-        }
-
-        setState({ ...initialState, ...savedData });
-      }
-      setIsHydrated(true);
-    } catch {
-      setIsHydrated(true);
-    }
-  }, []);
-
-  // 2. Cloud Synchronization Logic
-  const syncWithCloud = async (localState: ForjaState) => {
-    if (!navigator.onLine) {
-      setSyncStatus("offline");
-      return;
-    }
-
-    try {
-      setSyncStatus("syncing");
-      const cloudData = await getAppState();
-      
-      if (!cloudData) {
-        // Case A: Cloud empty + Local has data -> Upload Local
-        // We only upload if the user has actually added something, or just upload the hydrated state
-        console.log("Cloud is empty. Uploading local state.");
-        const result = await updateAppState({ state: localState, revision: 0 });
-        setCloudRevision(result.revision);
-        setSyncStatus("synced");
-        return;
-      }
-
-      const cloudState = cloudData.state as ForjaState;
-      const cloudRev = cloudData.revision;
-
-      // Simple reconciliation: Cloud wins if revision is higher
-      if (cloudRev > cloudRevision) {
-        console.log("Cloud state is newer. Updating local state.");
-        setState(cloudState);
-        setCloudRevision(cloudRev);
-      } else if (cloudRev === cloudRevision && isInitialLoad.current) {
-         // Same revision, just set it
-         setCloudRevision(cloudRev);
-      }
-      
-      setSyncStatus("synced");
-    } catch (err) {
-      console.error("Cloud sync error:", err);
-      setSyncStatus("error");
-    } finally {
-      isInitialLoad.current = false;
-    }
-  };
-
-  // Sync on start
-  useEffect(() => {
-    if (isHydrated) {
-      syncWithCloud(state);
-    }
-  }, [isHydrated]);
-
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("forja-sync")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "forja_app_state", filter: "id=eq.forja-principal" },
-        (payload) => {
-          const newData = payload.new as { state: ForjaState; revision: number };
-          if (newData.revision > cloudRevision) {
-            console.log("Realtime update received.");
-            setState(newData.state);
-            setCloudRevision(newData.revision);
-            setSyncStatus("synced");
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [cloudRevision]);
-
-  // 3. Debounced Persist (Local + Cloud)
-  useEffect(() => {
-    if (!isHydrated || isInitialLoad.current) return;
-
-    // Save to LocalStorage immediately for responsiveness
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {}
-
-    // Debounce Cloud save
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
-    saveTimeoutRef.current = setTimeout(async () => {
-      if (!navigator.onLine) {
-        setSyncStatus("offline");
-        return;
-      }
-
-      try {
-        setSyncStatus("syncing");
-        const result = await updateAppState({ state, revision: cloudRevision });
-        setCloudRevision(result.revision);
-        setSyncStatus("synced");
-      } catch (err) {
-        console.error("Auto-save to cloud failed:", err);
-        setSyncStatus("error");
-      }
-    }, 1000);
-
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    };
-  }, [state, isHydrated, cloudRevision]);
-
-
 function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
-  // First ensure every node has a connections array
   const newList = list.map(r => ({ ...r, connections: r.connections || [] }));
-  
-  // Then for each node that has a parentId, add it to the parent's connections if not already there
   newList.forEach(child => {
     if (child.parentId) {
       const parent = newList.find(p => p.id === child.parentId);
@@ -285,44 +137,144 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
       }
     }
   });
-
   return newList;
 }
 
+export function ForjaProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<ForjaState>(initialState);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("initial");
+  const [cloudRevision, setCloudRevision] = useState(0);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialLoad = useRef(true);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        if (!window.localStorage.getItem(BACKUP_KEY)) {
+          window.localStorage.setItem(BACKUP_KEY, raw);
+        }
+        const savedData = JSON.parse(raw) as Partial<ForjaState>;
+        if (savedData.responsibles && savedData.responsibles.length > 0) {
+          const needsMultiConnMigration = savedData.responsibles.some(r => r.parentId && (!r.connections || r.connections.length === 0));
+          if (needsMultiConnMigration) {
+            savedData.responsibles = migrateResponsiblesToMulti(savedData.responsibles);
+          }
+        }
+        setState({ ...initialState, ...savedData });
+      }
+      setIsHydrated(true);
+    } catch {
+      setIsHydrated(true);
+    }
+  }, []);
+
+  const syncWithCloud = async (localState: ForjaState) => {
+    if (!navigator.onLine) {
+      setSyncStatus("offline");
+      return;
+    }
+    try {
+      setSyncStatus("syncing");
+      const cloudData = await getAppState();
+      if (!cloudData) {
+        const result = await updateAppState({ state: localState, revision: 0 });
+        setCloudRevision(result.revision);
+        setSyncStatus("synced");
+        return;
+      }
+      const cloudState = cloudData.state as ForjaState;
+      const cloudRev = cloudData.revision;
+      if (cloudRev > cloudRevision) {
+        setState(cloudState);
+        setCloudRevision(cloudRev);
+      } else if (cloudRev === cloudRevision && isInitialLoad.current) {
+         setCloudRevision(cloudRev);
+      }
+      setSyncStatus("synced");
+    } catch (err) {
+      setSyncStatus("error");
+    } finally {
+      isInitialLoad.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (isHydrated) {
+      syncWithCloud(state);
+    }
+  }, [isHydrated]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("forja-sync")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "forja_app_state", filter: "id=eq.forja-principal" },
+        (payload) => {
+          const newData = payload.new as { state: ForjaState; revision: number };
+          if (newData.revision > cloudRevision) {
+            setState(newData.state);
+            setCloudRevision(newData.revision);
+            setSyncStatus("synced");
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [cloudRevision]);
+
+  useEffect(() => {
+    if (!isHydrated || isInitialLoad.current) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!navigator.onLine) {
+        setSyncStatus("offline");
+        return;
+      }
+      try {
+        setSyncStatus("syncing");
+        const result = await updateAppState({ state, revision: cloudRevision });
+        setCloudRevision(result.revision);
+        setSyncStatus("synced");
+      } catch (err) {
+        setSyncStatus("error");
+      }
+    }, 1000);
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [state, isHydrated, cloudRevision]);
 
   const value = useMemo<ForjaContextValue>(() => {
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
-
     const toggleItems = (group: ChecklistGroup, itemId: string): ChecklistGroup => ({
       ...group,
       items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
     });
-
     return {
       ...state,
       addTask: (task) => setState((s) => ({ ...s, tasks: [task, ...s.tasks] })),
       updateTask: (id, patch) => setState((s) => ({ ...s, tasks: patchList(s.tasks, id, patch) })),
       removeTask: (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) })),
       moveTask: (id, status) => setState((s) => ({ ...s, tasks: patchList(s.tasks, id, { status }) })),
-      updateResponsible: (id, patch) =>
-        setState((s) => ({ ...s, responsibles: patchList(s.responsibles, id, patch) })),
-      addResponsible: (responsible) =>
-        setState((s) => ({ ...s, responsibles: [...s.responsibles, responsible] })),
-      removeResponsible: (id) =>
-        setState((s) => ({ ...s, responsibles: s.responsibles.filter((r) => r.id !== id) })),
-      updatePurchase: (id, patch) =>
-        setState((s) => ({ ...s, purchases: patchList(s.purchases, id, patch) })),
+      updateResponsible: (id, patch) => setState((s) => ({ ...s, responsibles: patchList(s.responsibles, id, patch) })),
+      addResponsible: (responsible) => setState((s) => ({ ...s, responsibles: [...s.responsibles, responsible] })),
+      removeResponsible: (id) => setState((s) => ({ ...s, responsibles: s.responsibles.filter((r) => r.id !== id) })),
+      updatePurchase: (id, patch) => setState((s) => ({ ...s, purchases: patchList(s.purchases, id, patch) })),
       addPurchase: (purchase) => setState((s) => ({ ...s, purchases: [purchase, ...s.purchases] })),
-      removePurchase: (id) =>
-        setState((s) => ({ ...s, purchases: s.purchases.filter((p) => p.id !== id) })),
+      removePurchase: (id) => setState((s) => ({ ...s, purchases: s.purchases.filter((p) => p.id !== id) })),
       addScheduleItem: (item) => setState((s) => ({ ...s, schedule: [...s.schedule, item] })),
-      updateScheduleItem: (id, patch) =>
-        setState((s) => ({ ...s, schedule: patchList(s.schedule, id, patch) })),
-      removeScheduleItem: (id) =>
-        setState((s) => ({ ...s, schedule: s.schedule.filter((item) => item.id !== id) })),
-      reorderSchedule: (fromId, toId) =>
-        setState((s) => {
+      updateScheduleItem: (id, patch) => setState((s) => ({ ...s, schedule: patchList(s.schedule, id, patch) })),
+      removeScheduleItem: (id) => setState((s) => ({ ...s, schedule: s.schedule.filter((item) => item.id !== id) })),
+      reorderSchedule: (fromId, toId) => setState((s) => {
           const list = [...s.schedule];
           const from = list.findIndex((i) => i.id === fromId);
           const to = list.findIndex((i) => i.id === toId);
@@ -331,107 +283,37 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
           if (!moved) return s;
           list.splice(to, 0, moved);
           return { ...s, schedule: list };
-        }),
+      }),
       addSpeaker: (speaker) => setState((s) => ({ ...s, speakers: [...s.speakers, speaker] })),
       removeSpeaker: (id) => setState((s) => ({ ...s, speakers: s.speakers.filter((sp) => sp.id !== id) })),
-      updateSpeaker: (id, patch) =>
-        setState((s) => ({ ...s, speakers: patchList(s.speakers, id, patch) })),
-      toggleSpeakerStep: (id, index) =>
-        setState((s) => ({
-          ...s,
-          speakers: s.speakers.map((sp) =>
-            sp.id === id
-              ? { ...sp, checklist: sp.checklist.map((v, i) => (i === index ? !v : v)) }
-              : sp,
-          ),
-        })),
+      updateSpeaker: (id, patch) => setState((s) => ({ ...s, speakers: patchList(s.speakers, id, patch) })),
+      toggleSpeakerStep: (id, index) => setState((s) => ({ ...s, speakers: s.speakers.map((sp) => sp.id === id ? { ...sp, checklist: sp.checklist.map((v, i) => (i === index ? !v : v)) } : sp) })),
       addStaff: (member) => setState((s) => ({ ...s, staff: [...s.staff, member] })),
       removeStaff: (id) => setState((s) => ({ ...s, staff: s.staff.filter((m) => m.id !== id) })),
       updateStaff: (id, patch) => setState((s) => ({ ...s, staff: patchList(s.staff, id, patch) })),
-      toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) =>
-        setState((s) => ({ ...s, [groupKey]: toggleItems(s[groupKey], itemId) })),
-      toggleMediaItem: (groupId: string, itemId: string) =>
-        setState((s) => ({
-          ...s,
-          media: s.media.map((g) => (g.id === groupId ? toggleItems(g, itemId) : g)),
-        })),
-      addMediaDeliverable: (deliverable) =>
-        setState((s) => ({ ...s, deliverables: [...s.deliverables, deliverable] })),
-      removeMediaDeliverable: (id) =>
-        setState((s) => ({ ...s, deliverables: s.deliverables.filter((d) => d.id !== id) })),
-      updateMediaDeliverable: (id, patch) =>
-        setState((s) => ({ ...s, deliverables: patchList(s.deliverables, id, patch) })),
-      updateEquipment: (id, patch) =>
-        setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
-      updateContingency: (id, patch) =>
-        setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
-      addContingency: (contingency) =>
-        setState((s) => ({ ...s, contingencies: [...s.contingencies, contingency] })),
-      removeContingency: (id) =>
-        setState((s) => ({ ...s, contingencies: s.contingencies.filter((c) => c.id !== id) })),
+      toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) => setState((s) => ({ ...s, [groupKey]: toggleItems(s[groupKey], itemId) })),
+      toggleMediaItem: (groupId: string, itemId: string) => setState((s) => ({ ...s, media: s.media.map((g) => (g.id === groupId ? toggleItems(g, itemId) : g)) })),
+      addMediaDeliverable: (deliverable) => setState((s) => ({ ...s, deliverables: [...s.deliverables, deliverable] })),
+      removeMediaDeliverable: (id) => setState((s) => ({ ...s, deliverables: s.deliverables.filter((d) => d.id !== id) })),
+      updateMediaDeliverable: (id, patch) => setState((s) => ({ ...s, deliverables: patchList(s.deliverables, id, patch) })),
+      updateEquipment: (id, patch) => setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
+      updateContingency: (id, patch) => setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
+      addContingency: (contingency) => setState((s) => ({ ...s, contingencies: [...s.contingencies, contingency] })),
+      removeContingency: (id) => setState((s) => ({ ...s, contingencies: s.contingencies.filter((c) => c.id !== id) })),
       addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
       clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
       clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
-      updateResponsiblePosition: (id, position) =>
-        setState((s) => ({
-          ...s,
-          responsibles: s.responsibles.map((r) =>
-            r.id === id ? { ...r, position } : r
-          ),
-        })),
-      addConnection: (sourceId, targetId) =>
-        setState((s) => ({
-          ...s,
-          responsibles: s.responsibles.map((r) => {
-            if (r.id === sourceId) {
-              const connections = r.connections || [];
-              if (connections.some((c) => c.target === targetId)) return r;
-              return {
-                ...r,
-                connections: [...connections, { id: `e-${sourceId}-${targetId}`, target: targetId }],
-              };
-            }
-            return r;
-          }),
-        })),
-      removeConnection: (edgeId) =>
-        setState((s) => ({
-          ...s,
-          responsibles: s.responsibles.map((r) => ({
-            ...r,
-            connections: (r.connections || []).filter((c) => c.id !== edgeId),
-          })),
-        })),
-      updateConnection: (edgeId, newSourceId, newTargetId) =>
-        setState((s) => {
-          // Remove old edge
-          const cleaned = s.responsibles.map((r) => ({
-            ...r,
-            connections: (r.connections || []).filter((c) => c.id !== edgeId),
-          }));
-
-          // Add new edge to new source
-          return {
-            ...s,
-            responsibles: cleaned.map((r) => {
-              if (r.id === newSourceId) {
-                const connections = r.connections || [];
-                return {
-                  ...r,
-                  connections: [...connections, { id: edgeId, target: newTargetId }],
-                };
-              }
-              return r;
-            }),
-          };
-        }),
-      resetAll: () => {
-        window.localStorage.removeItem(STORAGE_KEY);
-        setState(initialState);
-      },
+      updateResponsiblePosition: (id, position) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => r.id === id ? { ...r, position } : r) })),
+      addConnection: (sourceId, targetId) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => { if (r.id === sourceId) { const connections = r.connections || []; if (connections.some((c) => c.target === targetId)) return r; return { ...r, connections: [...connections, { id: `e-${sourceId}-${targetId}`, target: targetId }] }; } return r; }) })),
+      removeConnection: (edgeId) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => ({ ...r, connections: (r.connections || []).filter((c) => c.id !== edgeId) })) })),
+      updateConnection: (edgeId, newSourceId, newTargetId) => setState((s) => { const cleaned = s.responsibles.map((r) => ({ ...r, connections: (r.connections || []).filter((c) => c.id !== edgeId) })); return { ...s, responsibles: cleaned.map((r) => { if (r.id === newSourceId) { const connections = r.connections || []; return { ...r, connections: [...connections, { id: edgeId, target: newTargetId }] }; } return r; }) }; }),
+      resetAll: () => { toast.error("O reset global está desativado nesta versão em nuvem por segurança."); },
+      syncStatus,
+      cloudRevision,
+      syncNow: () => syncWithCloud(state),
     };
-  }, [state]);
+  }, [state, syncStatus, cloudRevision]);
 
   return <ForjaContext.Provider value={value}>{children}</ForjaContext.Provider>;
 }
@@ -442,24 +324,17 @@ export function useForja() {
   return ctx;
 }
 
-/** Derived metrics used across dashboard and header. */
 export function useForjaMetrics() {
   const { tasks, purchases, responsibles, speakers, staff, equipment } = useForja();
-
   return useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const parse = (iso: string) => new Date(`${iso}T12:00:00`);
-
     const done = tasks.filter((t) => t.status === "concluido");
     const late = tasks.filter((t) => t.status !== "concluido" && parse(t.dueDate) < today);
-    const dueToday = tasks.filter(
-      (t) => t.status !== "concluido" && parse(t.dueDate).toDateString() === new Date().toDateString(),
-    );
+    const dueToday = tasks.filter((t) => t.status !== "concluido" && parse(t.dueDate).toDateString() === new Date().toDateString());
     const pending = tasks.filter((t) => t.status !== "concluido");
-    const pendingPurchases = purchases.filter(
-      (p) => p.status === "precisa-comprar" || p.status === "cotando",
-    );
+    const pendingPurchases = purchases.filter((p) => p.status === "precisa-comprar" || p.status === "cotando");
     const undefinedAreas = responsibles.filter((r) => !r.name);
     const unconfirmedSpeakers = speakers.filter((s) => s.status !== "confirmado");
     const purchasesWithoutOwner = purchases.filter((p) => !p.owner && p.status !== "cancelado");
@@ -467,51 +342,16 @@ export function useForjaMetrics() {
     const estimated = purchases.reduce((sum, p) => sum + p.estimated, 0);
     const testedEquipment = equipment.filter((e) => e.test === "aprovado");
     const confirmedTeam = [...responsibles, ...staff].filter((p) => p.status === "confirmado");
-
     const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
-
     const categories = [
       { label: "Equipe", value: pct(confirmedTeam.length, responsibles.length + staff.length) },
       { label: "Estrutura", value: pct(testedEquipment.length, equipment.length) },
-      {
-        label: "Mídia",
-        value: pct(
-          tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length,
-          tasks.filter((t) => t.category === "Mídia").length,
-        ),
-      },
-      {
-        label: "Palestrantes",
-        value: pct(
-          speakers.reduce((sum, s) => sum + s.checklist.filter(Boolean).length, 0),
-          speakers.length * 14,
-        ),
-      },
-      {
-        label: "Compras",
-        value: pct(
-          purchases.filter((p) => p.status === "comprado" || p.status === "recebido").length,
-          purchases.length,
-        ),
-      },
+      { label: "Mídia", value: pct(tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length, tasks.filter((t) => t.category === "Mídia").length) },
+      { label: "Palestrantes", value: pct(speakers.reduce((sum, s) => sum + s.checklist.filter(Boolean).length, 0), speakers.length * 14) },
+      { label: "Compras", value: pct(purchases.filter((p) => p.status === "comprado" || p.status === "recebido").length, purchases.length) },
       { label: "Programação", value: 0 },
     ];
-
-    const health = Math.max(
-      0,
-      Math.min(
-        100,
-        Math.round(
-          pct(done.length, tasks.length) * 0.3 +
-            categories[0]!.value * 0.2 +
-            categories[1]!.value * 0.2 +
-            categories[4]!.value * 0.15 +
-            categories[3]!.value * 0.15 -
-            late.length * 2,
-        ),
-      ),
-    );
-
+    const health = Math.max(0, Math.min(100, Math.round(pct(done.length, tasks.length) * 0.3 + categories[0]!.value * 0.2 + categories[1]!.value * 0.2 + categories[4]!.value * 0.15 + categories[3]!.value * 0.15 - late.length * 2)));
     return {
       total: tasks.length,
       done: done.length,
