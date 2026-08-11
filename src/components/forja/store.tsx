@@ -76,6 +76,7 @@ interface ForjaContextValue extends ForjaState {
   moveTask: (id: string, status: TaskStatus) => void;
   updateResponsible: (id: string, patch: Partial<Responsible>) => void;
   addResponsible: (responsible: Responsible) => void;
+  removeResponsible: (id: string) => void;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   addPurchase: (purchase: Purchase) => void;
   removePurchase: (id: string) => void;
@@ -137,6 +138,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, responsibles: patchList(s.responsibles, id, patch) })),
       addResponsible: (responsible) =>
         setState((s) => ({ ...s, responsibles: [...s.responsibles, responsible] })),
+      removeResponsible: (id) =>
+        setState((s) => ({ ...s, responsibles: s.responsibles.filter((r) => r.id !== id) })),
       updatePurchase: (id, patch) =>
         setState((s) => ({ ...s, purchases: patchList(s.purchases, id, patch) })),
       addPurchase: (purchase) => setState((s) => ({ ...s, purchases: [purchase, ...s.purchases] })),

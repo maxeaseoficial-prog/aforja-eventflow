@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, UserPlus } from "lucide-react";
+import { Pencil, Plus, UserPlus, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles } = useForja();
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
@@ -55,10 +55,24 @@ function ResponsiblesPage() {
             </button>
           ))}
         </div>
-        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">Nova área</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          {responsibles.length > 0 && (
+            <Button
+              size="sm"
+              variant="destructive"
+              className="gap-1.5"
+              onClick={() => {
+                if (confirm("Deseja apagar todos os responsáveis?")) clearResponsibles();
+              }}
+            >
+              <XCircle className="size-4" /> Apagar todos
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">Nova área</span>
+          </Button>
+        </div>
       </div>
 
       {undefinedCount > 0 && (
@@ -114,6 +128,16 @@ function ResponsiblesPage() {
                   {responsible.name ? "Editar" : "Adicionar responsável"}
                 </Button>
                 <WhatsappButton number={responsible.whatsapp} />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="ml-auto text-muted-foreground hover:text-destructive"
+                  onClick={() => {
+                    if (confirm(`Excluir a área "${responsible.area}"?`)) removeResponsible(responsible.id);
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
             </article>
           ))}
