@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -8,21 +8,42 @@ import {
   Edge,
   Node,
   Background,
-  Controls,
   Panel,
   Handle,
   Position,
   useReactFlow,
   ReactFlowProvider,
+  MarkerType,
+  OnNodesChange,
+  OnEdgesChange,
+  applyNodeChanges,
+  applyEdgeChanges,
+  OnConnect,
+  OnReconnect,
+  reconnectEdge,
+  SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
-import { Maximize, ZoomIn, ZoomOut, MousePointer2 } from 'lucide-react';
+import { 
+  Maximize, 
+  ZoomIn, 
+  ZoomOut, 
+  MousePointer2, 
+  Hand, 
+  MousePointer, 
+  Trash2,
+  RefreshCw,
+  Info
+} from 'lucide-react';
 import { Avatar, PersonStatusBadge } from '@/components/forja/ui-kit';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { Responsible } from '@/lib/forja-data';
 import { cn } from '@/lib/utils';
+import { useForja } from './store';
+import { toast } from 'sonner';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 // --- Dagre Layout Logic ---
 const dagreGraph = new dagre.graphlib.Graph();
@@ -44,30 +65,37 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB') => 
 
   dagre.layout(dagreGraph);
 
-  nodes.forEach((node) => {
+  return nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
-    node.targetPosition = Position.Top;
-    node.sourcePosition = Position.Bottom;
-    // We are shifting the dagre node position (which is center) to top-left
-    node.position = {
-      x: nodeWithPosition.x - nodeWidth / 2,
-      y: nodeWithPosition.y - nodeHeight / 2,
+    return {
+      ...node,
+      targetPosition: Position.Top,
+      sourcePosition: Position.Bottom,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
     };
   });
-
-  return { nodes, edges };
 };
 
 // --- Custom Node Component ---
-function ResponsibleNode({ data }: { data: { responsible: Responsible; onEdit: (r: Responsible) => void; onDelete: (r: Responsible) => void } }) {
+function ResponsibleNode({ data, selected }: { data: { responsible: Responsible; onEdit: (r: Responsible) => void; onDelete: (r: Responsible) => void }; selected?: boolean }) {
   const { responsible, onEdit, onDelete } = data;
   
   return (
-    <div className="surface-card border-primary/20 p-4 shadow-xl min-w-[260px] relative group animate-fade-in ring-1 ring-primary/5">
-      <Handle type="target" position={Position.Top} className="!bg-primary !w-3 !h-3 !border-2 !border-background" />
+    <div className={cn(
+      "surface-card border-primary/20 p-4 shadow-xl min-w-[260px] relative group animate-fade-in transition-all duration-200",
+      selected ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02] shadow-[0_0_20px_rgba(230,188,99,0.3)]" : "ring-1 ring-primary/5"
+    )}>
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        className="!bg-primary !w-3 !h-3 !border-2 !border-background hover:scale-150 transition-transform" 
+      />
       
       <div className="flex items-start gap-3">
-        <Avatar name={responsible.name} size="md" />
+        <Avatar name={responsible.name || ''} size="md" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-col">
             <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70">{responsible.sector || 'Geral'}</p>
@@ -110,13 +138,43 @@ function ResponsibleNode({ data }: { data: { responsible: Responsible; onEdit: (
         </button>
       </div>
 
-      <Handle type="source" position={Position.Bottom} className="!bg-primary !w-3 !h-3 !border-2 !border-background" />
+      <Handle 
+        type="source" 
+        position={Position.Bottom} 
+        className="!bg-primary !w-3 !h-3 !border-2 !border-background hover:scale-150 transition-transform" 
+      />
     </div>
   );
 }
 
 const nodeTypes = {
   responsible: ResponsibleNode,
+};
+
+// --- Helper to check for cycles ---
+const wouldCreateCycle = (nodes: Node[], edges: Edge[], source: string, target: string): boolean => {
+  if (source === target) return true;
+  
+  const visited = new Set<string>();
+  const queue = [source];
+  
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current === target) return true;
+    
+    // In this context, source is parent, target is child
+    // We want to check if target is already an ancestor of source
+    // So we search upwards from source
+    const parentEdge = edges.find(e => e.target === current);
+    if (parentEdge) {
+      if (!visited.has(parentEdge.source)) {
+        visited.add(parentEdge.source);
+        queue.push(parentEdge.source);
+      }
+    }
+  }
+  
+  return false;
 };
 
 // --- Flow Internal Component ---
@@ -130,109 +188,323 @@ function Flow({
   onDelete: (r: Responsible) => void;
 }) {
   const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
+  const { updateResponsiblePosition, reconnectResponsible, clearResponsibleParent } = useForja();
+  
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [edgeToDelete, setEdgeToDelete] = useState<Edge | null>(null);
 
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
-    const nodes: Node[] = responsibles.map((r) => ({
-      id: r.id,
-      type: 'responsible',
-      data: { responsible: r, onEdit, onDelete },
-      position: { x: 0, y: 0 },
+  // Initial state setup
+  const initialNodes: Node[] = responsibles.map((r) => ({
+    id: r.id,
+    type: 'responsible',
+    data: { responsible: r, onEdit, onDelete },
+    position: r.position || { x: 0, y: 0 },
+  }));
+
+  const initialEdges: Edge[] = responsibles
+    .filter((r) => r.parentId)
+    .map((r) => ({
+      id: `e-${r.parentId}-${r.id}`,
+      source: r.parentId!,
+      target: r.id,
+      type: 'smoothstep',
+      reconnectable: true,
+      style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: '#E6BC63',
+        width: 15,
+        height: 15,
+      },
     }));
 
-    const edges: Edge[] = responsibles
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+  // Sync state when responsibles list changes (e.g. added/removed)
+  useEffect(() => {
+    setNodes(prevNodes => {
+      const newNodes = responsibles.map(r => {
+        const existing = prevNodes.find(n => n.id === r.id);
+        return {
+          id: r.id,
+          type: 'responsible',
+          data: { responsible: r, onEdit, onDelete },
+          position: r.position || (existing ? existing.position : { x: 0, y: 0 }),
+        };
+      });
+      return newNodes;
+    });
+
+    setEdges(responsibles
       .filter((r) => r.parentId)
       .map((r) => ({
         id: `e-${r.parentId}-${r.id}`,
         source: r.parentId!,
         target: r.id,
         type: 'smoothstep',
-        animated: true,
+        reconnectable: true,
         style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
-      }));
-
-    return getLayoutedElements(nodes, edges);
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: '#E6BC63',
+          width: 15,
+          height: 15,
+        },
+      }))
+    );
   }, [responsibles, onEdit, onDelete]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // Re-layout if count changes
-  React.useEffect(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      responsibles.map((r) => ({
-        id: r.id,
-        type: 'responsible',
-        data: { responsible: r, onEdit, onDelete },
-        position: { x: 0, y: 0 },
-      })),
-      responsibles
-        .filter((r) => r.parentId)
-        .map((r) => ({
-          id: `e-${r.parentId}-${r.id}`,
-          source: r.parentId!,
-          target: r.id,
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
-        }))
-    );
-    setNodes(layoutedNodes);
-    setEdges(layoutedEdges);
-  }, [responsibles, setNodes, setEdges, onEdit, onDelete]);
-
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => {
+      setNodes((nds) => {
+        const nextNodes = applyNodeChanges(changes, nds);
+        
+        // Persist positions when dragging ends
+        changes.forEach(change => {
+          if (change.type === 'position' && change.dragging === false && change.position) {
+            updateResponsiblePosition(change.id, change.position);
+          }
+        });
+        
+        return nextNodes;
+      });
+    },
+    [updateResponsiblePosition]
   );
 
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
+
+  const onConnect: OnConnect = useCallback(
+    (params) => {
+      if (params.source === params.target) return;
+
+      // Rule: Single parent
+      const existingEdge = edges.find(e => e.target === params.target);
+      
+      // Rule: No cycles
+      if (wouldCreateCycle(nodes, edges, params.source!, params.target!)) {
+        toast.error("Esta ligação criaria uma hierarquia circular.");
+        return;
+      }
+
+      if (existingEdge) {
+        setEdges(eds => eds.filter(e => e.id !== existingEdge.id));
+      }
+
+      reconnectResponsible(params.target!, params.source);
+      toast.success("Hierarquia atualizada");
+    },
+    [edges, nodes, reconnectResponsible]
+  );
+
+  const onReconnect: OnReconnect = useCallback(
+    (oldEdge, newConnection) => {
+      if (newConnection.source === newConnection.target) return;
+      
+      if (wouldCreateCycle(nodes, edges, newConnection.source!, newConnection.target!)) {
+        toast.error("Esta ligação criaria uma hierarquia circular.");
+        return;
+      }
+
+      reconnectResponsible(newConnection.target!, newConnection.source);
+      setEdges((els) => reconnectEdge(oldEdge, newConnection, els));
+      toast.success("Conexão alterada");
+    },
+    [nodes, edges, reconnectResponsible]
+  );
+
+  const onEdgeDelete = useCallback(() => {
+    if (edgeToDelete) {
+      clearResponsibleParent(edgeToDelete.target);
+      setEdges(eds => eds.filter(e => e.id !== edgeToDelete.id));
+      setEdgeToDelete(null);
+      toast.success("Ligação removida");
+    }
+  }, [edgeToDelete, clearResponsibleParent]);
+
+  const runAutoLayout = useCallback(() => {
+    const layoutedNodes = getLayoutedElements(nodes, edges);
+    setNodes(layoutedNodes);
+    layoutedNodes.forEach(node => {
+      updateResponsiblePosition(node.id, node.position);
+    });
+    setTimeout(() => fitView({ duration: 800 }), 50);
+    toast.success("Layout organizado automaticamente");
+  }, [nodes, edges, updateResponsiblePosition, fitView]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (mode !== 'edit') return;
+      
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedEdges = edges.filter(e => e.selected);
+        if (selectedEdges.length > 0) {
+          setEdgeToDelete(selectedEdges[0]);
+        }
+      }
+      
+      if (e.key === 'Escape') {
+        setNodes(nds => nds.map(n => ({ ...n, selected: false })));
+        setEdges(eds => eds.map(e => ({ ...e, selected: false })));
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mode, edges]);
+
   return (
-    <div className="w-full h-[70vh] relative border border-border bg-black/40 rounded-xl overflow-hidden backdrop-blur-sm shadow-inner group cursor-grab active:cursor-grabbing">
+    <div className="w-full h-[75vh] relative border border-border bg-black/40 rounded-xl overflow-hidden backdrop-blur-sm shadow-inner group">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={onReconnect}
         nodeTypes={nodeTypes}
         fitView
-        minZoom={0.2}
+        minZoom={0.1}
         maxZoom={2}
-        className="forja-flow"
-        style={{ width: '100%', height: '100%' }}
+        
+        // Mode specific props
+        panOnDrag={mode === 'view'}
+        selectionOnDrag={mode === 'edit'}
+        selectionMode={SelectionMode.Partial}
+        panOnScroll={false}
+        
+        nodesDraggable={mode === 'edit'}
+        nodesConnectable={mode === 'edit'}
+        elementsSelectable={mode === 'edit'}
+        edgesFocusable={mode === 'edit'}
+        
+        // Visuals
+        snapToGrid={mode === 'edit'}
+        snapGrid={[20, 20]}
+        
+        className={cn("forja-flow", mode === 'view' ? "cursor-grab active:cursor-grabbing" : "cursor-default")}
       >
         <Background color="#E6BC63" style={{ opacity: 0.05 }} gap={20} size={1} />
         
-        <Panel position="bottom-right" className="flex gap-2 p-4 animate-fade-up">
-          <div className="flex bg-surface/90 backdrop-blur-md border border-border p-1 rounded-lg shadow-2xl items-center gap-1">
-            <Button variant="ghost" size="icon" type="button" onClick={() => zoomOut()} className="size-8 text-muted-foreground hover:text-primary">
-              <ZoomOut className="size-4" />
-            </Button>
-            <Button variant="ghost" size="sm" type="button" onClick={() => fitView({ duration: 800 })} className="h-8 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground hover:text-primary px-2">
-              Ajustar
-            </Button>
-            <Button variant="ghost" size="icon" type="button" onClick={() => zoomIn()} className="size-8 text-muted-foreground hover:text-primary">
-              <ZoomIn className="size-4" />
-            </Button>
-            <div className="w-px h-4 bg-border mx-1" />
+        {/* Main Control Panel (Bottom) */}
+        <Panel position="bottom-center" className="mb-6 animate-fade-up">
+          <div className="flex bg-surface/95 backdrop-blur-xl border border-primary/20 p-1.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] items-center gap-2 ring-1 ring-white/5">
+            
+            {/* Mode Switcher */}
+            <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 mr-2">
+              <button
+                onClick={() => setMode('view')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300",
+                  mode === 'view' 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Hand className="size-4" /> Navegar
+              </button>
+              <button
+                onClick={() => setMode('edit')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300",
+                  mode === 'edit' 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <MousePointer className="size-4" /> Editar
+              </button>
+            </div>
+
+            <div className="w-px h-8 bg-white/10 mx-1" />
+
+            {/* View Controls */}
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => zoomOut()} className="size-9 rounded-xl hover:bg-white/5">
+                <ZoomOut className="size-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => zoomIn()} className="size-9 rounded-xl hover:bg-white/5">
+                <ZoomIn className="size-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => fitView({ duration: 800 })} 
+                className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-white/5"
+              >
+                Ajustar
+              </Button>
+            </div>
+
+            <div className="w-px h-8 bg-white/10 mx-1" />
+
+            {/* Layout Controls */}
             <Button 
               variant="ghost" 
-              size="icon" 
-              type="button"
-              onClick={() => setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 800 })}
-              className="size-8 text-muted-foreground hover:text-primary"
+              size="sm" 
+              onClick={runAutoLayout}
+              className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-white/5 text-primary"
             >
-              <Maximize className="size-4" />
+              <RefreshCw className="size-3.5 mr-2" /> Organizar
             </Button>
           </div>
         </Panel>
 
+        {/* Info Panel (Top Left) */}
         <Panel position="top-left" className="p-4">
-          <div className="bg-primary-soft text-primary px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 border border-primary/20 shadow-lg">
-            <MousePointer2 className="size-3" />
-            Arraste para navegar • Use scroll para zoom
+          <div className={cn(
+            "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 border transition-all duration-500 shadow-xl backdrop-blur-md",
+            mode === 'edit' 
+              ? "bg-primary/20 border-primary/40 text-primary animate-pulse shadow-primary/10" 
+              : "bg-surface/60 border-white/5 text-muted-foreground"
+          )}>
+            <div className={cn("size-2 rounded-full", mode === 'edit' ? "bg-primary shadow-[0_0_8px_var(--primary)]" : "bg-muted-foreground")} />
+            {mode === 'edit' ? "Modo Edição Ativo" : "Visualização"}
+            <span className="opacity-40">•</span>
+            <span className="font-medium normal-case tracking-normal opacity-80">
+              {mode === 'edit' ? "Arraste cards ou crie conexões" : "Clique e arraste para navegar"}
+            </span>
           </div>
+          
+          {mode === 'edit' && (
+            <div className="mt-2 bg-black/60 border border-white/5 p-3 rounded-xl backdrop-blur-md text-[10px] text-muted-foreground space-y-1.5 animate-fade-in">
+              <div className="flex items-center gap-2"><Info className="size-3" /> <strong>Dicas de edição:</strong></div>
+              <p>• Arraste o fundo para selecionar vários cards</p>
+              <p>• Shift + Clique para seleção múltipla</p>
+              <p>• Arraste os pontos para criar ou mudar hierarquia</p>
+              <p>• Clique em uma linha e pressione Delete para remover</p>
+            </div>
+          )}
         </Panel>
+
+        {/* Selected Edge Actions */}
+        {mode === 'edit' && edges.some(e => e.selected) && (
+          <Panel position="top-right" className="p-4">
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-2xl animate-pop"
+              onClick={() => setEdgeToDelete(edges.find(e => e.selected)!)}
+            >
+              <Trash2 className="size-3.5 mr-2" /> Remover Ligação
+            </Button>
+          </Panel>
+        )}
       </ReactFlow>
+
+      <ConfirmDeleteDialog
+        open={!!edgeToDelete}
+        onOpenChange={(open) => !open && setEdgeToDelete(null)}
+        onConfirm={onEdgeDelete}
+        title="Remover ligação?"
+        description="Tem certeza que deseja remover esta conexão hierárquica? O responsável continuará existindo, apenas ficará sem um superior direto."
+        confirmLabel="Remover"
+      />
     </div>
   );
 }
