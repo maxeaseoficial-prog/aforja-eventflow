@@ -9,12 +9,13 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ForjaProvider } from "@/components/forja/store";
 import { Toaster } from "@/components/ui/sonner";
-
+import { usePWAStore } from "@/hooks/use-pwa";
 
 function NotFoundComponent() {
   return (
@@ -107,7 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" },
       { title: "FORJA — Event Command Center" },
       {
         name: "description",
@@ -116,6 +117,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#E6BC63" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
     ],
     links: [
       {
@@ -129,6 +133,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -153,13 +158,70 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { setDeferredPrompt, setNeedsUpdate, checkIsInstalled } = usePWAStore();
+
+  useEffect(() => {
+    checkIsInstalled();
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      checkIsInstalled();
+      toast.success("A Forja instalada com sucesso!");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    // Register Service Worker and handle updates
+    // In Lovable preview, we avoid SW registration to prevent caching issues for the user
+    const isProduction = typeof window !== "undefined" && 
+      !window.location.host.includes("localhost") && 
+      !window.location.host.includes("lovable.app");
+
+    if (isProduction && "serviceWorker" in navigator) {
+      import("virtual:pwa-register").then(({ registerSW }) => {
+        registerSW({
+          onNeedRefresh() {
+            setNeedsUpdate(true);
+            toast("Uma nova versão da Forja está disponível.", {
+              action: {
+                label: "Atualizar agora",
+                onClick: () => window.location.reload(),
+              },
+              duration: Infinity,
+            });
+          },
+          onOfflineReady() {
+            toast.info("O sistema está pronto para uso offline.");
+          },
+        });
+      });
+    }
+
+    const handleOnline = () => toast.success("Conexão restabelecida.");
+    const handleOffline = () => toast.error("Você está offline.");
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ForjaProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
-        <Toaster />
+        <Toaster position="top-right" closeButton theme="dark" richColors />
       </ForjaProvider>
     </QueryClientProvider>
   );
