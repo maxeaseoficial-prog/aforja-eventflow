@@ -63,6 +63,18 @@ function SettingsPage() {
   const handleInstall = async () => {
     // Check if it's iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+
+    // Diagnostic logging as requested
+    console.log("PWA_INSTALL_DIAGNOSTICS", {
+      hostname: window.location.hostname,
+      protocol: window.location.protocol,
+      isProd: import.meta.env.PROD,
+      serviceWorkerSupported: "serviceWorker" in navigator,
+      serviceWorkerRegistered: Boolean(await navigator.serviceWorker.getRegistration()),
+      displayModeStandalone: window.matchMedia("(display-mode: standalone)").matches,
+      deferredPromptAvailable: Boolean(deferredPrompt),
+      isInstalled
+    });
     
     if (isIOS && !isInstalled) {
       setShowIOSInstructions(true);
@@ -71,7 +83,7 @@ function SettingsPage() {
 
     if (!deferredPrompt) {
       if (!isInstalled) {
-        toast.info("A instalação automática não está disponível neste navegador. Use a opção 'Instalar' ou 'Adicionar à tela de início' do menu do seu navegador.");
+        toast.info("A instalação automática não está disponível neste navegador. Certifique-se de estar usando Chrome ou Edge e aguarde o carregamento do Service Worker.");
       }
       return;
     }

@@ -178,10 +178,8 @@ function RootComponent() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     // Register Service Worker and handle updates
-    // In Lovable preview, we avoid SW registration to prevent caching issues for the user
-    const isProduction = typeof window !== "undefined" && 
-      !window.location.host.includes("localhost") && 
-      !window.location.host.includes("lovable.app");
+    // Use build-time environment variable to register SW only in production builds
+    const isProduction = import.meta.env.PROD;
 
     if (isProduction && "serviceWorker" in navigator) {
       import("virtual:pwa-register").then(({ registerSW }) => {
