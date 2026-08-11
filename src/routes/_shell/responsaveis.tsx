@@ -335,10 +335,12 @@ function EditResponsibleDialog({
   responsible,
   onClose,
   onSave,
+  allResponsibles,
 }: {
   responsible: Responsible | null;
   onClose: () => void;
   onSave: (patch: Partial<Responsible>) => void;
+  allResponsibles: Responsible[];
 }) {
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -347,6 +349,8 @@ function EditResponsibleDialog({
   const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState<PersonStatus>("pendente");
   const [notes, setNotes] = useState("");
+  const [sector, setSector] = useState("Outro");
+  const [parentId, setParentId] = useState<string | null>(null);
   const [loadedId, setLoadedId] = useState<string | null>(null);
 
 
@@ -359,11 +363,15 @@ function EditResponsibleDialog({
     setWhatsapp(responsible.whatsapp);
     setStatus(responsible.status);
     setNotes(responsible.notes);
+    setSector(responsible.sector || "Outro");
+    setParentId(responsible.parentId || null);
   }
+
+  const availableParents = allResponsibles.filter(r => r.id !== responsible?.id);
 
   return (
     <Dialog open={!!responsible} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-surface">
+      <DialogContent className="bg-surface sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="font-display">Editar Área</DialogTitle>
         </DialogHeader>
@@ -374,9 +382,40 @@ function EditResponsibleDialog({
               <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
-              <Input id="resp-desc" maxLength={100} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Label htmlFor="resp-sector">Setor</Label>
+              <Select value={sector} onValueChange={setSector}>
+                <SelectTrigger id="resp-sector">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RESPONSIBLE_SECTORS.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
+            <Input id="resp-desc" maxLength={100} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="resp-parent">Responde para</Label>
+            <Select value={parentId || "none"} onValueChange={(v) => setParentId(v === "none" ? null : v)}>
+              <SelectTrigger id="resp-parent">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Ninguém (Nível 1)</SelectItem>
+                {availableParents.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>
+                    {r.area} {r.name ? `(${r.name})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="resp-name">Responsável (Nome)</Label>
@@ -436,6 +475,8 @@ function EditResponsibleDialog({
                 whatsapp: whatsapp.trim(),
                 status: name.trim() ? status : "indefinido",
                 notes: notes.trim(),
+                sector,
+                parentId,
               })
             }
           >
@@ -444,46 +485,5 @@ function EditResponsibleDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function OrganogramCard({ 
-  responsible, 
-  onEdit, 
-  onDelete 
-}: { 
-  responsible: Responsible; 
-  onEdit: () => void; 
-  onDelete: () => void;
-}) {
-  return (
-    <div className="surface-card w-56 p-4 shadow-card">
-      <div className="flex flex-col items-center text-center">
-        <Avatar name={responsible.name} size="md" />
-        <div className="mt-3 min-w-0 w-full">
-          <p className="label-caps text-[9px]">{responsible.area}</p>
-          {responsible.description && (
-            <p className="text-[8px] text-muted-foreground/80 italic line-clamp-2 mt-0.5">
-              {responsible.description}
-            </p>
-          )}
-          <h3 className="mt-2 truncate font-display text-sm font-bold">
-            {responsible.name || "NÃO DEFINIDO"}
-          </h3>
-          <p className="truncate text-[10px] text-muted-foreground">{responsible.role}</p>
-        </div>
-        
-        <div className="mt-4 flex items-center justify-center gap-2 border-t border-border w-full pt-3">
-          <Button size="icon" variant="ghost" className="size-7" onClick={onEdit}>
-            <Pencil className="size-3.5" />
-          </Button>
-          <Button size="icon" variant="ghost" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => {
-            if(confirm(`Excluir a área "${responsible.area}"?`)) onDelete();
-          }}>
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }
