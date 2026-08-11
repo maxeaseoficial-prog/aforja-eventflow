@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ModoEventoRouteImport } from './routes/modo-evento'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
@@ -26,6 +27,11 @@ import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModoEventoRoute = ModoEventoRouteImport.update({
@@ -96,6 +102,7 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
   '/configuracoes': typeof ShellConfiguracoesRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
   '/configuracoes': typeof ShellConfiguracoesRoute
@@ -127,6 +135,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteRouteWithChildren
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/_shell/compras': typeof ShellComprasRoute
   '/_shell/configuracoes': typeof ShellConfiguracoesRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/modo-evento'
     | '/compras'
     | '/configuracoes'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/modo-evento'
     | '/compras'
     | '/configuracoes'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_shell'
+    | '/login'
     | '/modo-evento'
     | '/_shell/compras'
     | '/_shell/configuracoes'
@@ -192,6 +204,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ModoEventoRoute: typeof ModoEventoRoute
 }
 
@@ -202,6 +215,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/modo-evento': {
@@ -334,6 +354,7 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   ShellRouteRoute: ShellRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
   ModoEventoRoute: ModoEventoRoute,
 }
 export const routeTree = rootRouteImport
