@@ -69,7 +69,7 @@ const initialState: ForjaState = {
 
 const STORAGE_KEY = "forja-command-center-v2";
 const LEGACY_STORAGE_KEY = "forja-command-center-v1";
-const MIGRATION_KEY = "forja-clean-migration-v3";
+const MIGRATION_KEY = "forja-clean-migration-v5";
 
 interface ForjaContextValue extends ForjaState {
   addTask: (task: Task) => void;
@@ -98,8 +98,9 @@ interface ForjaContextValue extends ForjaState {
     clearResponsibles: () => void;
     resetAll: () => void;
     updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
-    reconnectResponsible: (id: string, newParentId: string | null) => void;
-    clearResponsibleParent: (id: string) => void;
+    addConnection: (sourceId: string, targetId: string) => void;
+    removeConnection: (edgeId: string) => void;
+    updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
 }
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
@@ -122,11 +123,11 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       if (raw) {
         const savedData = JSON.parse(raw) as Partial<ForjaState>;
         
-        // Automated migration for Organogram v4
+        // Automated migration for Organogram v5 (Multiple connections)
         if (savedData.responsibles && savedData.responsibles.length > 0) {
-          const hasHierarchy = savedData.responsibles.some(r => r.sector || r.parentId);
-          if (!hasHierarchy) {
-            savedData.responsibles = migrateResponsibles(savedData.responsibles);
+          const needsMultiConnMigration = savedData.responsibles.some(r => r.parentId && (!r.connections || r.connections.length === 0));
+          if (needsMultiConnMigration) {
+            savedData.responsibles = migrateResponsiblesToMulti(savedData.responsibles);
           }
         }
 
@@ -137,43 +138,25 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-function migrateResponsibles(list: Responsible[]): Responsible[] {
-  const rootKeywords = ["diretor", "direção", "coordenação geral", "coordenador geral"];
-  const technicalKeywords = ["som", "iluminação", "vídeo", "projeção", "áudio", "led", "técnico"];
-  const productionKeywords = ["produção", "cerimonial", "logística"];
-  const palcoKeywords = ["palco", "bastidores"];
-  const recepcaoKeywords = ["recepção", "credenciamento"];
-  const midiaKeywords = ["mídia", "fotografia", "videomaker", "storymaker", "marketing", "comunicação"];
-  const infraKeywords = ["limpeza", "segurança", "infraestrutura", "estrutura"];
-  const alimentacaoKeywords = ["coffee", "break", "alimentação", "buffet"];
-
-  // Find root
-  let root = list.find(r => rootKeywords.some(k => r.area.toLowerCase().includes(k)));
-  if (!root && list.length > 0) root = list[0];
+function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
+  // First ensure every node has a connections array
+  const newList = list.map(r => ({ ...r, connections: r.connections || [] }));
   
-  return list.map(r => {
-    let sector = "Outro";
-    const area = r.area.toLowerCase();
-    
-    if (rootKeywords.some(k => area.includes(k))) sector = "Direção";
-    else if (technicalKeywords.some(k => area.includes(k))) sector = "Técnico / Audiovisual";
-    else if (productionKeywords.some(k => area.includes(k))) sector = "Produção";
-    else if (palcoKeywords.some(k => area.includes(k))) sector = "Palco";
-    else if (recepcaoKeywords.some(k => area.includes(k))) sector = "Recepção";
-    else if (midiaKeywords.some(k => area.includes(k))) sector = "Mídia";
-    else if (infraKeywords.some(k => area.includes(k))) {
-      if (area.includes("segurança")) sector = "Segurança";
-      else if (area.includes("limpeza")) sector = "Limpeza";
-      else sector = "Infraestrutura";
+  // Then for each node that has a parentId, add it to the parent's connections if not already there
+  newList.forEach(child => {
+    if (child.parentId) {
+      const parent = newList.find(p => p.id === child.parentId);
+      if (parent) {
+        if (!parent.connections) parent.connections = [];
+        const exists = parent.connections.some(c => c.target === child.id);
+        if (!exists) {
+          parent.connections.push({ id: `e-${parent.id}-${child.id}`, target: child.id });
+        }
+      }
     }
-    else if (alimentacaoKeywords.some(k => area.includes(k))) sector = "Alimentação / Coffee Break";
-
-    return {
-      ...r,
-      sector,
-      parentId: (root && r.id !== root.id) ? root.id : null
-    };
   });
+
+  return newList;
 }
 
   useEffect(() => {
@@ -259,20 +242,52 @@ function migrateResponsibles(list: Responsible[]): Responsible[] {
             r.id === id ? { ...r, position } : r
           ),
         })),
-      reconnectResponsible: (id, newParentId) =>
+      addConnection: (sourceId, targetId) =>
         setState((s) => ({
           ...s,
-          responsibles: s.responsibles.map((r) =>
-            r.id === id ? { ...r, parentId: newParentId } : r
-          ),
+          responsibles: s.responsibles.map((r) => {
+            if (r.id === sourceId) {
+              const connections = r.connections || [];
+              if (connections.some((c) => c.target === targetId)) return r;
+              return {
+                ...r,
+                connections: [...connections, { id: `e-${sourceId}-${targetId}`, target: targetId }],
+              };
+            }
+            return r;
+          }),
         })),
-      clearResponsibleParent: (id) =>
+      removeConnection: (edgeId) =>
         setState((s) => ({
           ...s,
-          responsibles: s.responsibles.map((r) =>
-            r.id === id ? { ...r, parentId: null } : r
-          ),
+          responsibles: s.responsibles.map((r) => ({
+            ...r,
+            connections: (r.connections || []).filter((c) => c.id !== edgeId),
+          })),
         })),
+      updateConnection: (edgeId, newSourceId, newTargetId) =>
+        setState((s) => {
+          // Remove old edge
+          const cleaned = s.responsibles.map((r) => ({
+            ...r,
+            connections: (r.connections || []).filter((c) => c.id !== edgeId),
+          }));
+
+          // Add new edge to new source
+          return {
+            ...s,
+            responsibles: cleaned.map((r) => {
+              if (r.id === newSourceId) {
+                const connections = r.connections || [];
+                return {
+                  ...r,
+                  connections: [...connections, { id: edgeId, target: newTargetId }],
+                };
+              }
+              return r;
+            }),
+          };
+        }),
       resetAll: () => {
         window.localStorage.removeItem(STORAGE_KEY);
         setState(initialState);
