@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RotateCcw, Save } from "lucide-react";
+import { RotateCcw, Save, Smartphone, Download, CheckCircle2, MonitorDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { useForja } from "@/components/forja/store";
+import { usePWAStore } from "@/hooks/use-pwa";
 import { Panel } from "@/components/forja/ui-kit";
 import {
   AlertDialog,
@@ -16,12 +17,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { brl } from "@/lib/forja-data";
 
 export const Route = createFileRoute("/_shell/configuracoes")({
+
   head: () => ({
     meta: [
       { title: "Configurações — FORJA Event Command Center" },
