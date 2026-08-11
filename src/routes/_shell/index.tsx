@@ -129,7 +129,7 @@ function CountdownBlock() {
   };
 
   const removeDate = () => {
-    updateEvent({ date: "" });
+    updateEvent({ date: "", venue: "" });
     setIsDeleteDialogOpen(false);
     toast.success("Data do evento removida");
   };
