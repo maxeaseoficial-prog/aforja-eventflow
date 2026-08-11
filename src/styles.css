@@ -286,8 +286,39 @@
 
 .react-flow__edge-path {
   stroke: var(--primary);
-  stroke-width: 2px;
-  opacity: 0.4;
+  stroke-width: 2.5px;
+  opacity: 0.6;
+  transition: opacity 200ms ease, stroke-width 200ms ease;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 4px;
+  opacity: 1;
+  stroke: var(--primary);
+  filter: drop-shadow(0 0 4px var(--primary));
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  opacity: 0.9;
+  stroke-width: 3.5px;
+}
+
+.react-flow__connection-path {
+  stroke: var(--primary);
+  stroke-width: 2.5px;
+  stroke-dasharray: 5, 5;
+}
+
+.react-flow__nodeselection-rect {
+  background: color-mix(in srgb, var(--primary), transparent 90%);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-md);
+}
+
+.react-flow__selection {
+  background: color-mix(in srgb, var(--primary), transparent 92%);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
 }
 
 .react-flow__attribution {

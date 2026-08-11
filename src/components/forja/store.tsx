@@ -97,6 +97,9 @@ interface ForjaContextValue extends ForjaState {
     clearTasks: () => void;
     clearResponsibles: () => void;
     resetAll: () => void;
+    updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
+    reconnectResponsible: (id: string, newParentId: string | null) => void;
+    clearResponsibleParent: (id: string) => void;
 }
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
@@ -249,6 +252,27 @@ function migrateResponsibles(list: Responsible[]): Responsible[] {
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
       clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
       clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
+      updateResponsiblePosition: (id, position) =>
+        setState((s) => ({
+          ...s,
+          responsibles: s.responsibles.map((r) =>
+            r.id === id ? { ...r, position } : r
+          ),
+        })),
+      reconnectResponsible: (id, newParentId) =>
+        setState((s) => ({
+          ...s,
+          responsibles: s.responsibles.map((r) =>
+            r.id === id ? { ...r, parentId: newParentId } : r
+          ),
+        })),
+      clearResponsibleParent: (id) =>
+        setState((s) => ({
+          ...s,
+          responsibles: s.responsibles.map((r) =>
+            r.id === id ? { ...r, parentId: null } : r
+          ),
+        })),
       resetAll: () => {
         window.localStorage.removeItem(STORAGE_KEY);
         setState(initialState);
