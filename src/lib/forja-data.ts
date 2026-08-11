@@ -134,6 +134,7 @@ export interface Responsible {
   notes: string;
   sector?: string;
   parentId?: string | null;
+  position?: { x: number; y: number } | null;
 }
 
 const AREAS = [
