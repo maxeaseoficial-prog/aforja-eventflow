@@ -8,10 +8,10 @@ export const getAppState = createServerFn({ method: "GET" })
   });
 
 export const updateAppState = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.object({
+  .validator(z.object({
     state: z.any(),
     revision: z.number()
-  }).parse(data))
+  }))
   .handler(async ({ data }) => {
     return updateAppStateServer(data.state, data.revision);
   });

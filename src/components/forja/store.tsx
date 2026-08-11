@@ -184,7 +184,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setSyncStatus("synced");
         return;
       }
-      const cloudState = cloudData.state as ForjaState;
+      const cloudState = cloudData.state as unknown as ForjaState;
       const cloudRev = cloudData.revision;
       if (cloudRev > cloudRevision) {
         setState(cloudState);
