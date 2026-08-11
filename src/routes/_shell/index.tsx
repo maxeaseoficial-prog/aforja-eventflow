@@ -14,8 +14,10 @@ import {
   Plus,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { useForja, useForjaMetrics } from "@/components/forja/store";
+import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import {
   AlertCard,
   Avatar,
@@ -114,6 +116,7 @@ function CountdownBlock() {
   const metrics = useForjaMetrics();
   const countdown = useCountdown(event.date);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const hasDate = !!event.date;
   const eventDateObj = hasDate ? new Date(event.date) : null;
@@ -126,9 +129,9 @@ function CountdownBlock() {
   };
 
   const removeDate = () => {
-    if (confirm("Deseja remover a data do evento e parar a contagem?")) {
-      updateEvent({ date: "" });
-    }
+    updateEvent({ date: "" });
+    setIsDeleteDialogOpen(false);
+    toast.success("Data do evento removida");
   };
 
   if (!hasDate) {
@@ -265,7 +268,7 @@ function CountdownBlock() {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={removeDate}
+            onClick={() => setIsDeleteDialogOpen(true)}
             className="text-muted-foreground hover:text-destructive gap-2"
           >
             <Trash2 className="size-4" />
@@ -291,6 +294,15 @@ function CountdownBlock() {
         onSave={handleSave} 
         initialDate={event?.date?.split('T')[0] ?? ""}
         initialTime={event?.date?.indexOf('T') !== -1 ? event?.date?.split('T')[1]?.slice(0, 5) ?? "" : ""}
+      />
+
+      <ConfirmDeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={removeDate}
+        title="Remover data do evento?"
+        description="Tem certeza que deseja remover a data do evento e parar a contagem regressiva?"
+        confirmLabel="Remover"
       />
     </section>
   );
