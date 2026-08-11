@@ -45,6 +45,7 @@ function SpeakersPage() {
   const { speakers, toggleSpeakerStep, updateSpeaker, addSpeaker, removeSpeaker } = useForja();
   const [openId, setOpenId] = useState<string | null>(speakers[0]?.id ?? null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleAddSpeaker = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,6 +69,8 @@ function SpeakersPage() {
     setIsAddModalOpen(false);
     toast.success("Palestrante adicionado com sucesso!");
   };
+
+  const speakerToDelete = speakers.find(s => s.id === deleteId);
 
   return (
     <div className="space-y-6">
@@ -165,7 +168,7 @@ function SpeakersPage() {
                 <PersonStatusBadge status={speaker.status} />
               </header>
 
-              <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
+              <div className="mt-4 grid gap-x-6 sm:columns-2">
                 <FieldRow
                   label="Palestra"
                   value={
@@ -213,18 +216,14 @@ function SpeakersPage() {
                     <SelectItem value="indefinido">Indefinido</SelectItem>
                   </SelectContent>
                 </Select>
-                <ConfirmDeleteDialog
-                  title="Excluir Palestrante"
-                  description={`Tem certeza que deseja excluir o palestrante ${speaker.name}? Esta ação não pode ser desfeita.`}
-                  onConfirm={() => {
-                    removeSpeaker(speaker.id);
-                    toast.success("Palestrante excluído!");
-                  }}
+                
+                <button 
+                  onClick={() => setDeleteId(speaker.id)}
+                  className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 text-destructive transition-colors hover:bg-destructive/10"
                 >
-                  <button className="flex size-8 items-center justify-center rounded-lg border border-destructive/20 text-destructive transition-colors hover:bg-destructive/10">
-                    <Trash2 className="size-4" />
-                  </button>
-                </ConfirmDeleteDialog>
+                  <Trash2 className="size-4" />
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setOpenId(expanded ? null : speaker.id)}
@@ -257,6 +256,20 @@ function SpeakersPage() {
           );
         })}
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={() => {
+          if (deleteId) {
+            removeSpeaker(deleteId);
+            setDeleteId(null);
+            toast.success("Palestrante excluído!");
+          }
+        }}
+        title="Excluir Palestrante"
+        itemName={speakerToDelete?.name}
+      />
 
       <Panel title="Como usar" className="xl:col-span-2">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
