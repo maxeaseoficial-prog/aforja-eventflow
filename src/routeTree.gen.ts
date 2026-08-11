@@ -9,9 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ModoEventoRouteImport } from './routes/modo-evento'
-import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellComprasRouteImport } from './routes/_shell/compras'
 import { Route as ShellConfiguracoesRouteImport } from './routes/_shell/configuracoes'
 import { Route as ShellContingenciasRouteImport } from './routes/_shell/contingencias'
@@ -24,19 +25,24 @@ import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsav
 import { Route as ShellStaffRouteImport } from './routes/_shell/staff'
 import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModoEventoRoute = ModoEventoRouteImport.update({
   id: '/modo-evento',
   path: '/modo-evento',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ShellIndexRoute = ShellIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ShellRouteRoute,
 } as any)
 const ShellComprasRoute = ShellComprasRouteImport.update({
   id: '/compras',
@@ -95,7 +101,8 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof ShellIndexRoute
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
   '/configuracoes': typeof ShellConfiguracoesRoute
@@ -110,6 +117,8 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
   '/configuracoes': typeof ShellConfiguracoesRoute
@@ -122,11 +131,12 @@ export interface FileRoutesByTo {
   '/responsaveis': typeof ShellResponsaveisRoute
   '/staff': typeof ShellStaffRoute
   '/tarefas': typeof ShellTarefasRoute
-  '/': typeof ShellIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
+  '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/_shell/compras': typeof ShellComprasRoute
   '/_shell/configuracoes': typeof ShellConfiguracoesRoute
@@ -139,12 +149,12 @@ export interface FileRoutesById {
   '/_shell/responsaveis': typeof ShellResponsaveisRoute
   '/_shell/staff': typeof ShellStaffRoute
   '/_shell/tarefas': typeof ShellTarefasRoute
-  '/_shell/': typeof ShellIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/modo-evento'
     | '/compras'
     | '/configuracoes'
@@ -159,6 +169,8 @@ export interface FileRouteTypes {
     | '/tarefas'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | '/login'
     | '/modo-evento'
     | '/compras'
     | '/configuracoes'
@@ -171,10 +183,11 @@ export interface FileRouteTypes {
     | '/responsaveis'
     | '/staff'
     | '/tarefas'
-    | '/'
   id:
     | '__root__'
+    | '/'
     | '/_shell'
+    | '/login'
     | '/modo-evento'
     | '/_shell/compras'
     | '/_shell/configuracoes'
@@ -187,21 +200,36 @@ export interface FileRouteTypes {
     | '/_shell/responsaveis'
     | '/_shell/staff'
     | '/_shell/tarefas'
-    | '/_shell/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ModoEventoRoute: typeof ModoEventoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_shell': {
       id: '/_shell'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ShellRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/modo-evento': {
@@ -210,13 +238,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/modo-evento'
       preLoaderRoute: typeof ModoEventoRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_shell/': {
-      id: '/_shell/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof ShellIndexRouteImport
-      parentRoute: typeof ShellRouteRoute
     }
     '/_shell/compras': {
       id: '/_shell/compras'
@@ -310,7 +331,6 @@ interface ShellRouteRouteChildren {
   ShellResponsaveisRoute: typeof ShellResponsaveisRoute
   ShellStaffRoute: typeof ShellStaffRoute
   ShellTarefasRoute: typeof ShellTarefasRoute
-  ShellIndexRoute: typeof ShellIndexRoute
 }
 
 const ShellRouteRouteChildren: ShellRouteRouteChildren = {
@@ -325,7 +345,6 @@ const ShellRouteRouteChildren: ShellRouteRouteChildren = {
   ShellResponsaveisRoute: ShellResponsaveisRoute,
   ShellStaffRoute: ShellStaffRoute,
   ShellTarefasRoute: ShellTarefasRoute,
-  ShellIndexRoute: ShellIndexRoute,
 }
 
 const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
@@ -333,7 +352,9 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   ShellRouteRoute: ShellRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
   ModoEventoRoute: ModoEventoRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,5 +1,6 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Bell, Menu, Plus, Radio, Search } from "lucide-react";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Bell, Menu, Plus, Radio, Search, LogOut } from "lucide-react";
+
 import { useState } from "react";
 
 import forjaLogo from "@/assets/forja-logo.png.asset.json";
@@ -7,8 +8,10 @@ import { GlobalSearch } from "@/components/forja/GlobalSearch";
 import { NewTaskSheet } from "@/components/forja/NewTaskSheet";
 import { NAV_ITEMS, findNavItem } from "@/components/forja/nav";
 import { useForja, useForjaMetrics } from "@/components/forja/store";
+import { useAuth } from "@/hooks/use-auth";
 import { Avatar } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCountdown } from "@/hooks/use-countdown";
@@ -114,7 +117,16 @@ export function AppShell() {
   const [taskOpen, setTaskOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate({ to: "/login" });
+  };
+
   return (
+
     <div className="min-h-screen bg-background">
       {/* subtle ember glow */}
       <div
@@ -195,6 +207,15 @@ export function AppShell() {
 
               <Notifications />
               <Avatar name="Henrique Alves" size="sm" />
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Sair"
+                className="grid size-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors duration-200 hover:border-destructive/30 hover:text-destructive"
+              >
+                <LogOut className="size-4" />
+              </button>
+
             </div>
           </div>
         </header>
