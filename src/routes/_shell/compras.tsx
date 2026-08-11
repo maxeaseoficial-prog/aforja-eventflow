@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useForja, useForjaMetrics } from "@/components/forja/store";
+import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import {
   EmptyState,
   Panel,
@@ -323,26 +324,19 @@ function PurchasesPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
-        <AlertDialogContent className="bg-surface">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-display">Excluir item?</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não poderá ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (deleting) removePurchase(deleting.id);
-                toast.success("Item excluído");
-                setDeleting(null);
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        onConfirm={() => {
+          if (deleting) {
+            removePurchase(deleting.id);
+            toast.success("Item excluído com sucesso.");
+            setDeleting(null);
+          }
+        }}
+        itemName={deleting?.item}
+        title="Excluir item de compra?"
+      />
     </div>
   );
 }
