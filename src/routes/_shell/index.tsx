@@ -159,17 +159,17 @@ function CountdownBlock() {
     { value: countdown.seconds, label: "SEGUNDOS" },
   ];
 
-  const displayDate = eventDateObj?.toLocaleDateString("pt-BR", {
+  const displayDate = hasDate && eventDateObj ? eventDateObj.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  });
+  }) : "";
 
-  const displayTime = eventDateObj?.toLocaleTimeString("pt-BR", {
+  const displayTime = hasDate && eventDateObj ? eventDateObj.toLocaleTimeString("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
     timeZone: "America/Sao_Paulo",
-  });
+  }) : "";
 
   return (
     <section className="surface-card animate-fade-up relative overflow-hidden p-6 shadow-2xl border-primary/10 group">
