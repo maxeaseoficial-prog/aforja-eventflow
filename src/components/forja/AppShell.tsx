@@ -149,7 +149,7 @@ export function AppShell() {
         className="pointer-events-none fixed inset-x-0 top-0 h-80 opacity-60"
         style={{
           background:
-            "radial-gradient(60% 100% at 25% 0%, oklch(0.664 0.207 37.5 / 0.14), transparent 70%)",
+            "radial-gradient(60% 100% at 25% 0%, oklch(0.79 0.12 85 / 0.14), transparent 70%)",
         }}
       />
 

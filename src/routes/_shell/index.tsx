@@ -178,12 +178,12 @@ function CountdownBlock() {
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-24 -left-24 size-96 rounded-full opacity-20 blur-3xl transition-opacity group-hover:opacity-30"
-        style={{ background: "radial-gradient(circle, oklch(0.664 0.207 37.5), transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, oklch(0.79 0.12 85), transparent 70%)" }}
       />
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full opacity-20 blur-3xl transition-opacity group-hover:opacity-30"
-        style={{ background: "radial-gradient(circle, oklch(0.664 0.207 37.5), transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, oklch(0.79 0.12 85), transparent 70%)" }}
       />
 
       <div className="relative flex flex-col items-center justify-center gap-8 py-8 md:py-12">
@@ -278,7 +278,7 @@ function CountdownBlock() {
         <span className="text-[10px] label-caps text-muted-foreground/60">Saúde da Forja</span>
         <div className="w-32 h-1 bg-border rounded-full overflow-hidden">
           <div 
-            className="h-full bg-primary shadow-[0_0_8px_rgba(255,77,0,0.5)] transition-all duration-1000" 
+            className="h-full bg-primary shadow-[0_0_8px_oklch(0.79_0.12_85/0.5)] transition-all duration-1000" 
             style={{ width: `${metrics.health}%` }}
           />
         </div>
