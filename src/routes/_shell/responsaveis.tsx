@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { useForja } from "@/components/forja/store";
 import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
-import { Avatar, EmptyState, FieldRow, Panel, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
+import { Avatar, EmptyState, FieldRow, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
+import { RESPONSIBLE_SECTORS } from "@/lib/forja-data";
+import { OrganogramaTree } from "@/components/forja/OrganogramaTree";
 
 export const Route = createFileRoute("/_shell/responsaveis")({
   head: () => ({
