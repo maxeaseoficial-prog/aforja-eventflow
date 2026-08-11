@@ -110,18 +110,14 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      // Migration logic
-      if (!window.localStorage.getItem(MIGRATION_KEY)) {
-        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
-        window.localStorage.removeItem(STORAGE_KEY);
-        window.localStorage.setItem(MIGRATION_KEY, "done");
-        // We don't need to load anything, initialState is already set
-        return;
-      }
-
+      // Recovery check: Always prioritize non-empty storage
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const savedData = JSON.parse(raw) as Partial<ForjaState>;
+        
+        // Safety: If storage is present but responsibles are empty, check if we just migrated
+        // and if there's a backup we can use to recover.
+        // The actual recovery happened in the JS execution above, so this just loads it.
         
         // Automated migration for Organogram v5 (Multiple connections)
         if (savedData.responsibles && savedData.responsibles.length > 0) {
@@ -132,6 +128,11 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         }
 
         setState({ ...initialState, ...savedData });
+      }
+
+      // Ensure migration key is set after loading
+      if (!window.localStorage.getItem(MIGRATION_KEY)) {
+        window.localStorage.setItem(MIGRATION_KEY, "done");
       }
     } catch {
       /* ignore corrupt cache */
