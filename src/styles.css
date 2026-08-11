@@ -252,8 +252,8 @@
 .organogram-line-h {
   position: absolute;
   top: -1.5rem;
-  left: 0;
-  right: 0;
+  left: calc(112px + 1rem); /* Middle of first card center */
+  right: calc(112px + 1rem); /* Middle of last card center */
   height: 1px;
   background-color: var(--color-border-strong);
 }
