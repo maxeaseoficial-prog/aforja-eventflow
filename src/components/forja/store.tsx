@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
+import { toast } from "sonner";
+import { getAppState, updateAppState } from "@/lib/forja-sync.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 import {
   eventConfig as seedEvent,
@@ -67,8 +70,11 @@ const initialState: ForjaState = {
 };
 
 const STORAGE_KEY = "forja-command-center-v2";
+const BACKUP_KEY = "forja-command-center-backup-before-cloud";
 const LEGACY_STORAGE_KEY = "forja-command-center-v1";
 const MIGRATION_KEY = "forja-clean-migration-v5";
+
+export type SyncStatus = "synced" | "syncing" | "offline" | "error" | "initial";
 
 interface ForjaContextValue extends ForjaState {
   addTask: (task: Task) => void;
@@ -109,21 +115,35 @@ interface ForjaContextValue extends ForjaState {
     updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
     addConnection: (sourceId: string, targetId: string) => void;
     removeConnection: (edgeId: string) => void;
-    updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
+  updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
+  syncStatus: SyncStatus;
+  cloudRevision: number;
+  syncNow: () => Promise<void>;
 }
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
 
-export function ForjaProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ForjaState>(initialState);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("initial");
+  const [cloudRevision, setCloudRevision] = useState(0);
+  const saveTimeoutRef = useRef<Timer | null>(null);
+  const isInitialLoad = useRef(true);
 
+  // 1. Initial Local Hydration & Backup
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
+        // Create backup if not exists
+        if (!window.localStorage.getItem(BACKUP_KEY)) {
+          window.localStorage.setItem(BACKUP_KEY, raw);
+          console.log("Local backup created before cloud sync.");
+        }
+
         const savedData = JSON.parse(raw) as Partial<ForjaState>;
         
-        // Automated migration for Organogram v5 (Multiple connections)
+        // Automated migration for Organogram v5
         if (savedData.responsibles && savedData.responsibles.length > 0) {
           const needsMultiConnMigration = savedData.responsibles.some(r => r.parentId && (!r.connections || r.connections.length === 0));
           if (needsMultiConnMigration) {
@@ -133,13 +153,120 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
         setState({ ...initialState, ...savedData });
       }
-
-      // NO DESTRUCTIVE MIGRATION HERE.
-      // If we need to set a key, we do it without clearing others.
+      setIsHydrated(true);
     } catch {
-      /* ignore corrupt cache */
+      setIsHydrated(true);
     }
   }, []);
+
+  // 2. Cloud Synchronization Logic
+  const syncWithCloud = async (localState: ForjaState) => {
+    if (!navigator.onLine) {
+      setSyncStatus("offline");
+      return;
+    }
+
+    try {
+      setSyncStatus("syncing");
+      const cloudData = await getAppState();
+      
+      if (!cloudData) {
+        // Case A: Cloud empty + Local has data -> Upload Local
+        // We only upload if the user has actually added something, or just upload the hydrated state
+        console.log("Cloud is empty. Uploading local state.");
+        const result = await updateAppState({ state: localState, revision: 0 });
+        setCloudRevision(result.revision);
+        setSyncStatus("synced");
+        return;
+      }
+
+      const cloudState = cloudData.state as ForjaState;
+      const cloudRev = cloudData.revision;
+
+      // Simple reconciliation: Cloud wins if revision is higher
+      if (cloudRev > cloudRevision) {
+        console.log("Cloud state is newer. Updating local state.");
+        setState(cloudState);
+        setCloudRevision(cloudRev);
+      } else if (cloudRev === cloudRevision && isInitialLoad.current) {
+         // Same revision, just set it
+         setCloudRevision(cloudRev);
+      }
+      
+      setSyncStatus("synced");
+    } catch (err) {
+      console.error("Cloud sync error:", err);
+      setSyncStatus("error");
+    } finally {
+      isInitialLoad.current = false;
+    }
+  };
+
+  // Sync on start
+  useEffect(() => {
+    if (isHydrated) {
+      syncWithCloud(state);
+    }
+  }, [isHydrated]);
+
+  // Realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel("forja-sync")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "forja_app_state", filter: "id=eq.forja-principal" },
+        (payload) => {
+          const newData = payload.new as { state: ForjaState; revision: number };
+          if (newData.revision > cloudRevision) {
+            console.log("Realtime update received.");
+            setState(newData.state);
+            setCloudRevision(newData.revision);
+            setSyncStatus("synced");
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [cloudRevision]);
+
+  // 3. Debounced Persist (Local + Cloud)
+  useEffect(() => {
+    if (!isHydrated || isInitialLoad.current) return;
+
+    // Save to LocalStorage immediately for responsiveness
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+
+    // Debounce Cloud save
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    
+    saveTimeoutRef.current = setTimeout(async () => {
+      if (!navigator.onLine) {
+        setSyncStatus("offline");
+        return;
+      }
+
+      try {
+        setSyncStatus("syncing");
+        const result = await updateAppState({ state, revision: cloudRevision });
+        setCloudRevision(result.revision);
+        setSyncStatus("synced");
+      } catch (err) {
+        console.error("Auto-save to cloud failed:", err);
+        setSyncStatus("error");
+      }
+    }, 1000);
+
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [state, isHydrated, cloudRevision]);
+
 
 function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
   // First ensure every node has a connections array
@@ -162,13 +289,6 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
   return newList;
 }
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      /* storage unavailable */
-    }
-  }, [state]);
 
   const value = useMemo<ForjaContextValue>(() => {
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
