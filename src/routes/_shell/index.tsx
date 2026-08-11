@@ -55,8 +55,8 @@ function DateTimeModal({ isOpen, onClose, onSave, initialDate = "", initialTime 
   isOpen: boolean; 
   onClose: () => void; 
   onSave: (date: string, time: string) => void;
-  initialDate?: string;
-  initialTime?: string;
+  initialDate?: string | undefined;
+  initialTime?: string | undefined;
 }) {
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState(initialTime);
