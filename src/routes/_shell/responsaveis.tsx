@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 import { useForja } from "@/components/forja/store";
+import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import { Avatar, EmptyState, FieldRow, Panel, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,6 +35,8 @@ function ResponsiblesPage() {
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [deleting, setDeleting] = useState<Responsible | null>(null);
+  const [clearingAll, setClearingAll] = useState(false);
 
   const list = responsibles.filter((r) => (filter === "todos" ? true : r.status === filter));
   const undefinedCount = responsibles.filter((r) => !r.name).length;
@@ -98,9 +101,7 @@ function ResponsiblesPage() {
               size="sm"
               variant="destructive"
               className="gap-1.5"
-              onClick={() => {
-                if (confirm("Deseja apagar todos os responsáveis?")) clearResponsibles();
-              }}
+              onClick={() => setClearingAll(true)}
             >
               <XCircle className="size-4" /> Apagar todos
             </Button>
@@ -176,9 +177,7 @@ function ResponsiblesPage() {
                   size="sm"
                   variant="ghost"
                   className="ml-auto text-muted-foreground hover:text-destructive"
-                  onClick={() => {
-                    if (confirm(`Excluir a área "${responsible.area}"?`)) removeResponsible(responsible.id);
-                  }}
+                  onClick={() => setDeleting(responsible)}
                 >
                   <Trash2 className="size-4" />
                 </Button>
@@ -195,7 +194,7 @@ function ResponsiblesPage() {
                   <OrganogramCard 
                     responsible={hierarchy.root} 
                     onEdit={() => setEditing(hierarchy.root)}
-                    onDelete={() => removeResponsible(hierarchy.root.id)}
+                    onDelete={() => setDeleting(hierarchy.root)}
                   />
                   {hierarchy.children.length > 0 && <div className="organogram-line-v" />}
                 </div>
@@ -209,7 +208,7 @@ function ResponsiblesPage() {
                         <OrganogramCard 
                           responsible={child}
                           onEdit={() => setEditing(child)}
-                          onDelete={() => removeResponsible(child.id)}
+                          onDelete={() => setDeleting(child)}
                         />
                       </div>
                     ))}
@@ -290,6 +289,38 @@ function ResponsiblesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        onConfirm={() => {
+          if (deleting) {
+            removeResponsible(deleting.id);
+            toast.success("Área excluída com sucesso.");
+            setDeleting(null);
+          }
+        }}
+        title="Excluir área?"
+        description={
+          deleting?.name 
+            ? `Tem certeza que deseja excluir a área "${deleting.area}"? Esta ação também removerá os dados do responsável (${deleting.name}) vinculados a esta área.`
+            : `Tem certeza que deseja excluir a área "${deleting?.area}"? Esta ação não pode ser desfeita.`
+        }
+        confirmLabel="Excluir área"
+      />
+
+      <ConfirmDeleteDialog
+        open={clearingAll}
+        onOpenChange={setClearingAll}
+        onConfirm={() => {
+          clearResponsibles();
+          toast.success("Todos os responsáveis foram excluídos.");
+          setClearingAll(false);
+        }}
+        title="Apagar todos os responsáveis?"
+        description="Tem certeza que deseja apagar permanentemente todas as áreas e responsáveis do evento? Esta ação não pode ser desfeita."
+        confirmLabel="Apagar todos"
+      />
     </div>
   );
 }

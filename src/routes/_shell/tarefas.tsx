@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { NewTaskSheet } from "@/components/forja/NewTaskSheet";
 import { useForja } from "@/components/forja/store";
+import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import {
   Avatar,
   ChecklistItem,
@@ -61,6 +62,7 @@ function TasksPage() {
   const [category, setCategory] = useState("todas");
   const [priority, setPriority] = useState("todas");
   const [deleting, setDeleting] = useState<Task | null>(null);
+  const [clearingAll, setClearingAll] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [dragging, setDragging] = useState<string | null>(null);
@@ -147,9 +149,7 @@ function TasksPage() {
                 size="sm"
                 variant="destructive"
                 className="gap-1.5"
-                onClick={() => {
-                  if (confirm("Deseja apagar todas as tarefas?")) clearTasks();
-                }}
+                onClick={() => setClearingAll(true)}
               >
                 <XCircle className="size-4" /> Apagar todas
               </Button>
@@ -462,6 +462,32 @@ function TasksPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ConfirmDeleteDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        onConfirm={() => {
+          if (deleting) {
+            removeTask(deleting.id);
+            toast.success("Tarefa excluída");
+            setDeleting(null);
+          }
+        }}
+        itemName={deleting?.title}
+        title="Excluir tarefa?"
+      />
+
+      <ConfirmDeleteDialog
+        open={clearingAll}
+        onOpenChange={setClearingAll}
+        onConfirm={() => {
+          clearTasks();
+          toast.success("Todas as tarefas foram excluídas");
+          setClearingAll(false);
+        }}
+        title="Apagar todas as tarefas?"
+        description="Tem certeza que deseja apagar permanentemente todas as tarefas do evento? Esta ação não pode ser desfeita."
+        confirmLabel="Apagar todas"
+      />
     </div>
   );
 }
