@@ -285,15 +285,13 @@ function CountdownBlock() {
         <span className="text-[10px] font-bold text-primary">{metrics.health}%</span>
       </div>
 
-      {event && (
-        <DateTimeModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          onSave={handleSave} 
-          initialDate={event.date ? event.date.split('T')[0] : ""}
-          initialTime={(event.date && event.date.indexOf('T') !== -1) ? event.date.split('T')[1].slice(0, 5) : ""}
-        />
-      )}
+      <DateTimeModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSave} 
+        initialDate={event.date ? event.date.split('T')[0] : ""}
+        initialTime={(event.date && event.date.indexOf('T') !== -1) ? event.date.split('T')[1].slice(0, 5) : ""}
+      />
     </section>
   );
 }
