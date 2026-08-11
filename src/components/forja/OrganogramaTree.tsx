@@ -344,7 +344,7 @@ function Flow({
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const selectedEdges = edges.filter(e => e.selected);
         if (selectedEdges.length > 0) {
-          setEdgeToDelete(selectedEdges[0]);
+          setEdgeToDelete(selectedEdges[0] ?? null);
         }
       }
       
