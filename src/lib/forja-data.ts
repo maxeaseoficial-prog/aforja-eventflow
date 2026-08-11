@@ -133,8 +133,9 @@ export interface Responsible {
   status: PersonStatus;
   notes: string;
   sector?: string;
-  parentId?: string | null;
+  parentId?: string | null; // Keep for legacy/main hierarchy but rely on connections for visuals
   position?: { x: number; y: number } | null;
+  connections?: { id: string; target: string }[]; // New: list of child IDs
 }
 
 const AREAS = [

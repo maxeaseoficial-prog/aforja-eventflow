@@ -162,14 +162,13 @@ const wouldCreateCycle = (nodes: Node[], edges: Edge[], source: string, target: 
     const current = queue.shift()!;
     if (current === target) return true;
     
-    // In this context, source is parent, target is child
-    // We want to check if target is already an ancestor of source
-    // So we search upwards from source
-    const parentEdge = edges.find(e => e.target === current);
-    if (parentEdge) {
-      if (!visited.has(parentEdge.source)) {
-        visited.add(parentEdge.source);
-        queue.push(parentEdge.source);
+    // We are checking if adding source -> target creates a cycle.
+    // This happens if there's already a path from target to source.
+    const childrenEdges = edges.filter(e => e.source === current);
+    for (const edge of childrenEdges) {
+      if (!visited.has(edge.target)) {
+        visited.add(edge.target);
+        queue.push(edge.target);
       }
     }
   }
@@ -187,8 +186,8 @@ function Flow({
   onEdit: (r: Responsible) => void;
   onDelete: (r: Responsible) => void;
 }) {
-  const { fitView, zoomIn, zoomOut, setViewport } = useReactFlow();
-  const { updateResponsiblePosition, reconnectResponsible, clearResponsibleParent } = useForja();
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const { updateResponsiblePosition, addConnection, removeConnection, updateConnection } = useForja();
   
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [edgeToDelete, setEdgeToDelete] = useState<Edge | null>(null);
@@ -201,12 +200,11 @@ function Flow({
     position: r.position || { x: 0, y: 0 },
   }));
 
-  const initialEdges: Edge[] = responsibles
-    .filter((r) => r.parentId)
-    .map((r) => ({
-      id: `e-${r.parentId}-${r.id}`,
-      source: r.parentId!,
-      target: r.id,
+  const initialEdges: Edge[] = responsibles.flatMap((r) => 
+    (r.connections || []).map((c) => ({
+      id: c.id,
+      source: r.id,
+      target: c.target,
       type: 'smoothstep',
       reconnectable: true,
       style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
@@ -216,7 +214,8 @@ function Flow({
         width: 15,
         height: 15,
       },
-    }));
+    }))
+  );
 
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -236,12 +235,11 @@ function Flow({
       return newNodes;
     });
 
-    setEdges(responsibles
-      .filter((r) => r.parentId)
-      .map((r) => ({
-        id: `e-${r.parentId}-${r.id}`,
-        source: r.parentId!,
-        target: r.id,
+    setEdges(responsibles.flatMap((r) => 
+      (r.connections || []).map((c) => ({
+        id: c.id,
+        source: r.id,
+        target: c.target,
         type: 'smoothstep',
         reconnectable: true,
         style: { stroke: 'var(--primary)', strokeWidth: 2, opacity: 0.6 },
@@ -252,7 +250,7 @@ function Flow({
           height: 15,
         },
       }))
-    );
+    ));
   }, [responsibles, onEdit, onDelete]);
 
   const onNodesChange: OnNodesChange = useCallback(
@@ -282,8 +280,9 @@ function Flow({
     (params) => {
       if (params.source === params.target) return;
 
-      // Rule: Single parent
-      const existingEdge = edges.find(e => e.target === params.target);
+      // Rule: No identical duplicates
+      const exists = edges.some(e => e.source === params.source && e.target === params.target);
+      if (exists) return;
       
       // Rule: No cycles
       if (wouldCreateCycle(nodes, edges, params.source!, params.target!)) {
@@ -291,14 +290,27 @@ function Flow({
         return;
       }
 
-      if (existingEdge) {
-        setEdges(eds => eds.filter(e => e.id !== existingEdge.id));
+      // Smart Align / Snap logic
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+      
+      if (sourceNode && targetNode) {
+        const sourceCenter = sourceNode.position.x + nodeWidth / 2;
+        const targetCenter = targetNode.position.x + nodeWidth / 2;
+        const diff = Math.abs(sourceCenter - targetCenter);
+        
+        // Tolerance for vertical alignment (approx 80px as requested)
+        if (diff < 80) {
+          const newX = sourceCenter - nodeWidth / 2;
+          updateResponsiblePosition(targetNode.id, { x: newX, y: targetNode.position.y });
+          setNodes(nds => nds.map(n => n.id === targetNode.id ? { ...n, position: { x: newX, y: n.position.y } } : n));
+        }
       }
 
-      reconnectResponsible(params.target!, params.source);
-      toast.success("Hierarquia atualizada");
+      addConnection(params.source!, params.target!);
+      toast.success("Conexão estabelecida");
     },
-    [edges, nodes, reconnectResponsible]
+    [edges, nodes, addConnection, updateResponsiblePosition]
   );
 
   const onReconnect: OnReconnect = useCallback(
@@ -310,21 +322,19 @@ function Flow({
         return;
       }
 
-      reconnectResponsible(newConnection.target!, newConnection.source);
-      setEdges((els) => reconnectEdge(oldEdge, newConnection, els));
+      updateConnection(oldEdge.id, newConnection.source!, newConnection.target!);
       toast.success("Conexão alterada");
     },
-    [nodes, edges, reconnectResponsible]
+    [nodes, edges, updateConnection]
   );
 
   const onEdgeDelete = useCallback(() => {
     if (edgeToDelete) {
-      clearResponsibleParent(edgeToDelete.target);
-      setEdges(eds => eds.filter(e => e.id !== edgeToDelete.id));
+      removeConnection(edgeToDelete.id);
       setEdgeToDelete(null);
       toast.success("Ligação removida");
     }
-  }, [edgeToDelete, clearResponsibleParent]);
+  }, [edgeToDelete, removeConnection]);
 
   const runAutoLayout = useCallback(() => {
     const layoutedNodes = getLayoutedElements(nodes, edges);
