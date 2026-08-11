@@ -129,9 +129,9 @@ function CountdownBlock() {
   };
 
   const removeDate = () => {
-    updateEvent({ date: "", venue: "" });
+    updateEvent({ date: "", venue: "", address: "", doorsAt: "", expectedGuests: 0 });
     setIsDeleteDialogOpen(false);
-    toast.success("Data do evento removida");
+    toast.success("Data e local do evento removidos");
   };
 
   if (!hasDate) {
@@ -301,7 +301,7 @@ function CountdownBlock() {
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={removeDate}
         title="Remover data do evento?"
-        description="Tem certeza que deseja remover a data do evento e parar a contagem regressiva?"
+        description="Tem certeza que deseja remover a data e o local configurados para o evento? Isso irá resetar o contador e limpar os dados de endereço."
         confirmLabel="Remover"
       />
     </section>
