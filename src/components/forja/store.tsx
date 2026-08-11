@@ -67,7 +67,9 @@ const initialState: ForjaState = {
   learnings: seedLearnings,
 };
 
-const STORAGE_KEY = "forja-command-center-v1";
+const STORAGE_KEY = "forja-command-center-v2";
+const LEGACY_STORAGE_KEY = "forja-command-center-v1";
+const MIGRATION_KEY = "forja-clean-migration-v3";
 
 interface ForjaContextValue extends ForjaState {
   addTask: (task: Task) => void;
@@ -104,6 +106,15 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
+      // Migration logic
+      if (!window.localStorage.getItem(MIGRATION_KEY)) {
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.setItem(MIGRATION_KEY, "done");
+        // We don't need to load anything, initialState is already set
+        return;
+      }
+
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) setState({ ...initialState, ...(JSON.parse(raw) as Partial<ForjaState>) });
     } catch {
@@ -187,7 +198,10 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
       clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
       clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
-      resetAll: () => setState(initialState),
+      resetAll: () => {
+        window.localStorage.removeItem(STORAGE_KEY);
+        setState(initialState);
+      },
     };
   }, [state]);
 
