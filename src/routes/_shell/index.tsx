@@ -277,16 +277,6 @@ function CountdownBlock() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 right-6 flex items-center gap-2">
-        <span className="text-[10px] label-caps text-muted-foreground/60">Saúde da Forja</span>
-        <div className="w-32 h-1 bg-border rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary shadow-[0_0_8px_oklch(0.79_0.12_85/0.5)] transition-all duration-1000" 
-            style={{ width: `${metrics.health}%` }}
-          />
-        </div>
-        <span className="text-[10px] font-bold text-primary">{metrics.health}%</span>
-      </div>
 
       <DateTimeModal 
         isOpen={isModalOpen} 
