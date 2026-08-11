@@ -90,8 +90,10 @@ interface ForjaContextValue extends ForjaState {
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
   addLearning: (learning: Learning) => void;
-  updateEvent: (patch: Partial<EventConfig>) => void;
-  resetAll: () => void;
+    updateEvent: (patch: Partial<EventConfig>) => void;
+    clearTasks: () => void;
+    clearResponsibles: () => void;
+    resetAll: () => void;
 }
 
 const ForjaContext = createContext<ForjaContextValue | null>(null);
@@ -180,6 +182,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
       addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
+      clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
+      clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
       resetAll: () => setState(initialState),
     };
   }, [state]);

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ClipboardList, KanbanSquare, List, Plus, Trash2 } from "lucide-react";
+import { ClipboardList, KanbanSquare, List, Plus, Trash2, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/_shell/tarefas")({
 type QuickFilter = "todas" | "hoje" | "semana" | "atrasadas" | "concluidas";
 
 function TasksPage() {
-  const { tasks, updateTask, removeTask, moveTask, responsibles } = useForja();
+  const { tasks, updateTask, removeTask, moveTask, responsibles, clearTasks } = useForja();
   const [view, setView] = useState<"lista" | "kanban">("lista");
   const [quick, setQuick] = useState<QuickFilter>("todas");
   const [search, setSearch] = useState("");
@@ -141,9 +141,23 @@ function TasksPage() {
               <KanbanSquare className="size-3.5" /> Kanban
             </button>
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => setNewOpen(true)}>
-            <Plus className="size-4" /> Nova tarefa
-          </Button>
+          <div className="flex items-center gap-2">
+            {tasks.length > 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-1.5"
+                onClick={() => {
+                  if (confirm("Deseja apagar todas as tarefas?")) clearTasks();
+                }}
+              >
+                <XCircle className="size-4" /> Apagar todas
+              </Button>
+            )}
+            <Button size="sm" className="gap-1.5" onClick={() => setNewOpen(true)}>
+              <Plus className="size-4" /> Nova tarefa
+            </Button>
+          </div>
         </div>
       </div>
 
