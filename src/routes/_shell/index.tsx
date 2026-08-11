@@ -289,8 +289,8 @@ function CountdownBlock() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSave={handleSave} 
-        initialDate={event.date ? (event.date as string).split('T')[0] : ""}
-        initialTime={(event.date && (event.date as string).indexOf('T') !== -1) ? (event.date as string).split('T')[1].slice(0, 5) : ""}
+        initialDate={event.date ? (event.date).split('T')[0] : ""}
+        initialTime={(event.date && (event.date).indexOf('T') !== -1) ? (event.date).split('T')[1].slice(0, 5) : ""}
       />
     </section>
   );
