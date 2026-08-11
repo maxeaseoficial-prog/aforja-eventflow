@@ -56,7 +56,7 @@ function PurchasesPage() {
   const [owner, setOwner] = useState("todos");
   const [deleting, setDeleting] = useState<Purchase | null>(null);
   const [newOpen, setNewOpen] = useState(false);
-  const [form, setForm] = useState({ item: "", quantity: "1", estimated: "0" });
+  const [form, setForm] = useState({ item: "", quantity: "1", estimated: "0", link: "" });
 
   const owners = Array.from(new Set(purchases.map((p) => p.owner).filter(Boolean) as string[]));
 
@@ -162,7 +162,21 @@ function PurchasesPage() {
                 <tbody className="divide-y divide-border">
                   {filtered.map((purchase) => (
                     <tr key={purchase.id} className="transition-colors duration-200 hover:bg-card-hover">
-                      <td className="py-3 pr-4 font-medium">{purchase.item}</td>
+                      <td className="py-3 pr-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{purchase.item}</span>
+                          {purchase.link && (
+                            <a
+                              href={purchase.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-primary hover:underline"
+                            >
+                              Ver item
+                            </a>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-3 pr-4 tabular-nums text-muted-foreground">{purchase.quantity}</td>
                       <td className="py-3 pr-4 tabular-nums text-muted-foreground">{brl(purchase.estimated)}</td>
                       <td className="py-3 pr-4 tabular-nums">
@@ -288,6 +302,15 @@ function PurchasesPage() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="plink">Link do item</Label>
+              <Input
+                id="plink"
+                placeholder="https://..."
+                value={form.link}
+                onChange={(e) => setForm({ ...form, link: e.target.value })}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setNewOpen(false)}>
@@ -312,9 +335,10 @@ function PurchasesPage() {
                   dueDate: new Date().toISOString().slice(0, 10),
                   status: "precisa-comprar",
                   notes: "",
+                  link: form.link,
                 });
                 toast.success("Item adicionado");
-                setForm({ item: "", quantity: "1", estimated: "0" });
+                setForm({ item: "", quantity: "1", estimated: "0", link: "" });
                 setNewOpen(false);
               }}
             >

@@ -5,7 +5,6 @@ import {
   seedContingencies,
   seedDeliverables,
   seedEquipment,
-  seedExperience,
   seedLearnings,
   seedMediaChecklists,
   seedOpeningChecklist,
@@ -60,7 +59,7 @@ const initialState: ForjaState = {
   media: seedMediaChecklists,
   deliverables: seedDeliverables,
   equipment: seedEquipment,
-  experience: seedExperience,
+  experience: { id: "experiencia", title: "Jornada do convidado", items: [] },
   contingencies: seedContingencies,
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
@@ -92,6 +91,8 @@ interface ForjaContextValue extends ForjaState {
   updateDeliverable: (id: string, patch: Partial<Deliverable>) => void;
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
+  addContingency: (contingency: Contingency) => void;
+  removeContingency: (id: string) => void;
   addLearning: (learning: Learning) => void;
     updateEvent: (patch: Partial<EventConfig>) => void;
     clearTasks: () => void;
@@ -225,6 +226,10 @@ function migrateResponsiblesToMulti(list: Responsible[]): Responsible[] {
         setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
       updateContingency: (id, patch) =>
         setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
+      addContingency: (contingency) =>
+        setState((s) => ({ ...s, contingencies: [...s.contingencies, contingency] })),
+      removeContingency: (id) =>
+        setState((s) => ({ ...s, contingencies: s.contingencies.filter((c) => c.id !== id) })),
       addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
       updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
       clearTasks: () => setState((s) => ({ ...s, tasks: [] })),

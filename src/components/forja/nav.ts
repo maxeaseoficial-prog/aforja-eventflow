@@ -32,7 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/staff", label: "Staff", icon: Users, subtitle: "Equipe operacional e escalas." },
   { to: "/midia", label: "Mídia", icon: Camera, subtitle: "Captação, cenas e entregáveis." },
   { to: "/estrutura", label: "Estrutura", icon: Boxes, subtitle: "Equipamentos, testes e plano B." },
-  { to: "/experiencia", label: "Experiência", icon: Sparkles, subtitle: "Jornada completa do convidado." },
+  
   { to: "/contingencias", label: "Contingências", icon: LifeBuoy, subtitle: "O que fazer quando algo falhar." },
   { to: "/pos-evento", label: "Pós-evento", icon: Rotate3d, subtitle: "Entregas, aprendizados e próxima edição." },
   { to: "/configuracoes", label: "Configurações", icon: Settings, subtitle: "Dados e parâmetros da edição." },

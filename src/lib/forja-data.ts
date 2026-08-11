@@ -198,6 +198,7 @@ export interface Purchase {
   dueDate: string;
   status: PurchaseStatus;
   notes: string;
+  link?: string;
 }
 
 const PURCHASE_SEED: Array<[string, number, number, number | null, string | null, PurchaseStatus]> = [];
@@ -346,13 +347,6 @@ export interface Equipment {
 
 export const seedEquipment: Equipment[] = [];
 
-export const seedExperience: ChecklistGroup = group(
-  "experiencia",
-  "Jornada do convidado",
-  [],
-  0,
-  "Cada ponto de contato do convidado com A Forja",
-);
 
 export interface Contingency {
   id: string;
