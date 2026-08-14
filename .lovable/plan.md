@@ -1,45 +1,41 @@
-# Plano de Implementação: Responsáveis e Times (Team Builder)
+# Plan - Team Builder & Responsibles Evolution
 
-Evolução do módulo de Responsáveis para um sistema de gestão de equipes com assistente de configuração inteligente (Team Builder).
+Correct the implementation of "Responsáveis e Times" to use a Team-centric model (Team -> Leader -> Members) instead of the legacy individual-area model, and implement the 4 requested visualizations.
 
-## 1. Alterações no Modelo de Dados (Schema)
+## 1. Data Model & Store Updates
+- Update `Responsible` interface in `src/lib/forja-data.ts` to fully support `teamId`, `isLeader`, and `teamSize` (already partially there but needs standardization).
+- Update `src/components/forja/store.tsx`:
+    - Add `preferredTeamView` to the event state.
+    - Standardize metrics calculation (`getTeamMetrics`).
+    - Fix `addResponsible` to handle team positions correctly.
+    - Add methods to manage team members within a team.
 
-*   **Arquivo:** `src/lib/forja-data.ts`
-*   **Mudança:** Adicionar `teamId` (string) e `isLeader` (boolean) à interface `Responsible`. Isso permitirá agrupar responsáveis em times e identificar quem é o líder sem criar novas tabelas.
-*   **Setores:** Expansão da constante `RESPONSIBLE_SECTORS` para incluir os ~70 setores do Mapa-Mestre (já realizado).
+## 2. Team Builder Engine Correction
+- Modify `src/lib/team-builder.ts`:
+    - Ensure `convertRecommendationToResponsibles` creates ONE record for the team (the leader position) and defines the member slots as positions within that team, OR ensure the UI aggregates multiple records by `teamId`.
+    - Preference: Model each "slot" as a record but ensure they all share a `teamId` and the UI handles them as a single group.
 
-## 2. Recommendation Engine (Lógica de Negócio)
+## 3. Step 5 of the Wizard
+- Update `src/components/forja/TeamBuilder/Wizard.tsx` and `useTeamBuilderWizard.ts`:
+    - Add Step 5: "Como você quer visualizar seu time?".
+    - Implement a premium selectable layout with 4 options (Cards, Organograma, Lista, Colunas).
+    - Save the selection to the event state.
 
-*   **Arquivo:** `src/lib/team-builder.ts`
-*   **Função:** `generateTeamRecommendation(profile: EventProfile): TeamRecommendation[]`
-*   **Lógica:** Determinística, baseada no número de convidados e complexidade (palcos, palestrantes, alimentação, etc.).
-*   **Agrupamento:** Funções serão agrupadas em times (ex: Som, Luz e Vídeo em "Técnica / AV" para eventos pequenos).
+## 4. Four Main Visualizations
+- Redesign `src/routes/_shell/responsaveis.tsx`:
+    - Implement the operational summary at the top (Total people, Times, Leaders, Open slots).
+    - Replace the Grid/Organograma toggle with a 4-view toolbar.
+    - **Visualização 1: Cards**: Implement the "Team Card" design showing Leader and Member summary.
+    - **Visualização 2: Organograma**: Update `OrganogramaTree.tsx` to group by Team and allow expansion.
+    - **Visualização 3: Lista**: Create a compact table view.
+    - **Visualização 4: Colunas**: Create a board-style view where columns are teams.
 
-## 3. Team Builder Wizard (UI/UX)
+## 5. UI/UX Refinements
+- Use high-quality components from `shadcn/ui` and `lucide-react`.
+- Ensure responsive behavior for all 4 views.
+- Replace the "Apagar todos" button location to be less prominent.
 
-*   **Componentes:** Criar `src/components/forja/TeamBuilder/`
-    *   `Wizard.tsx`: Container principal com stepper.
-    *   `Step1Attendee.tsx`: Pergunta sobre público.
-    *   `Step2Features.tsx`: Seleção de o que haverá no evento.
-    *   `Step3Complexity.tsx`: Perguntas condicionais.
-    *   `Step4Recommendation.tsx`: Exibição e edição da estrutura sugerida.
-    *   `AnalysisScreen.tsx`: Tela de transição com feedbacks progressivos.
-
-## 4. Visualizações da Central
-
-*   A página de Responsáveis (`src/routes/_shell/responsaveis.tsx`) será atualizada para oferecer 4 modos:
-    1.  **Cards:** (Novo) Visualização por times com líderes em destaque.
-    2.  **Organograma:** (Atualizado) Reutilizar o engine `@xyflow/react` existente.
-    3.  **Lista:** (Novo) Tabela compacta para visão operacional.
-    4.  **Times:** (Novo) Foco em preenchimento de vagas por núcleo.
-
-## 5. Compatibilidade e Migração
-
-*   Dados existentes serão preservados. O Wizard só aparecerá se não houver dados ou via botão "Revisar estrutura".
-*   O campo `parentId` continuará sendo usado para a hierarquia visual do Organograma, garantindo que a visualização atual não quebre.
-
-## Detalhes Técnicos
-
-*   **Engine:** Funções puras em TypeScript para facilidade de teste.
-*   **Estado:** Utilização do `useForja` (Zustand/Context) para persistência em nuvem.
-*   **Design:** Dourado queimado (#E6BC63), grafite e tipografia premium.
+## Technical Details
+- Use `preferredTeamView` for persistence.
+- Standardize `teamSize` to include the leader.
+- Maintain compatibility with existing individual records by treating them as "Single-person teams" if no `teamId` is present.
