@@ -154,6 +154,7 @@ interface ForjaContextValue {
   updateEvent: (patch: Partial<EventConfig>) => void;
   clearTasks: () => void;
   clearResponsibles: () => void;
+  updateEventData: (patch: any) => void;
   resetAll: () => void;
   updateResponsiblePosition: (id: string, position: { x: number; y: number }) => void;
   addConnection: (sourceId: string, targetId: string) => void;
