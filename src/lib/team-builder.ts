@@ -328,12 +328,11 @@ export function convertRecommendationToResponsibles(teams: TeamRecommendation[])
   let currentX = 0;
   let currentY = 0;
   const SECTOR_SPACING = 300;
-  const PERSON_SPACING = 320;
 
-  teams.forEach((team, teamIndex) => {
+  teams.forEach((team) => {
     const teamId = team.id;
     
-    // Create Leader
+    // Create Leader Position
     const leader: Responsible = {
       id: `r-${teamId}-leader`,
       area: team.name,
@@ -351,8 +350,12 @@ export function convertRecommendationToResponsibles(teams: TeamRecommendation[])
     };
     responsibles.push(leader);
 
-    // Create Members
-    let memberX = currentX + PERSON_SPACING;
+    // Instead of creating multiple card records for members, we create specific positions
+    // that the UI will aggregate. The goal is 1 Leader + N Member slots per team record conceptually,
+    // but the store currently works with Responsible[]. We'll keep them as individual records 
+    // but ensure they have clear teamId and isLeader flags so the NEW UI can group them.
+    
+    let memberIndex = 0;
     team.memberRoles.forEach((roleGroup, groupIndex) => {
       for (let i = 0; i < roleGroup.count; i++) {
         const memberId = `r-${teamId}-member-${groupIndex}-${i}`;
@@ -368,15 +371,11 @@ export function convertRecommendationToResponsibles(teams: TeamRecommendation[])
           sector: team.name,
           teamId: teamId,
           isLeader: false,
-          position: { x: memberX, y: currentY },
+          position: { x: currentX, y: currentY }, // UI will handle visual grouping
           connections: []
         };
         responsibles.push(member);
-        
-        // Connect to leader
-        leader.connections?.push({ id: `e-${leader.id}-${memberId}`, target: memberId });
-        
-        memberX += PERSON_SPACING;
+        memberIndex++;
       }
     });
 

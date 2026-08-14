@@ -123,6 +123,28 @@ const t = (
 
 export const seedTasks: Task[] = [];
 
+export interface TeamMember {
+  id: string;
+  name: string | null;
+  role: string;
+  whatsapp: string;
+  status: PersonStatus;
+  notes: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description: string | null;
+  sector: string;
+  leaderId: string | null; // ID of the member who is the leader
+  teamSize: number;        // Total positions including leader
+  members: TeamMember[];
+  isExternal?: boolean;
+  position?: { x: number; y: number } | null;
+  connections?: { id: string; target: string }[];
+}
+
 export interface Responsible {
   id: string;
   area: string;
@@ -136,8 +158,8 @@ export interface Responsible {
   parentId?: string | null;
   position?: { x: number; y: number } | null;
   connections?: { id: string; target: string }[];
-  teamId?: string | null; // ID of the team this person belongs to
-  isLeader?: boolean;     // Whether this person is the leader of their team
+  teamId?: string | null; 
+  isLeader?: boolean;     
 }
 
 const AREAS = [
