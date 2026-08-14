@@ -198,19 +198,50 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
           window.localStorage.setItem(BACKUP_KEY, raw);
         }
         const savedData = JSON.parse(raw) as Partial<ForjaState>;
-        if (savedData.responsibles && savedData.responsibles.length > 0) {
-          const needsMultiConnMigration = savedData.responsibles.some(r => r.parentId && (!r.connections || r.connections.length === 0));
-          if (needsMultiConnMigration) {
-            savedData.responsibles = migrateResponsiblesToMulti(savedData.responsibles);
-          }
+        // Data migration logic for multiple events structure
+        if (savedData && !savedData.eventData && (savedData as any).tasks) {
+          const oldData = savedData as any;
+          const eventId = crypto.randomUUID();
+          const eventEntry: EventEntry = {
+            id: eventId,
+            name: oldData.event?.name || "Evento Importado",
+            date: oldData.event?.date || new Date().toISOString(),
+            venue: oldData.event?.venue || "",
+            createdAt: new Date().toISOString(),
+          };
+          setState({
+            currentEventId: eventId,
+            events: [eventEntry],
+            eventData: {
+              [eventId]: {
+                event: oldData.event || seedEvent,
+                tasks: oldData.tasks || seedTasks,
+                responsibles: oldData.responsibles || seedResponsibles,
+                purchases: oldData.purchases || seedPurchases,
+                schedule: oldData.schedule || seedSchedule,
+                speakers: oldData.speakers || seedSpeakers,
+                staff: oldData.staff || seedStaff,
+                media: oldData.media || seedMediaChecklists,
+                deliverables: oldData.deliverables || seedDeliverables,
+                equipment: oldData.equipment || seedEquipment,
+                experience: oldData.experience || { id: "experiencia", title: "Jornada do convidado", items: [] },
+                contingencies: oldData.contingencies || seedContingencies,
+                postEvent: oldData.postEvent || seedPostEvent,
+                opening: oldData.opening || seedOpeningChecklist,
+                learnings: oldData.learnings || seedLearnings,
+              }
+            }
+          });
+        } else {
+          setState({ ...initialState, ...savedData });
         }
-        setState({ ...initialState, ...savedData });
       }
       setIsHydrated(true);
     } catch {
       setIsHydrated(true);
     }
   }, []);
+
 
   const syncWithCloud = async (localState: ForjaState) => {
     if (!navigator.onLine) {
