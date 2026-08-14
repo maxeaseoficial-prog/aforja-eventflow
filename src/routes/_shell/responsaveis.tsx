@@ -37,6 +37,7 @@ function ResponsiblesPage() {
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
   const [view, setView] = useState<"grid" | "organograma">("grid");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newSector, setNewSector] = useState("Outro");
@@ -122,8 +123,17 @@ function ResponsiblesPage() {
         <EmptyState
           icon={UserPlus}
           title="Nenhuma área definida"
-          description="Comece definindo as áreas e responsáveis do evento."
-          action={<Button onClick={() => setNewAreaOpen(true)}>+ Nova área</Button>}
+          description="Comece definindo as áreas do evento manualmente ou use o assistente de equipe."
+          action={
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={() => setWizardOpen(true)} variant="default" className="bg-primary hover:bg-primary/90">
+                Usar Team Builder
+              </Button>
+              <Button onClick={() => setNewAreaOpen(true)} variant="outline">
+                Manual: Nova área
+              </Button>
+            </div>
+          }
         />
       ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -190,6 +200,8 @@ function ResponsiblesPage() {
           onDelete={setDeleting} 
         />
       )}
+
+      <TeamBuilderWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
       <EditResponsibleDialog
         responsible={editing}
