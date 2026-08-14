@@ -426,11 +426,11 @@ function EditResponsibleDialog({
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="resp-area">Título da área</Label>
+              <Label htmlFor="resp-area">Título da área / Posto</Label>
               <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="resp-sector">Setor</Label>
+              <Label htmlFor="resp-sector">Setor / Time</Label>
               <Select value={sector} onValueChange={setSector}>
                 <SelectTrigger id="resp-sector">
                   <SelectValue />
