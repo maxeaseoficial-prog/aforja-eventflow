@@ -361,6 +361,12 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     });
 
 
+    const toggleItems = (group: ChecklistGroup, itemId: string): ChecklistGroup => ({
+      ...group,
+      items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
+    });
+
+
     return {
       currentEventId: state.currentEventId,
       events: state.events,
