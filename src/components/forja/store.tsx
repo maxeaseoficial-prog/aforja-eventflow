@@ -239,7 +239,11 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
             }
           });
         } else {
-          setState({ ...initialState, ...savedData });
+          const mergedState = { ...initialState, ...savedData };
+          // Ensure events and eventData exist
+          if (!mergedState.events) mergedState.events = [];
+          if (!mergedState.eventData) mergedState.eventData = {};
+          setState(mergedState);
         }
       }
       setIsHydrated(true);
