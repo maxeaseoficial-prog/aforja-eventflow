@@ -33,25 +33,37 @@ import {
   type TaskStatus,
 } from "@/lib/forja-data";
 
-interface ForjaState {
-  event: EventConfig;
-  tasks: Task[];
-  responsibles: Responsible[];
-  purchases: Purchase[];
-  schedule: ScheduleItem[];
-  speakers: Speaker[];
-  staff: StaffMember[];
-  media: ChecklistGroup[];
-  deliverables: Deliverable[];
-  equipment: Equipment[];
-  experience: ChecklistGroup;
-  contingencies: Contingency[];
-  postEvent: ChecklistGroup;
-  opening: ChecklistGroup;
-  learnings: Learning[];
+interface EventEntry {
+  id: string;
+  name: string;
+  date: string;
+  venue: string;
+  createdAt: string;
 }
 
-const initialState: ForjaState = {
+interface ForjaState {
+  currentEventId: string | null;
+  events: EventEntry[];
+  eventData: Record<string, {
+    event: EventConfig;
+    tasks: Task[];
+    responsibles: Responsible[];
+    purchases: Purchase[];
+    schedule: ScheduleItem[];
+    speakers: Speaker[];
+    staff: StaffMember[];
+    media: ChecklistGroup[];
+    deliverables: Deliverable[];
+    equipment: Equipment[];
+    experience: ChecklistGroup;
+    contingencies: Contingency[];
+    postEvent: ChecklistGroup;
+    opening: ChecklistGroup;
+    learnings: Learning[];
+  }>;
+}
+
+const emptyEventData = () => ({
   event: seedEvent,
   tasks: seedTasks,
   responsibles: seedResponsibles,
@@ -67,6 +79,12 @@ const initialState: ForjaState = {
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
   learnings: seedLearnings,
+});
+
+const initialState: ForjaState = {
+  currentEventId: null,
+  events: [],
+  eventData: {},
 };
 
 const STORAGE_KEY = "forja-command-center-v2";
