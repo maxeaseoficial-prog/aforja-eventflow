@@ -62,14 +62,16 @@ function EventSelector() {
         <Button 
             variant="ghost" 
             size="sm" 
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground gap-2"
             onClick={() => {
-                sessionStorage.removeItem("forja-auth-session");
-                window.location.href = "/login";
+                logout();
+                navigate({ to: "/login" });
             }}
-        >
-          Sair
-        </Button>
+          >
+            <LogOut className="size-4" />
+            Sair
+          </Button>
+
       </header>
 
       <main className="relative z-10 flex-1 container mx-auto px-4 py-12 flex flex-col items-center">
