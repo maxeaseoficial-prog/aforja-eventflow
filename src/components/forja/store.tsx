@@ -350,6 +350,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
 
 
+
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
 
