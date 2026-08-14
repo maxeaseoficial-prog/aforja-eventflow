@@ -32,10 +32,10 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView } = useForja();
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
-  const [view, setView] = useState<"grid" | "organograma">("grid");
+  const [view, setView] = useState<"grid" | "organograma" | "lista" | "colunas">(preferredTeamView || "grid");
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [newArea, setNewArea] = useState("");

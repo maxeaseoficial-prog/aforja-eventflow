@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { type TeamBuilderData, INITIAL_WIZARD_DATA } from "./types";
 import { generateTeamRecommendation, type TeamRecommendation } from "@/lib/team-builder";
 import { useForja } from "@/components/forja/store";
@@ -50,7 +50,6 @@ export function useTeamBuilderWizard() {
       event: {
         attendees: data.attendeeCount,
         layout: data.layout,
-        // Keep other fields if they exist in EventConfig
       } as any,
       responsibles: responsibles
     });
