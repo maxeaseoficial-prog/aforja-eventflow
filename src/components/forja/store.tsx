@@ -331,17 +331,21 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
     const patchData = (patch: Partial<ReturnType<typeof emptyEventData>>) => {
       if (!state.currentEventId) return;
-      setState((s) => ({
-        ...s,
-        eventData: {
-          ...s.eventData,
-          [s.currentEventId!]: {
-            ...s.eventData[s.currentEventId!],
-            ...patch,
+      setState((s) => {
+        const currentEventData = s.eventData[s.currentEventId!] || emptyEventData();
+        return {
+          ...s,
+          eventData: {
+            ...s.eventData,
+            [s.currentEventId!]: {
+              ...currentEventData,
+              ...patch,
+            },
           },
-        },
-      }));
+        };
+      });
     };
+
 
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
