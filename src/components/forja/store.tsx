@@ -426,17 +426,16 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         let y = 0;
         
         if (others.length > 0) {
+          // Find the rightmost node
           const maxX = Math.max(...others.map(r => r.position?.x ?? 0));
-          const maxY = Math.max(...others.map(r => r.position?.y ?? 0));
-          
-          // Place it to the right of the rightmost node
-          x = maxX + 300;
-          y = 0; // Keep it on the top row or adjust as needed
+          // Default node width is 280, so we add 320 for spacing
+          x = maxX + 320;
+          y = 0;
         }
         
         const newResponsible = {
           ...responsible,
-          position: responsible.position || { x, y }
+          position: { x, y }
         };
         
         patchData({ responsibles: [...others, newResponsible] });
