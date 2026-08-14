@@ -20,7 +20,10 @@ export const Route = createFileRoute("/")({
 
 function EventSelector() {
   const { events = [], addEvent, selectEvent } = useForja();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [isNewEventOpen, setIsNewEventOpen] = useState(false);
+
   const [newEvent, setNewEvent] = useState({
     name: "",
     date: "",
