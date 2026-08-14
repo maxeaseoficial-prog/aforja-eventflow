@@ -386,8 +386,9 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       }),
 
       ...activeData,
-
+      addTask: (task) => patchData({ tasks: [task, ...activeData.tasks] }),
       updateEvent: (patch) => {
+
         const id = state.currentEventId;
         if (!id) return;
         
