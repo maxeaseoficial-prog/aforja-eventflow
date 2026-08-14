@@ -326,67 +326,146 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
   }, [state, isHydrated, cloudRevision]);
 
   const value = useMemo<ForjaContextValue>(() => {
+    const currentData = state.currentEventId ? state.eventData[state.currentEventId] : null;
+    const activeData = currentData || emptyEventData();
+
+    const patchData = (patch: Partial<ReturnType<typeof emptyEventData>>) => {
+      if (!state.currentEventId) return;
+      setState((s) => ({
+        ...s,
+        eventData: {
+          ...s.eventData,
+          [s.currentEventId!]: {
+            ...s.eventData[s.currentEventId!],
+            ...patch,
+          },
+        },
+      }));
+    };
+
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
+
     const toggleItems = (group: ChecklistGroup, itemId: string): ChecklistGroup => ({
       ...group,
       items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
     });
+
     return {
-      ...state,
-      addTask: (task) => setState((s) => ({ ...s, tasks: [task, ...s.tasks] })),
-      updateTask: (id, patch) => setState((s) => ({ ...s, tasks: patchList(s.tasks, id, patch) })),
-      removeTask: (id) => setState((s) => ({ ...s, tasks: s.tasks.filter((t) => t.id !== id) })),
-      moveTask: (id, status) => setState((s) => ({ ...s, tasks: patchList(s.tasks, id, { status }) })),
-      updateResponsible: (id, patch) => setState((s) => ({ ...s, responsibles: patchList(s.responsibles, id, patch) })),
-      addResponsible: (responsible) => setState((s) => ({ ...s, responsibles: [...s.responsibles, responsible] })),
-      removeResponsible: (id) => setState((s) => ({ ...s, responsibles: s.responsibles.filter((r) => r.id !== id) })),
-      updatePurchase: (id, patch) => setState((s) => ({ ...s, purchases: patchList(s.purchases, id, patch) })),
-      addPurchase: (purchase) => setState((s) => ({ ...s, purchases: [purchase, ...s.purchases] })),
-      removePurchase: (id) => setState((s) => ({ ...s, purchases: s.purchases.filter((p) => p.id !== id) })),
-      addScheduleItem: (item) => setState((s) => ({ ...s, schedule: [...s.schedule, item] })),
-      updateScheduleItem: (id, patch) => setState((s) => ({ ...s, schedule: patchList(s.schedule, id, patch) })),
-      removeScheduleItem: (id) => setState((s) => ({ ...s, schedule: s.schedule.filter((item) => item.id !== id) })),
-      reorderSchedule: (fromId, toId) => setState((s) => {
-          const list = [...s.schedule];
-          const from = list.findIndex((i) => i.id === fromId);
-          const to = list.findIndex((i) => i.id === toId);
-          if (from < 0 || to < 0 || from === to) return s;
-          const [moved] = list.splice(from, 1);
-          if (!moved) return s;
-          list.splice(to, 0, moved);
-          return { ...s, schedule: list };
+      currentEventId: state.currentEventId,
+      events: state.events,
+      addEvent: (evt) => {
+        const id = (evt as any).id || crypto.randomUUID();
+        const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
+        setState((s) => ({
+          ...s,
+          events: [...s.events, entry],
+          eventData: { ...s.eventData, [id]: emptyEventData() },
+        }));
+      },
+      selectEvent: (id) => setState((s) => ({ ...s, currentEventId: id })),
+      removeEvent: (id) => setState((s) => {
+        const { [id]: _, ...remainingData } = s.eventData;
+        return {
+          ...s,
+          events: s.events.filter((e) => e.id !== id),
+          eventData: remainingData,
+          currentEventId: s.currentEventId === id ? null : s.currentEventId,
+        };
       }),
-      addSpeaker: (speaker) => setState((s) => ({ ...s, speakers: [...s.speakers, speaker] })),
-      removeSpeaker: (id) => setState((s) => ({ ...s, speakers: s.speakers.filter((sp) => sp.id !== id) })),
-      updateSpeaker: (id, patch) => setState((s) => ({ ...s, speakers: patchList(s.speakers, id, patch) })),
-      toggleSpeakerStep: (id, index) => setState((s) => ({ ...s, speakers: s.speakers.map((sp) => sp.id === id ? { ...sp, checklist: sp.checklist.map((v, i) => (i === index ? !v : v)) } : sp) })),
-      addStaff: (member) => setState((s) => ({ ...s, staff: [...s.staff, member] })),
-      removeStaff: (id) => setState((s) => ({ ...s, staff: s.staff.filter((m) => m.id !== id) })),
-      updateStaff: (id, patch) => setState((s) => ({ ...s, staff: patchList(s.staff, id, patch) })),
-      toggleGroupItem: (groupKey: "experience" | "postEvent" | "opening", itemId: string) => setState((s) => ({ ...s, [groupKey]: toggleItems(s[groupKey], itemId) })),
-      toggleMediaItem: (groupId: string, itemId: string) => setState((s) => ({ ...s, media: s.media.map((g) => (g.id === groupId ? toggleItems(g, itemId) : g)) })),
-      addMediaDeliverable: (deliverable) => setState((s) => ({ ...s, deliverables: [...s.deliverables, deliverable] })),
-      removeMediaDeliverable: (id) => setState((s) => ({ ...s, deliverables: s.deliverables.filter((d) => d.id !== id) })),
-      updateMediaDeliverable: (id, patch) => setState((s) => ({ ...s, deliverables: patchList(s.deliverables, id, patch) })),
-      updateEquipment: (id, patch) => setState((s) => ({ ...s, equipment: patchList(s.equipment, id, patch) })),
-      updateContingency: (id, patch) => setState((s) => ({ ...s, contingencies: patchList(s.contingencies, id, patch) })),
-      addContingency: (contingency) => setState((s) => ({ ...s, contingencies: [...s.contingencies, contingency] })),
-      removeContingency: (id) => setState((s) => ({ ...s, contingencies: s.contingencies.filter((c) => c.id !== id) })),
-      addLearning: (learning) => setState((s) => ({ ...s, learnings: [learning, ...s.learnings] })),
-      updateEvent: (patch) => setState((s) => ({ ...s, event: { ...s.event, ...patch } })),
-      clearTasks: () => setState((s) => ({ ...s, tasks: [] })),
-      clearResponsibles: () => setState((s) => ({ ...s, responsibles: [] })),
-      updateResponsiblePosition: (id, position) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => r.id === id ? { ...r, position } : r) })),
-      addConnection: (sourceId, targetId) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => { if (r.id === sourceId) { const connections = r.connections || []; if (connections.some((c) => c.target === targetId)) return r; return { ...r, connections: [...connections, { id: `e-${sourceId}-${targetId}`, target: targetId }] }; } return r; }) })),
-      removeConnection: (edgeId) => setState((s) => ({ ...s, responsibles: s.responsibles.map((r) => ({ ...r, connections: (r.connections || []).filter((c) => c.id !== edgeId) })) })),
-      updateConnection: (edgeId, newSourceId, newTargetId) => setState((s) => { const cleaned = s.responsibles.map((r) => ({ ...r, connections: (r.connections || []).filter((c) => c.id !== edgeId) })); return { ...s, responsibles: cleaned.map((r) => { if (r.id === newSourceId) { const connections = r.connections || []; return { ...r, connections: [...connections, { id: edgeId, target: newTargetId }] }; } return r; }) }; }),
+
+      ...activeData,
+
+      addTask: (task) => patchData({ tasks: [task, ...activeData.tasks] }),
+      updateTask: (id, patch) => patchData({ tasks: patchList(activeData.tasks, id, patch) }),
+      removeTask: (id) => patchData({ tasks: activeData.tasks.filter((t) => t.id !== id) }),
+      moveTask: (id, status) => patchData({ tasks: patchList(activeData.tasks, id, { status }) }),
+      updateResponsible: (id, patch) => patchData({ responsibles: patchList(activeData.responsibles, id, patch) }),
+      addResponsible: (responsible) => patchData({ responsibles: [...activeData.responsibles, responsible] }),
+      removeResponsible: (id) => patchData({ responsibles: activeData.responsibles.filter((r) => r.id !== id) }),
+      updatePurchase: (id, patch) => patchData({ purchases: patchList(activeData.purchases, id, patch) }),
+      addPurchase: (purchase) => patchData({ purchases: [purchase, ...activeData.purchases] }),
+      removePurchase: (id) => patchData({ purchases: activeData.purchases.filter((p) => p.id !== id) }),
+      addScheduleItem: (item) => patchData({ schedule: [...activeData.schedule, item] }),
+      updateScheduleItem: (id, patch) => patchData({ schedule: patchList(activeData.schedule, id, patch) }),
+      removeScheduleItem: (id) => patchData({ schedule: activeData.schedule.filter((item) => item.id !== id) }),
+      reorderSchedule: (fromId, toId) => {
+        const list = [...activeData.schedule];
+        const from = list.findIndex((i) => i.id === fromId);
+        const to = list.findIndex((i) => i.id === toId);
+        if (from < 0 || to < 0 || from === to) return;
+        const [moved] = list.splice(from, 1);
+        if (!moved) return;
+        list.splice(to, 0, moved);
+        patchData({ schedule: list });
+      },
+      addSpeaker: (speaker) => patchData({ speakers: [...activeData.speakers, speaker] }),
+      removeSpeaker: (id) => patchData({ speakers: activeData.speakers.filter((sp) => sp.id !== id) }),
+      updateSpeaker: (id, patch) => patchData({ speakers: patchList(activeData.speakers, id, patch) }),
+      toggleSpeakerStep: (id, index) => patchData({
+        speakers: activeData.speakers.map((sp) =>
+          sp.id === id ? { ...sp, checklist: sp.checklist.map((v, i) => (i === index ? !v : v)) } : sp
+        ),
+      }),
+      addStaff: (member) => patchData({ staff: [...activeData.staff, member] }),
+      removeStaff: (id) => patchData({ staff: activeData.staff.filter((m) => m.id !== id) }),
+      updateStaff: (id, patch) => patchData({ staff: patchList(activeData.staff, id, patch) }),
+      toggleGroupItem: (groupKey, itemId) => patchData({ [groupKey]: toggleItems(activeData[groupKey], itemId) }),
+      toggleMediaItem: (groupId, itemId) => patchData({
+        media: activeData.media.map((g) => (g.id === groupId ? toggleItems(g, itemId) : g)),
+      }),
+      addMediaDeliverable: (deliverable) => patchData({ deliverables: [...activeData.deliverables, deliverable] }),
+      removeMediaDeliverable: (id) => patchData({ deliverables: activeData.deliverables.filter((d) => d.id !== id) }),
+      updateMediaDeliverable: (id, patch) => patchData({ deliverables: patchList(activeData.deliverables, id, patch) }),
+      updateEquipment: (id, patch) => patchData({ equipment: patchList(activeData.equipment, id, patch) }),
+      updateContingency: (id, patch) => patchData({ contingencies: patchList(activeData.contingencies, id, patch) }),
+      addContingency: (contingency) => patchData({ contingencies: [...activeData.contingencies, contingency] }),
+      removeContingency: (id) => patchData({ contingencies: activeData.contingencies.filter((c) => c.id !== id) }),
+      addLearning: (learning) => patchData({ learnings: [learning, ...activeData.learnings] }),
+      updateEvent: (patch) => patchData({ event: { ...activeData.event, ...patch } }),
+      clearTasks: () => patchData({ tasks: [] }),
+      clearResponsibles: () => patchData({ responsibles: [] }),
+      updateResponsiblePosition: (id, position) => patchData({
+        responsibles: activeData.responsibles.map((r) => (r.id === id ? { ...r, position } : r)),
+      }),
+      addConnection: (sourceId, targetId) => patchData({
+        responsibles: activeData.responsibles.map((r) => {
+          if (r.id === sourceId) {
+            const connections = r.connections || [];
+            if (connections.some((c) => c.target === targetId)) return r;
+            return { ...r, connections: [...connections, { id: `e-${sourceId}-${targetId}`, target: targetId }] };
+          }
+          return r;
+        }),
+      }),
+      removeConnection: (edgeId) => patchData({
+        responsibles: activeData.responsibles.map((r) => ({
+          ...r,
+          connections: (r.connections || []).filter((c) => c.id !== edgeId),
+        })),
+      }),
+      updateConnection: (edgeId, newSourceId, newTargetId) => {
+        const cleaned = activeData.responsibles.map((r) => ({
+          ...r,
+          connections: (r.connections || []).filter((c) => c.id !== edgeId),
+        }));
+        patchData({
+          responsibles: cleaned.map((r) => {
+            if (r.id === newSourceId) {
+              const connections = r.connections || [];
+              return { ...r, connections: [...connections, { id: edgeId, target: newTargetId }] };
+            }
+            return r;
+          }),
+        });
+      },
       resetAll: () => { toast.error("O reset global está desativado nesta versão em nuvem por segurança."); },
       syncStatus,
       cloudRevision,
       syncNow: () => syncWithCloud(state),
     };
   }, [state, syncStatus, cloudRevision]);
+
 
   return <ForjaContext.Provider value={value}>{children}</ForjaContext.Provider>;
 }
