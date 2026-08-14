@@ -258,21 +258,33 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       setSyncStatus("syncing");
       const cloudData = await getAppState();
       if (!cloudData) {
-        const result = await updateAppState({ data: { state: localState, revision: 0 } });
-        setCloudRevision(result.revision);
+        // First time syncing: try to push local state if it exists
+        if (localState.events.length > 0) {
+          try {
+            const result = await updateAppState({ data: { state: localState, revision: 0 } });
+            setCloudRevision(result.revision);
+          } catch (e) {
+            console.error("Failed to push initial local state:", e);
+          }
+        }
         setSyncStatus("synced");
         return;
       }
       const cloudState = cloudData.state as unknown as ForjaState;
       const cloudRev = cloudData.revision;
-      if (cloudRev > cloudRevision) {
+      
+      // Critical: Ensure cloudState has the required structure before merging
+      if (cloudState && Array.isArray(cloudState.events)) {
         setState(cloudState);
         setCloudRevision(cloudRev);
-      } else if (cloudRev === cloudRevision && isInitialLoad.current) {
-         setCloudRevision(cloudRev);
+      } else if (localState.events.length > 0) {
+        // If cloud is empty but local has data, try to push local
+        const result = await updateAppState({ data: { state: localState, revision: cloudRev } });
+        setCloudRevision(result.revision);
       }
       setSyncStatus("synced");
     } catch (err) {
+      console.error("Sync error:", err);
       setSyncStatus("error");
     } finally {
       isInitialLoad.current = false;
