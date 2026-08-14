@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Bell, Menu, Plus, Radio, Search, LogOut, Cloud, CloudOff, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Bell, Menu, Plus, Radio, Search, LogOut, Cloud, CloudOff, RefreshCw, CheckCircle2, Calendar } from "lucide-react";
+
 
 import { useState } from "react";
 
@@ -143,6 +144,18 @@ export function AppShell() {
           <Brand />
         </div>
         <NavList />
+        <div className="mt-auto border-t border-sidebar-border p-4">
+          <Button 
+            asChild 
+            variant="ghost" 
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+          >
+            <Link to="/">
+              <Calendar className="size-4" />
+              Ver Eventos
+            </Link>
+          </Button>
+        </div>
       </aside>
 
       <div className="lg:pl-64">
@@ -166,9 +179,23 @@ export function AppShell() {
                       <Brand />
                     </div>
                     <NavList onNavigate={() => setMobileOpen(false)} />
+                    <div className="mt-auto border-t border-sidebar-border p-4">
+                      <Button 
+                        asChild 
+                        variant="ghost" 
+                        className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <Link to="/">
+                          <Calendar className="size-4" />
+                          Ver Eventos
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
+
 
               <div className="min-w-0">
                 <h1 className="truncate font-display text-lg font-bold sm:text-xl">{current.label}</h1>
