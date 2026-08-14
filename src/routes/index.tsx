@@ -173,7 +173,13 @@ function EventSelector() {
                   <div className="flex flex-wrap gap-4 mt-auto">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium uppercase tracking-wider">
                       <Clock className="size-3.5" />
-                      {format(new Date(event.date + "T12:00:00"), "dd MMM, yyyy", { locale: ptBR })}
+                      {(() => {
+                        try {
+                          return format(new Date(event.date + (event.date.includes("T") ? "" : "T12:00:00")), "dd MMM, yyyy", { locale: ptBR });
+                        } catch (e) {
+                          return "Data não definida";
+                        }
+                      })()}
                     </div>
                     {event.venue && (
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium uppercase tracking-wider">

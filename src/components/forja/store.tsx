@@ -364,7 +364,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
     return {
       currentEventId: state.currentEventId,
-      events: state.events,
+      events: state.events || [],
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
