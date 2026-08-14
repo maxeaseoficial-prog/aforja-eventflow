@@ -451,7 +451,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       addContingency: (contingency) => patchData({ contingencies: [...activeData.contingencies, contingency] }),
       removeContingency: (id) => patchData({ contingencies: activeData.contingencies.filter((c) => c.id !== id) }),
       addLearning: (learning) => patchData({ learnings: [learning, ...activeData.learnings] }),
-      updateEvent: (patch) => patchData({ event: { ...activeData.event, ...patch } }),
+      
       clearTasks: () => patchData({ tasks: [] }),
       clearResponsibles: () => patchData({ responsibles: [] }),
       updateResponsiblePosition: (id, position) => patchData({
