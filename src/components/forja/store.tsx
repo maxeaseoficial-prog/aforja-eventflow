@@ -420,7 +420,27 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       removeTask: (id) => patchData({ tasks: activeData.tasks.filter((t) => t.id !== id) }),
       moveTask: (id, status) => patchData({ tasks: patchList(activeData.tasks, id, { status }) }),
       updateResponsible: (id, patch) => patchData({ responsibles: patchList(activeData.responsibles, id, patch) }),
-      addResponsible: (responsible) => patchData({ responsibles: [...activeData.responsibles, responsible] }),
+      addResponsible: (responsible) => {
+        const others = activeData.responsibles;
+        let x = 0;
+        let y = 0;
+        
+        if (others.length > 0) {
+          const maxX = Math.max(...others.map(r => r.position?.x ?? 0));
+          const maxY = Math.max(...others.map(r => r.position?.y ?? 0));
+          
+          // Place it to the right of the rightmost node
+          x = maxX + 300;
+          y = 0; // Keep it on the top row or adjust as needed
+        }
+        
+        const newResponsible = {
+          ...responsible,
+          position: responsible.position || { x, y }
+        };
+        
+        patchData({ responsibles: [...others, newResponsible] });
+      },
       removeResponsible: (id) => patchData({ responsibles: activeData.responsibles.filter((r) => r.id !== id) }),
       updatePurchase: (id, patch) => patchData({ purchases: patchList(activeData.purchases, id, patch) }),
       addPurchase: (purchase) => patchData({ purchases: [purchase, ...activeData.purchases] }),
