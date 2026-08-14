@@ -38,8 +38,17 @@ function EventSelector() {
 
   const handleCreateEvent = () => {
     if (!newEvent.name || !newEvent.date) return;
+    
+    // Ensure the date is stored as a full ISO string at noon to avoid timezone shifts
+    // when using only the date picker (YYYY-MM-DD).
+    const eventDate = newEvent.date.includes("T") 
+      ? newEvent.date 
+      : `${newEvent.date}T12:00:00`;
+
     addEvent({
-      ...newEvent,
+      name: newEvent.name,
+      date: eventDate,
+      venue: newEvent.venue,
       id: crypto.randomUUID(),
     });
     setIsNewEventOpen(false);
@@ -49,17 +58,15 @@ function EventSelector() {
   const handleUpdateEvent = () => {
     if (!editingEvent?.name || !editingEvent?.date) return;
     
-    // We need to select the event temporarily to use updateEvent from store (which is scoped)
-    // or we could add a root updateEvent to store.
-    // For now, let's just use the store's setState directly or trigger select then update.
-    // Actually, store.tsx already handles updating the event list if name/date changes inside updateEvent.
-    // But updateEvent requires currentEventId.
+    const eventDate = editingEvent.date.includes("T") 
+      ? editingEvent.date 
+      : `${editingEvent.date}T12:00:00`;
     
     selectEvent(editingEvent.id);
     setTimeout(() => {
       updateEvent({
         name: editingEvent.name,
-        date: editingEvent.date,
+        date: eventDate,
         venue: editingEvent.venue
       });
       // Deselect after update so we stay in selector
