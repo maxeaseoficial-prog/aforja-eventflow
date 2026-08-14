@@ -161,6 +161,8 @@ interface ForjaContextValue {
   addConnection: (sourceId: string, targetId: string) => void;
   removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
+  preferredTeamView?: "cards" | "organograma" | "lista" | "colunas";
+  setPreferredTeamView: (view: "cards" | "organograma" | "lista" | "colunas") => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
   syncNow: () => Promise<void>;
