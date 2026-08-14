@@ -487,7 +487,11 @@ function EditResponsibleDialog({
   onSave: (patch: Partial<Responsible>) => void;
   allResponsibles: Responsible[];
 }) {
+  const isContextual = responsible?.id?.startsWith('new-');
+  const title = responsible?.isLeader ? "Definir líder do time" : "Adicionar integrante";
+  
   const [name, setName] = useState("");
+
   const [area, setArea] = useState("");
   const [description, setDescription] = useState("");
   const [role, setRole] = useState("");
@@ -518,8 +522,12 @@ function EditResponsibleDialog({
     <Dialog open={!!responsible} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-surface sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-display">Editar Área</DialogTitle>
+          <DialogTitle className="font-display">{title}</DialogTitle>
+          {isContextual && (
+            <p className="text-xs text-primary font-bold uppercase tracking-widest">{sector}</p>
+          )}
         </DialogHeader>
+
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
