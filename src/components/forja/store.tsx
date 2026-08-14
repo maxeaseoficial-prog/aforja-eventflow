@@ -274,10 +274,10 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       const cloudRev = cloudData.revision;
       
       // Critical: Ensure cloudState has the required structure before merging
-      if (cloudState && Array.isArray(cloudState.events)) {
+      if (cloudState && Array.isArray(cloudState.events) && cloudState.events.length > 0) {
         setState(cloudState);
         setCloudRevision(cloudRev);
-      } else if (localState.events.length > 0) {
+      } else if (localState.events && Array.isArray(localState.events) && localState.events.length > 0) {
         // If cloud is empty but local has data, try to push local
         const result = await updateAppState({ data: { state: localState, revision: cloudRev } });
         setCloudRevision(result.revision);
