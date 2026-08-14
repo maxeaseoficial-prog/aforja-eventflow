@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Calendar, Settings, ArrowRight, Event, Clock, MapPin } from "lucide-react";
+import { Plus, Calendar, Settings, ArrowRight, Clock, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useForja } from "@/components/forja/store";
 import { Button } from "@/components/ui/button";
@@ -27,15 +27,14 @@ function EventSelector() {
 
   const handleCreateEvent = () => {
     if (!newEvent.name || !newEvent.date) return;
-    const id = crypto.randomUUID();
     addEvent({
-      id,
       ...newEvent,
-      createdAt: new Date().toISOString(),
+      id: crypto.randomUUID(),
     });
     setIsNewEventOpen(false);
     setNewEvent({ name: "", date: "", venue: "" });
   };
+
 
   const handleSelectEvent = (id: string) => {
     selectEvent(id);
