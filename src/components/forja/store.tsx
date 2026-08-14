@@ -578,25 +578,25 @@ export function useForjaMetrics() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const parse = (iso: string) => new Date(`${iso}T12:00:00`);
-    const done = tasks.filter((t) => t?.status === "concluido");
-    const late = tasks.filter((t) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate) < today);
-    const dueToday = tasks.filter((t) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate).toDateString() === new Date().toDateString());
-    const pending = tasks.filter((t) => t?.status !== "concluido");
-    const pendingPurchases = purchases.filter((p) => p?.status === "precisa-comprar" || p?.status === "cotando");
-    const undefinedAreas = responsibles.filter((r) => !r?.name);
-    const unconfirmedSpeakers = speakers.filter((s) => s?.status !== "confirmado");
-    const purchasesWithoutOwner = purchases.filter((p) => !p?.owner && p?.status !== "cancelado");
-    const spent = purchases.reduce((sum, p) => sum + (p?.actual ?? 0), 0);
-    const estimated = purchases.reduce((sum, p) => sum + (p?.estimated ?? 0), 0);
-    const testedEquipment = equipment.filter((e) => e.test === "aprovado");
-    const confirmedTeam = [...responsibles, ...staff].filter((p) => p.status === "confirmado");
+    const done = tasks.filter((t: Task) => t?.status === "concluido");
+    const late = tasks.filter((t: Task) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate) < today);
+    const dueToday = tasks.filter((t: Task) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate).toDateString() === new Date().toDateString());
+    const pending = tasks.filter((t: Task) => t?.status !== "concluido");
+    const pendingPurchases = purchases.filter((p: Purchase) => p?.status === "precisa-comprar" || p?.status === "cotando");
+    const undefinedAreas = responsibles.filter((r: Responsible) => !r?.name);
+    const unconfirmedSpeakers = speakers.filter((s: Speaker) => s?.status !== "confirmado");
+    const purchasesWithoutOwner = purchases.filter((p: Purchase) => !p?.owner && p?.status !== "cancelado");
+    const spent = purchases.reduce((sum: number, p: Purchase) => sum + (p?.actual ?? 0), 0);
+    const estimated = purchases.reduce((sum: number, p: Purchase) => sum + (p?.estimated ?? 0), 0);
+    const testedEquipment = equipment.filter((e: Equipment) => e.test === "aprovado");
+    const confirmedTeam = [...responsibles, ...staff].filter((p: Responsible | StaffMember) => p.status === "confirmado");
     const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
     const categories = [
       { label: "Equipe", value: pct(confirmedTeam.length, responsibles.length + staff.length) },
       { label: "Estrutura", value: pct(testedEquipment.length, equipment.length) },
-      { label: "Mídia", value: pct(tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length, tasks.filter((t) => t.category === "Mídia").length) },
-      { label: "Palestrantes", value: pct(speakers.reduce((sum, s) => sum + s.checklist.filter(Boolean).length, 0), speakers.length * 14) },
-      { label: "Compras", value: pct(purchases.filter((p) => p.status === "comprado" || p.status === "recebido").length, purchases.length) },
+      { label: "Mídia", value: pct(tasks.filter((t: Task) => t.category === "Mídia" && t.status === "concluido").length, tasks.filter((t: Task) => t.category === "Mídia").length) },
+      { label: "Palestrantes", value: pct(speakers.reduce((sum: number, s: Speaker) => sum + s.checklist.filter(Boolean).length, 0), speakers.length * 14) },
+      { label: "Compras", value: pct(purchases.filter((p: Purchase) => p.status === "comprado" || p.status === "recebido").length, purchases.length) },
       { label: "Programação", value: 0 },
     ];
     const health = Math.max(0, Math.min(100, Math.round(pct(done.length, tasks.length) * 0.3 + categories[0]!.value * 0.2 + categories[1]!.value * 0.2 + categories[4]!.value * 0.15 + categories[3]!.value * 0.15 - late.length * 2)));
@@ -610,7 +610,7 @@ export function useForjaMetrics() {
       purchasesWithoutOwner,
       undefinedAreas,
       unconfirmedSpeakers,
-      teamSize: (responsibles?.filter((r) => r?.name).length ?? 0) + (staff?.length ?? 0),
+      teamSize: (responsibles?.filter((r: Responsible) => r?.name).length ?? 0) + (staff?.length ?? 0),
       confirmedTeam: confirmedTeam.length,
       spent,
       estimated,
