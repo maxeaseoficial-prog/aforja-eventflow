@@ -35,11 +35,41 @@ export type Database = {
         }
         Relationships: []
       }
+      forja_event_access: {
+        Row: {
+          event_id: string
+          id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forja_event_access_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "forja_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forja_events: {
         Row: {
           address: string | null
           budget: number | null
           created_at: string | null
+          created_by: string | null
           date: string
           expected_guests: number | null
           id: string
@@ -54,6 +84,7 @@ export type Database = {
           address?: string | null
           budget?: number | null
           created_at?: string | null
+          created_by?: string | null
           date: string
           expected_guests?: number | null
           id?: string
@@ -68,6 +99,7 @@ export type Database = {
           address?: string | null
           budget?: number | null
           created_at?: string | null
+          created_by?: string | null
           date?: string
           expected_guests?: number | null
           id?: string
