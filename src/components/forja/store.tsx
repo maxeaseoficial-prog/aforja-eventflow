@@ -412,9 +412,6 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         };
       }),
 
-      ...activeData,
-      preferredTeamView: activeData.preferredTeamView,
-      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       addTask: (task) => patchData({ tasks: [task, ...activeData.tasks] }),
       updateEvent: (patch) => {
 
