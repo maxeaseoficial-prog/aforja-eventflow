@@ -80,7 +80,7 @@ const emptyEventData = () => ({
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
   learnings: seedLearnings,
-  preferredTeamView: "colunas",
+  preferredTeamView: "colunas" as const,
 });
 
 const initialState: ForjaState = {
