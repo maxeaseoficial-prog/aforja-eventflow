@@ -262,7 +262,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     try {
       setSyncStatus("syncing");
       const cloudData = await getAppState();
-      if (!cloudData) {
+      
+      if (!cloudData || !cloudData.state) {
         // First time syncing: try to push local state if it exists
         if (localState.events.length > 0) {
           try {
@@ -275,17 +276,14 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setSyncStatus("synced");
         return;
       }
+      
       const cloudState = cloudData.state as unknown as ForjaState;
       const cloudRev = cloudData.revision;
       
-      // Critical: Ensure cloudState has the required structure before merging
-      if (cloudState && Array.isArray(cloudState.events) && cloudState.events.length > 0) {
+      // Critical: Ensure cloudState has the required structure
+      if (cloudState && Array.isArray(cloudState.events)) {
         setState(cloudState);
         setCloudRevision(cloudRev);
-      } else if (localState.events && Array.isArray(localState.events) && localState.events.length > 0) {
-        // If cloud is empty but local has data, try to push local
-        const result = await updateAppState({ data: { state: localState, revision: cloudRev } });
-        setCloudRevision(result.revision);
       }
       setSyncStatus("synced");
     } catch (err) {
@@ -304,7 +302,17 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const channel = supabase
-      .channel("forja-sync")
+      .channel("forja-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "forja_events" },
+        () => syncWithCloud(state)
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "forja_responsibles" },
+        () => syncWithCloud(state)
+      )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "forja_app_state", filter: "id=eq.forja-principal" },
@@ -321,13 +329,14 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [cloudRevision]);
+  }, [cloudRevision, state]);
 
   useEffect(() => {
     if (!isHydrated || isInitialLoad.current) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {}
+    
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
       if (!navigator.onLine) {
@@ -340,9 +349,11 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         setCloudRevision(result.revision);
         setSyncStatus("synced");
       } catch (err) {
+        console.error("Auto-save error:", err);
         setSyncStatus("error");
       }
-    }, 1000);
+    }, 2000);
+    
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
