@@ -1,6 +1,5 @@
+import { describe, test, expect } from "vitest";
 import { brl, formatDate } from "./forja-data";
-
-describe("formatters", () => {
   test("brl formats valid numbers", () => {
     expect(brl(1000)).toBe("R$ 1.000");
   });
