@@ -60,6 +60,7 @@ interface ForjaState {
     postEvent: ChecklistGroup;
     opening: ChecklistGroup;
     learnings: Learning[];
+    preferredTeamView?: "cards" | "organograma" | "lista" | "colunas";
   }>;
 }
 
