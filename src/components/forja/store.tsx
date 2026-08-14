@@ -387,7 +387,25 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
       ...activeData,
 
-      addTask: (task) => patchData({ tasks: [task, ...activeData.tasks] }),
+      updateEvent: (patch) => {
+        const id = state.currentEventId;
+        if (!id) return;
+        
+        // Se mudou nome ou data, atualiza a lista de eventos também
+        if (patch.name !== undefined || patch.date !== undefined) {
+          setState(s => ({
+            ...s,
+            events: s.events.map(e => e.id === id ? {
+              ...e,
+              name: patch.name !== undefined ? patch.name : e.name,
+              date: patch.date !== undefined ? patch.date : e.date,
+            } : e)
+          }));
+        }
+
+        patchData({ event: { ...activeData.event, ...patch } });
+      },
+
       updateTask: (id, patch) => patchData({ tasks: patchList(activeData.tasks, id, patch) }),
       removeTask: (id) => patchData({ tasks: activeData.tasks.filter((t) => t.id !== id) }),
       moveTask: (id, status) => patchData({ tasks: patchList(activeData.tasks, id, { status }) }),
