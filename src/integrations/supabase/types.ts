@@ -35,6 +35,155 @@ export type Database = {
         }
         Relationships: []
       }
+      forja_event_access: {
+        Row: {
+          event_id: string
+          id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forja_event_access_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "forja_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forja_events: {
+        Row: {
+          address: string | null
+          budget: number | null
+          created_at: string | null
+          created_by: string | null
+          date: string
+          expected_guests: number | null
+          id: string
+          instagram: string | null
+          name: string
+          notes: string | null
+          updated_at: string | null
+          venue: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          budget?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          expected_guests?: number | null
+          id?: string
+          instagram?: string | null
+          name: string
+          notes?: string | null
+          updated_at?: string | null
+          venue?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          budget?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          expected_guests?: number | null
+          id?: string
+          instagram?: string | null
+          name?: string
+          notes?: string | null
+          updated_at?: string | null
+          venue?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      forja_responsibles: {
+        Row: {
+          area: string
+          created_at: string | null
+          description: string | null
+          event_id: string
+          id: string
+          is_leader: boolean | null
+          name: string | null
+          notes: string | null
+          parent_id: string | null
+          position_x: number | null
+          position_y: number | null
+          role: string | null
+          sector: string | null
+          status: string | null
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          area: string
+          created_at?: string | null
+          description?: string | null
+          event_id: string
+          id?: string
+          is_leader?: boolean | null
+          name?: string | null
+          notes?: string | null
+          parent_id?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          role?: string | null
+          sector?: string | null
+          status?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          area?: string
+          created_at?: string | null
+          description?: string | null
+          event_id?: string
+          id?: string
+          is_leader?: boolean | null
+          name?: string | null
+          notes?: string | null
+          parent_id?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          role?: string | null
+          sector?: string | null
+          status?: string | null
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forja_responsibles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "forja_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forja_responsibles_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "forja_responsibles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forja_state_history: {
         Row: {
           created_at: string
