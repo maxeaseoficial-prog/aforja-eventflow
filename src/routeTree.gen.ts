@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShellRouteRouteImport } from './routes/_shell/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ModoEventoRouteImport } from './routes/modo-evento'
@@ -25,6 +26,11 @@ import { Route as ShellResponsaveisRouteImport } from './routes/_shell/responsav
 import { Route as ShellStaffRouteImport } from './routes/_shell/staff'
 import { Route as ShellTarefasRouteImport } from './routes/_shell/tarefas'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShellRouteRoute = ShellRouteRouteImport.update({
   id: '/_shell',
   getParentRoute: () => rootRouteImport,
@@ -101,7 +107,7 @@ const ShellTarefasRoute = ShellTarefasRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof ShellRouteRouteWithChildren
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
@@ -118,7 +124,7 @@ export interface FileRoutesByFullPath {
   '/tarefas': typeof ShellTarefasRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof ShellRouteRouteWithChildren
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
   '/compras': typeof ShellComprasRoute
@@ -136,6 +142,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_shell': typeof ShellRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/modo-evento': typeof ModoEventoRoute
@@ -189,6 +196,7 @@ export interface FileRouteTypes {
     | '/tarefas'
   id:
     | '__root__'
+    | '/'
     | '/_shell'
     | '/login'
     | '/modo-evento'
@@ -207,6 +215,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   ShellRouteRoute: typeof ShellRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   ModoEventoRoute: typeof ModoEventoRoute
@@ -214,6 +223,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_shell': {
       id: '/_shell'
       path: ''
@@ -357,6 +373,7 @@ const ShellRouteRouteWithChildren = ShellRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   ShellRouteRoute: ShellRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   ModoEventoRoute: ModoEventoRoute,
