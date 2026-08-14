@@ -349,7 +349,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ForjaContextValue>(() => {
     const currentData = state.currentEventId ? state.eventData[state.currentEventId] : null;
-    const activeData = useMemo(() => (currentData || emptyEventData()), [currentData]);
+    const activeData = (currentData || emptyEventData()) as ReturnType<typeof emptyEventData>;
 
 
     const patchData = (patch: Partial<ReturnType<typeof emptyEventData>>) => {
