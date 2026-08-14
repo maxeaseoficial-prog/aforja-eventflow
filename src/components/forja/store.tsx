@@ -351,7 +351,6 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     const currentData = state.currentEventId ? state.eventData[state.currentEventId] : null;
     const activeData = (currentData || emptyEventData()) as ReturnType<typeof emptyEventData>;
 
-
     const patchData = (patch: Partial<ReturnType<typeof emptyEventData>>) => {
       if (!state.currentEventId) return;
       setState((s) => {
@@ -370,21 +369,18 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       });
     };
 
-
-
-
-
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
 
     const toggleItems = (group: ChecklistGroup, itemId: string): ChecklistGroup => ({
       ...group,
-      items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
+      items: (group?.items || []).map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
     });
 
-
-
     return {
+      ...activeData,
+      preferredTeamView: activeData.preferredTeamView || "grid",
+      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       currentEventId: state.currentEventId,
       events: state.events || [],
       addEvent: (evt) => {
