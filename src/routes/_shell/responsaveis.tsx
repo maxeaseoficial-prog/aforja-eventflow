@@ -300,7 +300,9 @@ function ColumnView({
   onEdit: (r: Responsible) => void;
   onDelete: (r: Responsible) => void;
 }) {
+  const groups = useMemo(() => {
     const map: Record<string, { leader: Responsible | null; members: Responsible[]; teamSize: number }> = {};
+
     
     responsibles.forEach((r) => {
       const s = r.sector || "Outro";
