@@ -370,8 +370,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
         setState((s) => ({
           ...s,
-          events: [...s.events, entry],
-          eventData: { ...s.eventData, [id]: emptyEventData() },
+          events: [...(s.events || []), entry],
+          eventData: { ...(s.eventData || {}), [id]: emptyEventData() },
         }));
       },
       selectEvent: (id) => setState((s) => ({ ...s, currentEventId: id })),
