@@ -535,9 +535,9 @@ function EditResponsibleDialog({
               <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="resp-sector">Setor / Time</Label>
-              <Select value={sector} onValueChange={setSector}>
-                <SelectTrigger id="resp-sector">
+              <Label htmlFor="resp-sector">Time / Setor</Label>
+              <Select value={sector} onValueChange={setSector} disabled={isContextual}>
+                <SelectTrigger id="resp-sector" className={cn(isContextual && "opacity-80 bg-secondary/50")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -549,6 +549,7 @@ function EditResponsibleDialog({
                 </SelectContent>
               </Select>
             </div>
+
           </div>
           <div className="space-y-2">
             <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
