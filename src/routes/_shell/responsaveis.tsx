@@ -291,9 +291,12 @@ function MetricCard({ value, label, tone = "primary" }: { value: number; label: 
 }
 
 
-  onEdit: (r: Responsible) => void;
-  onDelete: (r: Responsible) => void;
-}) {
+function ColumnView({
+  responsibles,
+  onEdit,
+  onDelete,
+}: {
+  responsibles: Responsible[];
   const groups = useMemo(() => {
     const map: Record<string, { leader: Responsible | null; members: Responsible[]; teamSize: number }> = {};
     
