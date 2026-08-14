@@ -56,11 +56,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           </div>
         </div>
         <h1 className="text-2xl font-display font-black tracking-tight text-foreground uppercase italic text-center">
-          Erro Operacional
+          agora está com esse erro aqui: Erro Operacional
         </h1>
         <p className="mt-4 text-sm text-muted-foreground text-center leading-relaxed">
-          Ocorreu um erro ao carregar os dados do centro de comando. 
-          Isso pode ser causado por uma falha na conexão ou dados corrompidos.
+          Ocorreu um erro ao carregar os dados do centro de comando. Isso pode ser causado por uma falha na conexão ou dados corrompidos.
         </p>
         
         {error.message && (
