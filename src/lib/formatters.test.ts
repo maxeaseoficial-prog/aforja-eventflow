@@ -11,14 +11,14 @@ describe("formatters", () => {
     expect(brl(0).replace(/\s/g, ' ')).toBe("R$ 0");
   });
 
-  test("brl crashes on undefined (reproducing bug)", () => {
+  test("brl returns fallback for undefined", () => {
     // @ts-ignore
-    expect(() => brl(undefined)).toThrow();
+    expect(brl(undefined).replace(/\s/g, ' ')).toBe("R$ 0");
   });
 
-  test("brl crashes on null (reproducing bug)", () => {
+  test("brl returns fallback for null", () => {
     // @ts-ignore
-    expect(() => brl(null)).toThrow();
+    expect(brl(null).replace(/\s/g, ' ')).toBe("R$ 0");
   });
 
   test("formatDate formats valid ISO strings", () => {
@@ -26,8 +26,8 @@ describe("formatters", () => {
     expect(formatDate("2026-12-25")).toContain("dez");
   });
 
-  test("formatDate handles undefined (reproducing bug)", () => {
+  test("formatDate handles undefined gracefully", () => {
     // @ts-ignore
-    expect(() => formatDate(undefined)).toThrow();
+    expect(formatDate(undefined)).toBe("—");
   });
 });
