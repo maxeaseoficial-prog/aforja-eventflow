@@ -245,15 +245,9 @@ export function AppShell() {
 
             </div>
 
-            {syncStatus !== "synced" && (
+            {syncStatus !== "synced" && syncStatus !== "syncing" && (
               <div className="flex shrink-0 items-center gap-2 mt-2 px-4 py-2 bg-card/50 border-t border-border lg:mt-0 lg:border-t-0 lg:bg-transparent lg:px-0 lg:py-0">
                  <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider">
-                    {syncStatus === "syncing" && (
-                      <div className="flex items-center gap-1.5 text-primary animate-pulse">
-                        <RefreshCw className="size-3 animate-spin" />
-                        <span className="sr-only">Salvando...</span>
-                      </div>
-                    )}
                     {syncStatus === "offline" && (
                       <div className="flex items-center gap-1.5 text-warning">
                         <CloudOff className="size-3" />
