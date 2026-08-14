@@ -420,7 +420,26 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       removeTask: (id) => patchData({ tasks: activeData.tasks.filter((t) => t.id !== id) }),
       moveTask: (id, status) => patchData({ tasks: patchList(activeData.tasks, id, { status }) }),
       updateResponsible: (id, patch) => patchData({ responsibles: patchList(activeData.responsibles, id, patch) }),
-      addResponsible: (responsible) => patchData({ responsibles: [...activeData.responsibles, responsible] }),
+      addResponsible: (responsible) => {
+        const others = activeData.responsibles;
+        let x = 0;
+        let y = 0;
+        
+        if (others.length > 0) {
+          // Find the rightmost node
+          const maxX = Math.max(...others.map(r => r.position?.x ?? 0));
+          // Default node width is 280, so we add 320 for spacing
+          x = maxX + 320;
+          y = 0;
+        }
+        
+        const newResponsible = {
+          ...responsible,
+          position: { x, y }
+        };
+        
+        patchData({ responsibles: [...others, newResponsible] });
+      },
       removeResponsible: (id) => patchData({ responsibles: activeData.responsibles.filter((r) => r.id !== id) }),
       updatePurchase: (id, patch) => patchData({ purchases: patchList(activeData.purchases, id, patch) }),
       addPurchase: (purchase) => patchData({ purchases: [purchase, ...activeData.purchases] }),
