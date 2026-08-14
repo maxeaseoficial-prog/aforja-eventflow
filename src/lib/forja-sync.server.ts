@@ -1,9 +1,10 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const STATE_ID = "forja-principal";
 
-export async function getAppStateServer(supabase: SupabaseClient<Database>, userId: string) {
+export async function getAppStateServer() {
+  const supabase = supabaseAdmin;
+
   // 1. Fetch main blob
   const { data: blob, error: blobError } = await supabase
     .from("forja_app_state")
@@ -34,13 +35,12 @@ export async function getAppStateServer(supabase: SupabaseClient<Database>, user
     console.error("Error fetching granular responsibles:", respError);
   }
 
-  // If no blob exists yet, return null (provider will initialize with seed)
+  // If no blob exists yet, return null
   if (!blob) return null;
 
   const state = blob.state as any;
 
   // Merge granular data into the state
-  // This ensures that the normalized tables are the source of truth for these specific entities
   if (events && events.length > 0) {
     state.events = events.map(e => ({
       id: e.id,
@@ -50,7 +50,6 @@ export async function getAppStateServer(supabase: SupabaseClient<Database>, user
       createdAt: e.created_at
     }));
 
-    // Update eventData meta
     events.forEach(e => {
       if (!state.eventData) state.eventData = {};
       if (!state.eventData[e.id]) {
@@ -102,7 +101,6 @@ export async function getAppStateServer(supabase: SupabaseClient<Database>, user
   }
 
   if (responsibles) {
-    // Map responsibles to their events
     responsibles.forEach(r => {
       if (state.eventData && state.eventData[r.event_id]) {
         const list = state.eventData[r.event_id].responsibles as any[];
@@ -129,9 +127,6 @@ export async function getAppStateServer(supabase: SupabaseClient<Database>, user
         }
       }
     });
-    
-    // Cleanup: ensure eventData[e.id].responsibles only contains what's in the table
-    // (Optional, but ensures strict truth)
   }
 
   return {
@@ -140,8 +135,9 @@ export async function getAppStateServer(supabase: SupabaseClient<Database>, user
   };
 }
 
-export async function updateAppStateServer(supabase: SupabaseClient<Database>, userId: string, state: any, revision: number) {
-  // 1. Get current revision from blob
+export async function updateAppStateServer(state: any, revision: number) {
+  const supabase = supabaseAdmin;
+
   const { data: current } = await supabase
     .from("forja_app_state")
     .select("revision")
@@ -150,7 +146,6 @@ export async function updateAppStateServer(supabase: SupabaseClient<Database>, u
 
   const nextRevision = (current?.revision || 0) + 1;
 
-  // 2. Granular updates for events and responsibles
   if (state.events && Array.isArray(state.events)) {
     for (const e of state.events) {
       const meta = state.eventData?.[e.id]?.event;
@@ -164,8 +159,7 @@ export async function updateAppStateServer(supabase: SupabaseClient<Database>, u
         expected_guests: meta?.expectedGuests,
         whatsapp: meta?.whatsapp,
         instagram: meta?.instagram,
-        notes: meta?.notes,
-        created_by: userId
+        notes: meta?.notes
       });
 
       const resps = state.eventData?.[e.id]?.responsibles;
@@ -192,7 +186,6 @@ export async function updateAppStateServer(supabase: SupabaseClient<Database>, u
     }
   }
 
-  // 3. Update main blob
   const { data, error } = await supabase
     .from("forja_app_state")
     .upsert({
@@ -211,4 +204,5 @@ export async function updateAppStateServer(supabase: SupabaseClient<Database>, u
 
   return data;
 }
+
 
