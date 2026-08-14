@@ -1,35 +1,53 @@
-# Plano de Persistência em Nuvem — FORJA
+# Plan - Responsáveis e Times Evolution
 
-Implementação de sincronização em nuvem (Lovable Cloud) com preservação integral dos dados locais e suporte offline.
+Transform the "Responsáveis" module into a guided "Team Builder" experience and a professional hierarchical management center.
 
-## Ações Realizadas
-- [x] Configuração do Lovable Cloud (Supabase).
-- [x] Criação das tabelas `forja_app_state` e `forja_state_history` via migração SQL.
-- [x] Implementação de Server Functions (`src/lib/forja-sync.functions.ts`) para leitura/escrita segura via Service Role no servidor.
-- [x] Implementação de lógica de persistência híbrida no `ForjaProvider`:
-    - Backup local automático em `forja-command-center-backup-before-cloud` antes da primeira sincronização.
-    - Carregamento inicial do cache local para resposta instantânea.
-    - Sincronização em background com a nuvem (Reconciliação baseada em revisões).
-    - Persistência debounced (1s) para evitar sobrecarga.
-    - Realtime habilitado via Supabase Channels para atualizações entre dispositivos.
-- [x] UI de status de sincronização no cabeçalho.
-- [x] Proteção contra reset acidental no módulo de configurações.
+## User Review Required
 
-## Detalhes Técnicos
+> [!IMPORTANT]
+> This plan involves adding a guided onboarding for new events and evolving the data model for teams (adding leader/member relationships). Existing data will be preserved.
 
-### Estrutura de Dados
-- **Tabela**: `public.forja_app_state`
-- **Campos**: `id` (PK, "forja-principal"), `state` (JSONB), `revision` (INT), `updated_at` (TIMESTAMPTZ).
-- **Segurança**: RLS habilitado com políticas de acesso público (limitado pela camada de login admin/admin do app).
+- **Visual Style**: High-end dark theme (black/graphite) with gold accents. No generic AI aesthetics (no robots, no purple gradients, no emojis).
+- **Recommendation Engine**: Deterministic logic based on event size and features.
 
-### Fluxo de Sincronização
-1. **Hidratação**: O app lê o `localStorage` v2 imediatamente.
-2. **Download**: Busca a revisão mais recente na nuvem. Se a nuvem for mais nova, atualiza o estado local.
-3. **Upload**: Se a nuvem estiver vazia (primeiro uso), faz o upload do estado local.
-4. **Edição**: Qualquer alteração no estado React aciona o salvamento no `localStorage` (instantâneo) e agenda um upload para a nuvem (debounce 1s).
-5. **Realtime**: Se outro dispositivo salvar, este dispositivo recebe o evento e atualiza o estado automaticamente se a revisão for superior.
+## Proposed Changes
 
-## Verificação
-- O backup `forja-command-center-backup-before-cloud` garante que os dados pré-migração estão salvos no navegador original.
-- O campo `revision` impede que um estado vazio sobrescreva um estado preenchido.
-- O PWA mantém funcionamento offline total usando o cache local v2.
+### 1. Data Model & Storage Evolution
+- Update `Responsible` interface in `src/lib/forja-data.ts` to explicitly support `leaderId` or a `isLeader` flag within teams, and `expectedHeadcount`.
+- Ensure `forja-sync` functions support the new fields.
+- **Data Safety**: Reuse existing `responsibles` array. Areas will be grouped into "Teams" visually.
+
+### 2. Team Builder (Onboarding Wizard)
+- Create `src/components/forja/TeamBuilderWizard.tsx`.
+- Implement a 5-step guided flow:
+    1. **Event Size**: Attendee count shortcuts + manual input.
+    2. **Features**: Multi-select cards (Stage, Speakers, Sound, Catering, etc.).
+    3. **Complexity**: Conditional questions based on step 2 (e.g., "How many stages?").
+    4. **Analysis**: 2-second deterministic "calculation" animation.
+    5. **Suggestion**: Review recommended teams, headcount, and external providers.
+- Implement the `recommendationEngine` utility in `src/lib/team-engine.ts`.
+
+### 3. New "Responsáveis e Times" Interface
+- Update `src/routes/_shell/responsaveis.tsx`.
+- Add View Switcher: **Cards**, **Organograma**, **Lista**, **Times**.
+- **Cards View**: Detailed team cards showing Leader (name/role/whatsapp) and Members (confirmed/vancant slots).
+- **Organograma**: Enhance the `@xyflow/react` tree to support the new team structure.
+- **Times View**: Focused view for individual team building.
+
+### 4. Logic & Interactions
+- Implement team editing: move members between teams, promote to leader.
+- "Revisar Estrutura": Allow users to run the wizard again without overwriting existing assignments.
+- "Smart Align": Auto-positioning in the Org Chart to prevent overlaps.
+
+## Technical Details
+
+- **Deterministic Engine**: Logic based on presets (e.g., 1 Receptionist per 50 guests, 1 Stage Manager if Stage > 0).
+- **Views**: All 4 views consume the same `responsibles` array from `ForjaProvider`.
+- **Performance**: Use `memo` for Org Chart nodes and heavy list rendering.
+
+## Verification Plan
+
+- **Preservation Test**: Ensure manual entries created before this update appear in the new "Responsáveis e Times" page.
+- **Engine Coverage**: Test with 20, 100, and 500 guest scenarios via simulated wizard inputs.
+- **Responsive Audit**: Check wizard and Org Chart on mobile viewports.
+- **Persistence**: Verify that team groupings and manual positions survive a page reload.
