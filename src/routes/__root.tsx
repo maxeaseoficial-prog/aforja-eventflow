@@ -86,8 +86,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           const sessionStr = sessionStorage.getItem("forja-auth-session");
           let authenticated = false;
           if (sessionStr) {
-            const session = JSON.parse(sessionStr);
-            authenticated = !!session?.state?.isAuthenticated;
+            try {
+              const session = JSON.parse(sessionStr);
+              authenticated = !!session?.state?.isAuthenticated;
+            } catch (parseError) {
+              console.error("Erro ao processar sessão:", parseError);
+              sessionStorage.removeItem("forja-auth-session");
+            }
           }
 
           if (!authenticated) {
