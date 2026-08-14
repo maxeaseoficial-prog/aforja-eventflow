@@ -291,75 +291,177 @@ function MetricCard({ value, label, tone = "primary" }: { value: number; label: 
 }
 
 
-function ColumnView({
-  responsibles,
-  onEdit,
-  onDelete,
-}: {
-  responsibles: Responsible[];
   onEdit: (r: Responsible) => void;
   onDelete: (r: Responsible) => void;
 }) {
   const groups = useMemo(() => {
-    const map: Record<string, Responsible[]> = {};
-    RESPONSIBLE_SECTORS.forEach((s) => (map[s] = []));
+    const map: Record<string, { leader: Responsible | null; members: Responsible[]; teamSize: number }> = {};
     
     responsibles.forEach((r) => {
       const s = r.sector || "Outro";
-      if (!map[s]) map[s] = [];
-      map[s].push(r);
+      if (!map[s]) map[s] = { leader: null, members: [], teamSize: 0 };
+      
+      if (r.isLeader) {
+        map[s].leader = r;
+      } else {
+        map[s].members.push(r);
+      }
+      
+      // Calculate team size: either from the first responsible we find or sum
+      // But based on recommendation engine, we should check if teamId matches
+      // For now, let's use the unique count of positions in this sector
+      map[s].teamSize = (map[s].leader ? 1 : 0) + map[s].members.length;
     });
     
     return Object.entries(map)
-      .filter(([_, items]) => items.length > 0)
-      .sort((a, b) => b[1].length - a[1].length);
+      .filter(([_, data]) => data.leader || data.members.length > 0)
+      .sort((a, b) => b[1].teamSize - a[1].teamSize);
   }, [responsibles]);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-6 -mx-6 px-6 forja-scroll snap-x">
-      {groups.map(([sector, items]) => (
-        <div key={sector} className="min-w-[300px] max-w-[320px] flex flex-col gap-3 snap-start">
-          <div className="flex items-center justify-between p-2 sticky top-0 bg-background/80 backdrop-blur-sm z-10 rounded-lg">
-            <h3 className="label-caps truncate max-w-[200px]" title={sector}>{sector}</h3>
-            <span className="text-[10px] font-bold bg-primary-soft text-primary px-2 py-0.5 rounded-full">
-              {items.length}
+    <div className="flex gap-6 overflow-x-auto pb-6 -mx-6 px-6 forja-scroll snap-x">
+      {groups.map(([sector, data]) => (
+        <div key={sector} className="min-w-[320px] max-w-[340px] flex flex-col gap-4 snap-start">
+          <div className="flex items-center justify-between p-3 sticky top-0 bg-background/90 backdrop-blur-md z-10 rounded-xl border border-border/50 shadow-sm">
+            <h3 className="label-caps truncate font-bold text-xs" title={sector}>{sector}</h3>
+            <span className="text-[10px] font-black bg-primary text-primary-foreground px-2 py-0.5 rounded-full min-w-[20px] text-center">
+              {data.teamSize}
             </span>
           </div>
           
-          <div className="flex flex-col gap-3">
-            {items.map((r) => (
-              <div 
-                key={r.id} 
-                className="surface-card p-3 shadow-sm hover:shadow-md transition-shadow group relative"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <Avatar name={r.name} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold truncate leading-tight">{r.name || "NÃO DEFINIDO"}</p>
-                    <p className="text-[9px] label-caps text-primary/70 truncate">{r.area}</p>
+          <div className="flex flex-col gap-5">
+            {/* LÍDER DO TIME */}
+            <div className="space-y-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Líder do Time</p>
+              {data.leader ? (
+                <div 
+                  className="surface-card p-4 shadow-md border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors group relative cursor-pointer"
+                  onClick={() => onEdit(data.leader!)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar name={data.leader.name} size="md" />
+                      <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-0.5 rounded-full border-2 border-background">
+                        <CheckCircle2 className="size-2.5" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black truncate leading-tight text-primary">
+                        {data.leader.name || "NOME NÃO DEFINIDO"}
+                      </p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase truncate mt-0.5">
+                        {data.leader.role || "Coordenador"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 flex items-center justify-between">
+                    <PersonStatusBadge status={data.leader.status} className="scale-75 origin-left" />
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" variant="ghost" className="size-7" onClick={(e) => { e.stopPropagation(); onEdit(data.leader!); }}>
+                        <Pencil className="size-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="size-7 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(data.leader!); }}>
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between gap-2">
-                  <PersonStatusBadge status={r.status} className="scale-75 origin-left" />
-                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="size-6" onClick={() => onEdit(r)}>
-                      <Pencil className="size-3" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="size-6 text-destructive/70 hover:text-destructive" onClick={() => onDelete(r)}>
-                      <Trash2 className="size-3" />
-                    </Button>
-                  </div>
-                </div>
+              ) : (
+                <button 
+                  onClick={() => onEdit({ 
+                    id: `new-leader-${sector}`, 
+                    area: sector, 
+                    sector, 
+                    isLeader: true, 
+                    status: 'indefinido', 
+                    name: null, 
+                    role: 'Líder do Time',
+                    whatsapp: '',
+                    notes: ''
+                  } as Responsible)}
+                  className="w-full border-2 border-dashed border-primary/20 rounded-xl p-4 text-center hover:bg-primary/5 hover:border-primary/40 transition-all group"
+                >
+                  <UserPlus className="size-5 mx-auto mb-2 text-primary/40 group-hover:text-primary/60 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60 group-hover:text-primary transition-colors">
+                    Definir Líder
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* INTEGRANTES */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Integrantes</p>
+                <span className="text-[9px] font-bold text-muted-foreground/60">{data.members.length}</span>
               </div>
-            ))}
+              
+              <div className="flex flex-col gap-2">
+                {data.members.map((r) => (
+                  <div 
+                    key={r.id} 
+                    className="surface-card p-3 shadow-sm hover:shadow-md transition-shadow group relative cursor-pointer"
+                    onClick={() => onEdit(r)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar name={r.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold truncate leading-tight">
+                          {r.name || "Definir Integrante"}
+                        </p>
+                        <p className="text-[9px] text-muted-foreground truncate font-medium">
+                          {r.role || "Membro"}
+                        </p>
+                      </div>
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="size-6" onClick={(e) => { e.stopPropagation(); onEdit(r); }}>
+                          <Pencil className="size-3" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="size-6 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(r); }}>
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button 
+                  onClick={() => onEdit({ 
+                    id: `new-member-${sector}-${Date.now()}`, 
+                    area: sector, 
+                    sector, 
+                    isLeader: false, 
+                    status: 'indefinido', 
+                    name: null, 
+                    role: 'Integrante',
+                    whatsapp: '',
+                    notes: ''
+                  } as Responsible)}
+                  className="w-full border border-dashed border-border rounded-lg p-2.5 text-center hover:bg-card-hover hover:border-border-strong transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Plus className="size-3 text-muted-foreground/60" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-foreground">
+                    Adicionar Integrante
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* MÉTRICA DA COLUNA */}
+            <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+              <span>{data.leader && data.members.filter(m => m.name).length + 1} / {data.teamSize} definidos</span>
+              <span>
+                {data.teamSize - (data.leader && data.leader.name ? 1 : 0) - data.members.filter(m => m.name).length} vagas
+              </span>
+            </div>
           </div>
         </div>
       ))}
       {groups.length === 0 && (
         <div className="w-full p-20 text-center surface-card border-dashed">
           <Layout className="size-8 mx-auto mb-3 text-muted-foreground opacity-20" />
-          <p className="text-muted-foreground text-sm">Nenhum setor com responsáveis cadastrados.</p>
+          <p className="text-muted-foreground text-sm">Nenhum time cadastrado.</p>
         </div>
       )}
     </div>
