@@ -162,7 +162,7 @@ interface ForjaContextValue {
   addConnection: (sourceId: string, targetId: string) => void;
   removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
-  preferredTeamView?: "grid" | "organograma" | "lista" | "colunas";
+  preferredTeamView: "grid" | "organograma" | "lista" | "colunas";
   setPreferredTeamView: (view: "grid" | "organograma" | "lista" | "colunas") => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
