@@ -58,7 +58,10 @@ function EventSelector() {
       />
 
       <header className="relative z-10 p-6 flex items-center justify-between container mx-auto">
-        <img src={forjaLogo.url} alt="A Forja" className="h-10 w-auto object-contain" />
+        <Link to="/">
+          <img src={forjaLogo.url} alt="A Forja" className="h-10 w-auto object-contain cursor-pointer" />
+        </Link>
+
         <Button 
             variant="ghost" 
             size="sm" 
