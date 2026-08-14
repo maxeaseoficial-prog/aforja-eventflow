@@ -94,7 +94,30 @@ const MIGRATION_KEY = "forja-clean-migration-v5";
 
 export type SyncStatus = "synced" | "syncing" | "offline" | "error" | "initial";
 
-interface ForjaContextValue extends ForjaState {
+interface ForjaContextValue {
+  currentEventId: string | null;
+  events: EventEntry[];
+  addEvent: (event: Omit<EventEntry, "createdAt">) => void;
+  selectEvent: (id: string | null) => void;
+  removeEvent: (id: string) => void;
+  
+  // Scoped data accessors
+  event: EventConfig;
+  tasks: Task[];
+  responsibles: Responsible[];
+  purchases: Purchase[];
+  schedule: ScheduleItem[];
+  speakers: Speaker[];
+  staff: StaffMember[];
+  media: ChecklistGroup[];
+  deliverables: Deliverable[];
+  equipment: Equipment[];
+  experience: ChecklistGroup;
+  contingencies: Contingency[];
+  postEvent: ChecklistGroup;
+  opening: ChecklistGroup;
+  learnings: Learning[];
+
   addTask: (task: Task) => void;
   updateTask: (id: string, patch: Partial<Task>) => void;
   removeTask: (id: string) => void;
@@ -120,6 +143,7 @@ interface ForjaContextValue extends ForjaState {
   toggleMediaItem: (groupId: string, itemId: string) => void;
   addMediaDeliverable: (deliverable: Deliverable) => void;
   removeMediaDeliverable: (id: string) => void;
+
   updateMediaDeliverable: (id: string, patch: Partial<Deliverable>) => void;
   updateEquipment: (id: string, patch: Partial<Equipment>) => void;
   updateContingency: (id: string, patch: Partial<Contingency>) => void;
