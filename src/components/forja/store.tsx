@@ -572,7 +572,10 @@ export function useForja() {
 }
 
 export function useForjaMetrics() {
-  const { tasks, purchases, responsibles, speakers, staff, equipment } = useForja();
+  const context = useForja();
+  const { tasks, purchases, responsibles, speakers, staff, equipment } = context || {
+    tasks: [], purchases: [], responsibles: [], speakers: [], staff: [], equipment: []
+  };
   return useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
