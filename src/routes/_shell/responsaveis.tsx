@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout } from "lucide-react";
+import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout, Phone, Briefcase, MapPin } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -70,7 +70,7 @@ function ResponsiblesPage() {
                 view === "grid" ? "bg-primary-soft text-primary" : "text-muted-foreground"
               )}
             >
-              <LayoutGrid className="size-3.5" /> Grade
+              <LayoutGrid className="size-3.5" /> Cards
             </button>
             <button
               type="button"
@@ -228,9 +228,17 @@ function ResponsiblesPage() {
           onDelete={setDeleting} 
         />
       ) : view === "lista" ? (
-        <div className="surface-card p-6">Visualização de Lista em desenvolvimento</div>
+        <ListView
+          list={list}
+          onEdit={setEditing}
+          onDelete={setDeleting}
+        />
       ) : (
-        <div className="surface-card p-6">Visualização de Colunas em desenvolvimento</div>
+        <ColumnView
+          responsibles={responsibles}
+          onEdit={setEditing}
+          onDelete={setDeleting}
+        />
       )}
 
       <TeamBuilderWizard open={wizardOpen} onOpenChange={setWizardOpen} />
@@ -378,6 +386,152 @@ function ResponsiblesPage() {
     </div>
   );
 }
+
+function ListView({
+  list,
+  onEdit,
+  onDelete,
+}: {
+  list: Responsible[];
+  onEdit: (r: Responsible) => void;
+  onDelete: (r: Responsible) => void;
+}) {
+  return (
+    <div className="surface-card overflow-hidden shadow-card">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-border bg-card/50">
+              <th className="label-caps p-4">Responsável</th>
+              <th className="label-caps p-4">Área / Posto</th>
+              <th className="label-caps p-4 hidden md:table-cell">Setor</th>
+              <th className="label-caps p-4 hidden sm:table-cell">Contato</th>
+              <th className="label-caps p-4 text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.map((r) => (
+              <tr key={r.id} className="hover:bg-card-hover transition-colors group">
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar name={r.name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate">{r.name || "Não definido"}</p>
+                      <PersonStatusBadge status={r.status} className="mt-0.5 scale-90 origin-left" />
+                    </div>
+                  </div>
+                </td>
+                <td className="p-4">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-primary">{r.area}</p>
+                    {r.description && <p className="text-[10px] text-muted-foreground truncate">{r.description}</p>}
+                  </div>
+                </td>
+                <td className="p-4 hidden md:table-cell">
+                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border">
+                    {r.sector || "Geral"}
+                  </span>
+                </td>
+                <td className="p-4 hidden sm:table-cell">
+                  <WhatsappButton number={r.whatsapp} label={r.whatsapp ? r.whatsapp.replace(/^55/, "") : "N/A"} />
+                </td>
+                <td className="p-4 text-right">
+                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="icon" variant="ghost" className="size-8" onClick={() => onEdit(r)}>
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(r)}>
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {list.length === 0 && (
+        <div className="p-12 text-center text-muted-foreground">Nenhum responsável encontrado para este filtro.</div>
+      )}
+    </div>
+  );
+}
+
+function ColumnView({
+  responsibles,
+  onEdit,
+  onDelete,
+}: {
+  responsibles: Responsible[];
+  onEdit: (r: Responsible) => void;
+  onDelete: (r: Responsible) => void;
+}) {
+  const groups = useMemo(() => {
+    const map: Record<string, Responsible[]> = {};
+    RESPONSIBLE_SECTORS.forEach((s) => (map[s] = []));
+    
+    responsibles.forEach((r) => {
+      const s = r.sector || "Outro";
+      if (!map[s]) map[s] = [];
+      map[s].push(r);
+    });
+    
+    return Object.entries(map)
+      .filter(([_, items]) => items.length > 0)
+      .sort((a, b) => b[1].length - a[1].length);
+  }, [responsibles]);
+
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-6 -mx-6 px-6 forja-scroll snap-x">
+      {groups.map(([sector, items]) => (
+        <div key={sector} className="min-w-[300px] max-w-[320px] flex flex-col gap-3 snap-start">
+          <div className="flex items-center justify-between p-2 sticky top-0 bg-background/80 backdrop-blur-sm z-10 rounded-lg">
+            <h3 className="label-caps truncate max-w-[200px]" title={sector}>{sector}</h3>
+            <span className="text-[10px] font-bold bg-primary-soft text-primary px-2 py-0.5 rounded-full">
+              {items.length}
+            </span>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            {items.map((r) => (
+              <div 
+                key={r.id} 
+                className="surface-card p-3 shadow-sm hover:shadow-md transition-shadow group relative"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Avatar name={r.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold truncate leading-tight">{r.name || "NÃO DEFINIDO"}</p>
+                    <p className="text-[9px] label-caps text-primary/70 truncate">{r.area}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between gap-2">
+                  <PersonStatusBadge status={r.status} className="scale-75 origin-left" />
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="icon" variant="ghost" className="size-6" onClick={() => onEdit(r)}>
+                      <Pencil className="size-3" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="size-6 text-destructive/70 hover:text-destructive" onClick={() => onDelete(r)}>
+                      <Trash2 className="size-3" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      {groups.length === 0 && (
+        <div className="w-full p-20 text-center surface-card border-dashed">
+          <Layout className="size-8 mx-auto mb-3 text-muted-foreground opacity-20" />
+          <p className="text-muted-foreground text-sm">Nenhum setor com responsáveis cadastrados.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function EditResponsibleDialog({
   responsible,
