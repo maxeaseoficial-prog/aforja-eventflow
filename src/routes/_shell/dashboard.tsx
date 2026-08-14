@@ -380,7 +380,7 @@ function Dashboard() {
               <AlertCard
                 tone="destructive"
                 label={`${metrics.undefinedAreas.length} áreas sem responsável`}
-                detail={metrics.undefinedAreas.map((a) => a.area).join(", ")}
+                detail={metrics.undefinedAreas.map((a: Responsible) => a.area).join(", ")}
               />
             )}
             {metrics.late.length === 0 &&
