@@ -135,7 +135,7 @@ function ResponsiblesPage() {
           )}
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
             <Plus className="size-4" />
-            <span className="hidden sm:inline">Nova área</span>
+            <span className="hidden sm:inline">Novo time</span>
           </Button>
         </div>
       </div>
@@ -158,7 +158,7 @@ function ResponsiblesPage() {
                 Usar Team Builder
               </Button>
               <Button onClick={() => setNewAreaOpen(true)} variant="outline">
-                Manual: Nova área
+                Manual: Novo time
               </Button>
             </div>
           }
@@ -258,7 +258,7 @@ function ResponsiblesPage() {
       <Dialog open={newAreaOpen} onOpenChange={setNewAreaOpen}>
         <DialogContent className="bg-surface sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="font-display">Nova área</DialogTitle>
+            <DialogTitle className="font-display">Novo time</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -346,7 +346,7 @@ function ResponsiblesPage() {
                 setNewAreaOpen(false);
               }}
             >
-              Criar área
+              Criar time
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -362,13 +362,13 @@ function ResponsiblesPage() {
             setDeleting(null);
           }
         }}
-        title="Excluir área?"
+        title="Excluir time?"
         description={
           deleting?.name 
             ? `Tem certeza que deseja excluir a área "${deleting.area}"? Esta ação também removerá os dados do responsável (${deleting.name}) vinculados a esta área.`
             : `Tem certeza que deseja excluir a área "${deleting?.area}"? Esta ação não pode ser desfeita.`
         }
-        confirmLabel="Excluir área"
+        confirmLabel="Excluir time"
       />
 
       <ConfirmDeleteDialog

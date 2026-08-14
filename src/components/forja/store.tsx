@@ -60,7 +60,7 @@ interface ForjaState {
     postEvent: ChecklistGroup;
     opening: ChecklistGroup;
     learnings: Learning[];
-    preferredTeamView?: "grid" | "organograma" | "lista" | "colunas";
+    preferredTeamView: "colunas";
   }>;
 }
 
@@ -80,7 +80,7 @@ const emptyEventData = () => ({
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
   learnings: seedLearnings,
-  preferredTeamView: "grid" as "grid" | "organograma" | "lista" | "colunas",
+  preferredTeamView: "colunas" as const,
 });
 
 const initialState: ForjaState = {
@@ -162,8 +162,8 @@ interface ForjaContextValue {
   addConnection: (sourceId: string, targetId: string) => void;
   removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
-  preferredTeamView: "grid" | "organograma" | "lista" | "colunas";
-  setPreferredTeamView: (view: "grid" | "organograma" | "lista" | "colunas") => void;
+  preferredTeamView: "colunas";
+  setPreferredTeamView: (view: "colunas") => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
   syncNow: () => Promise<void>;
@@ -381,7 +381,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       ...activeData,
       currentEventId: state.currentEventId,
       events: state.events || [],
-      preferredTeamView: activeData.preferredTeamView || "grid",
+      preferredTeamView: "colunas",
       setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();

@@ -52,9 +52,9 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                 <p className="text-xs text-muted-foreground mt-0.5">Configuração inteligente de equipe de evento</p>
               </div>
               <div className="text-right">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 5</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 4</span>
                 <div className="flex gap-1 mt-1.5">
-                  {[1, 2, 3, 4, 5].map(s => (
+                  {[1, 2, 3, 4].map(s => (
                     <div 
                       key={s} 
                       className={cn(
