@@ -52,9 +52,9 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                 <p className="text-xs text-muted-foreground mt-0.5">Configuração inteligente de equipe de evento</p>
               </div>
               <div className="text-right">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 4</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 5</span>
                 <div className="flex gap-1 mt-1.5">
-                  {[1, 2, 3, 4].map(s => (
+                  {[1, 2, 3, 4, 5].map(s => (
                     <div 
                       key={s} 
                       className={cn(
@@ -316,17 +316,61 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                         Reiniciar
                       </Button>
                       <Button 
-                        onClick={() => {
-                          wizard.applyRecommendations();
-                          onOpenChange(false);
-                        }} 
+                        onClick={wizard.nextStep} 
                         className="flex-1 h-12 text-base font-bold gap-2 bg-primary shadow-lg shadow-primary/30"
                       >
-                        Aplicar Estrutura <ChevronRight className="size-4" />
+                        Próximo <ChevronRight className="size-4" />
                       </Button>
                     </div>
                   </>
                 )}
+              </div>
+            )}
+
+            {wizard.step === 5 && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center size-10 rounded-xl bg-primary-soft text-primary mb-2">
+                    <CheckCircle2 className="size-5" />
+                  </div>
+                  <h2 className="text-2xl font-display font-bold">Resumo e Confirmação</h2>
+                  <p className="text-muted-foreground">Revise a escala total da equipe antes de criar as áreas no sistema.</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-6 rounded-2xl bg-card/40 border border-border">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total de Times</p>
+                    <p className="text-3xl font-display font-bold text-primary">{wizard.recommendations.length}</p>
+                  </div>
+                  <div className="p-6 rounded-2xl bg-card/40 border border-border">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total de Pessoas</p>
+                    <p className="text-3xl font-display font-bold text-primary">
+                      {wizard.recommendations.reduce((sum, r) => sum + 1 + r.memberRoles.reduce((s, m) => s + m.count, 0), 0)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="surface-card p-4 border-primary/20 bg-primary-soft/10">
+                  <p className="text-xs text-primary font-medium leading-relaxed">
+                    Ao clicar em "Confirmar e Criar", o sistema irá gerar automaticamente todas as áreas e postos de trabalho. 
+                    Você poderá preencher os nomes e contatos de cada pessoa nas visualizações de Grade, Organograma ou Lista.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button variant="ghost" onClick={wizard.prevStep} className="h-12 px-6">
+                    <ChevronLeft className="size-4" /> Voltar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      wizard.applyRecommendations();
+                      onOpenChange(false);
+                    }} 
+                    className="flex-1 h-12 text-base font-bold gap-2 bg-primary shadow-lg shadow-primary/30"
+                  >
+                    Confirmar e Criar <Rocket className="size-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
