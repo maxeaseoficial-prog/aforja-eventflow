@@ -31,7 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/palestrantes", label: "Palestrantes", icon: Mic, subtitle: "Preparação individual de cada palestra." },
   { to: "/staff", label: "Staff", icon: Users, subtitle: "Equipe operacional e escalas." },
   { to: "/midia", label: "Mídia", icon: Camera, subtitle: "Captação, cenas e entregáveis." },
-  { to: "/estrutura", label: "Estrutura", icon: Boxes, subtitle: "Equipamentos, testes e plano B." },
+  
   
   { to: "/contingencias", label: "Contingências", icon: LifeBuoy, subtitle: "O que fazer quando algo falhar." },
   { to: "/pos-evento", label: "Pós-evento", icon: Rotate3d, subtitle: "Entregas, aprendizados e próxima edição." },
