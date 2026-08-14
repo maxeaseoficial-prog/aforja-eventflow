@@ -29,7 +29,7 @@ function EventSelector() {
     date: "",
     venue: "",
   });
-  const navigate = useNavigate();
+
 
   const handleCreateEvent = () => {
     if (!newEvent.name || !newEvent.date) return;
