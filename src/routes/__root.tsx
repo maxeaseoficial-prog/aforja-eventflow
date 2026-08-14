@@ -65,7 +65,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         {error.message && (
           <div className="mt-4 p-3 bg-destructive/5 border border-destructive/10 rounded-md">
             <p className="text-[10px] font-mono text-destructive/70 break-all uppercase tracking-tighter">
-              {error.message}
+              LOG: {error.message}
             </p>
           </div>
         )}
