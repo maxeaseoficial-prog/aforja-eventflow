@@ -138,6 +138,7 @@ function ResponsiblesPage() {
         responsible={editing}
         allResponsibles={responsibles}
         onClose={() => setEditing(null)}
+        addResponsible={addResponsible}
         onSave={(patch) => {
           if (!editing) return;
           updateResponsible(editing.id, patch);
@@ -480,11 +481,13 @@ function EditResponsibleDialog({
   responsible,
   onClose,
   onSave,
+  addResponsible,
   allResponsibles,
 }: {
   responsible: Responsible | null;
   onClose: () => void;
   onSave: (patch: Partial<Responsible>) => void;
+  addResponsible: (r: Responsible) => void;
   allResponsibles: Responsible[];
 }) {
   const isContextual = responsible?.id?.startsWith('new-');
@@ -625,7 +628,7 @@ function EditResponsibleDialog({
                 toast.error("Informe o nome.");
                 return;
               }
-              onSave({
+              const patch: Partial<Responsible> = {
                 area: area.trim(),
                 description: description.trim() || null,
                 name: name.trim() || null,
@@ -636,12 +639,23 @@ function EditResponsibleDialog({
                 sector,
                 parentId,
                 isLeader: responsible?.isLeader || false,
-                id: responsible?.id?.startsWith('new-') ? `r-${Date.now()}` : responsible?.id
-              });
+              };
+              
+              if (responsible?.id?.startsWith('new-')) {
+                addResponsible({
+                  ...patch,
+                  id: `r-${Date.now()}`,
+                } as Responsible);
+                toast.success(responsible.isLeader ? "Líder definido" : "Integrante adicionado");
+                onClose();
+              } else {
+                onSave(patch);
+              }
             }}
           >
             Salvar
           </Button>
+
 
         </DialogFooter>
       </DialogContent>
