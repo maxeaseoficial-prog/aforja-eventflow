@@ -461,14 +461,18 @@ export const seedLearnings: Learning[] = [];
 
 export const seedNotifications = [];
 
-export const brl = (value: number | null | undefined) => {
+export const brl = (value: number | string | null | undefined) => {
   if (value === null || value === undefined) return "R$ 0";
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num)) return "R$ 0";
+  return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 };
 
-export const formatDate = (iso: string | null | undefined) => {
+export const formatDate = (iso: string | Date | null | undefined) => {
   if (!iso) return "—";
-  return new Date(iso + (iso.length === 10 ? "T12:00:00" : "")).toLocaleDateString("pt-BR", {
+  const date = iso instanceof Date ? iso : new Date(iso + (typeof iso === "string" && iso.length === 10 ? "T12:00:00" : ""));
+  if (isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
   });
