@@ -9,6 +9,7 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
