@@ -133,9 +133,11 @@ export interface Responsible {
   status: PersonStatus;
   notes: string;
   sector?: string;
-  parentId?: string | null; // Keep for legacy/main hierarchy but rely on connections for visuals
+  parentId?: string | null;
   position?: { x: number; y: number } | null;
-  connections?: { id: string; target: string }[]; // New: list of child IDs
+  connections?: { id: string; target: string }[];
+  teamId?: string | null; // ID of the team this person belongs to
+  isLeader?: boolean;     // Whether this person is the leader of their team
 }
 
 const AREAS = [
