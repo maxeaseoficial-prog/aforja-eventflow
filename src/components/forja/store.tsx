@@ -454,6 +454,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       },
       removeResponsible: (id) => patchData({ responsibles: activeData.responsibles.filter((r) => r.id !== id) }),
       addResponsiblesBulk: (list) => patchData({ responsibles: [...activeData.responsibles, ...list] }),
+      updateEventData: (patch) => patchData(patch),
       updatePurchase: (id, patch) => patchData({ purchases: patchList(activeData.purchases, id, patch) }),
       addPurchase: (purchase) => patchData({ purchases: [purchase, ...activeData.purchases] }),
       removePurchase: (id) => patchData({ purchases: activeData.purchases.filter((p) => p.id !== id) }),
