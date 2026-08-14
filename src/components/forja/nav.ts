@@ -23,7 +23,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, subtitle: "Visão geral da organização da Forja." },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, subtitle: "Visão geral da organização da Forja." },
   { to: "/responsaveis", label: "Responsáveis", icon: UserCog, subtitle: "Quem responde por cada área do evento." },
   { to: "/tarefas", label: "Tarefas", icon: ClipboardList, subtitle: "Tudo que precisa ser executado." },
   { to: "/compras", label: "Compras", icon: ShoppingCart, subtitle: "Itens, fornecedores e orçamento." },
