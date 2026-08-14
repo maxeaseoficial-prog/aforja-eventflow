@@ -422,20 +422,31 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       updateResponsible: (id, patch) => patchData({ responsibles: patchList(activeData.responsibles, id, patch) }),
       addResponsible: (responsible) => {
         const others = activeData.responsibles;
+        
+        // Find existing responsibles in the same sector to avoid stacking
+        const sameSector = others.filter(r => r.sector === responsible.sector);
+        
         let x = 0;
         let y = 0;
         
-        if (others.length > 0) {
-          // Find the rightmost node
-          const maxX = Math.max(...others.map(r => r.position?.x ?? 0));
-          // Default node width is 280, so we add 320 for spacing
+        if (sameSector.length > 0) {
+          // Find the rightmost node in this sector
+          const maxX = Math.max(...sameSector.map(r => r.position?.x ?? 0));
+          const sectorY = sameSector[0].position?.y ?? 0;
           x = maxX + 320;
-          y = 0;
+          y = sectorY;
+        } else if (others.length > 0) {
+          // If it's a new sector, place it below the lowest existing node
+          const maxY = Math.max(...others.map(r => r.position?.y ?? 0));
+          x = 0;
+          y = maxY + 250;
         }
         
         const newResponsible = {
           ...responsible,
-          position: { x, y }
+          position: responsible.position && (responsible.position.x !== 0 || responsible.position.y !== 0) 
+            ? responsible.position 
+            : { x, y }
         };
         
         patchData({ responsibles: [...others, newResponsible] });
