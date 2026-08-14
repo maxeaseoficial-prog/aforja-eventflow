@@ -220,6 +220,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
             events: [eventEntry],
             eventData: {
               [eventId]: {
+                ...emptyEventData(),
                 event: oldData.event || seedEvent,
                 tasks: oldData.tasks || seedTasks,
                 responsibles: oldData.responsibles || seedResponsibles,
@@ -381,8 +382,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       ...activeData,
       currentEventId: state.currentEventId,
       events: state.events || [],
-      preferredTeamView: "colunas",
-      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
+      preferredTeamView: "colunas" as const,
+      setPreferredTeamView: () => {},
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };

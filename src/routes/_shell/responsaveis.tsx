@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout, Phone, Briefcase, MapPin } from "lucide-react";
+import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout, Phone, Briefcase, MapPin, Menu, MoreVertical, CheckCircle2 } from "lucide-react";
+
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -13,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
 import { RESPONSIBLE_SECTORS } from "@/lib/forja-data";
 import { OrganogramaTree } from "@/components/forja/OrganogramaTree";
@@ -33,6 +35,8 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 
 function ResponsiblesPage() {
   const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView } = useForja();
+  const metrics = useForjaMetrics();
+
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
   
@@ -56,50 +60,11 @@ function ResponsiblesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-border bg-card p-0.5">
-            <button
-              type="button"
-              onClick={() => handleViewChange("grid")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "grid" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <LayoutGrid className="size-3.5" /> Cards
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("organograma")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "organograma" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Network className="size-3.5" /> Organograma
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("lista")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "lista" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Users className="size-3.5" /> Lista
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("colunas")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "colunas" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Layout className="size-3.5" /> Colunas
-            </button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold">Responsáveis e Times</h1>
+          <p className="text-sm text-muted-foreground">Organize os líderes e integrantes de cada time do evento.</p>
         </div>
+
         
         <div className="flex min-w-0 flex-wrap gap-2">
           {(["todos", "confirmado", "pendente", "indefinido"] as const).map((option) => (
@@ -159,83 +124,22 @@ function ResponsiblesPage() {
             </div>
           }
         />
-      ) : view === "grid" ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((responsible) => (
-            <article
-              key={responsible.id}
-              className="surface-card surface-card-hover animate-fade-up p-5 shadow-card"
-            >
-              <div className="flex items-start gap-3">
-                <Avatar name={responsible.name} size="lg" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col">
-                    <p className="label-caps">{responsible.area}</p>
-                    {responsible.description && (
-                      <p className="text-[10px] text-muted-foreground/80 leading-tight italic mt-0.5">
-                        {responsible.description}
-                      </p>
-                    )}
-                  </div>
-                  {responsible.name ? (
-                    <>
-                      <h3 className="truncate font-display text-base font-bold">{responsible.name}</h3>
-                      <p className="truncate text-sm text-muted-foreground">{responsible.role}</p>
-                    </>
-                  ) : (
-                    <p className="mt-1 font-display text-sm font-bold text-destructive">
-                      RESPONSÁVEL NÃO DEFINIDO
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-1 border-t border-border pt-3">
-                <FieldRow
-                  label="WhatsApp"
-                  value={responsible.whatsapp ? responsible.whatsapp.replace(/^55/, "") : "—"}
-                />
-                <FieldRow label="Status" value={<PersonStatusBadge status={responsible.status} />} />
-                {responsible.notes && <FieldRow label="Obs." value={responsible.notes} />}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setEditing(responsible)}>
-                  {responsible.name ? <Pencil className="size-3.5" /> : <UserPlus className="size-3.5" />}
-                  {responsible.name ? "Editar" : "Adicionar responsável"}
-                </Button>
-                <WhatsappButton number={responsible.whatsapp} />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="ml-auto text-muted-foreground hover:text-destructive"
-                  onClick={() => setDeleting(responsible)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : view === "organograma" ? (
-        <OrganogramaTree 
-          responsibles={responsibles} 
-          onEdit={setEditing} 
-          onDelete={setDeleting} 
+      {responsibles.length === 0 ? (
+        <EmptyState
+          icon={UserPlus}
+          title="Nenhum time definido"
+          description="Comece definindo os times do evento usando o Team Builder ou manualmente."
+          action={
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={() => setWizardOpen(true)} variant="default" className="bg-primary hover:bg-primary/90">
+                Usar Team Builder
+              </Button>
+              <Button onClick={() => setNewAreaOpen(true)} variant="outline">
+                Manual: Novo time
+              </Button>
+            </div>
+          }
         />
-      ) : view === "lista" ? (
-        <ListView
-          list={list}
-          onEdit={setEditing}
-          onDelete={setDeleting}
-        />
-      ) : (
-        <ColumnView
-          responsibles={responsibles}
-          onEdit={setEditing}
-          onDelete={setDeleting}
-        />
-      )}
 
       <TeamBuilderWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
@@ -383,75 +287,18 @@ function ResponsiblesPage() {
   );
 }
 
-function ListView({
-  list,
-  onEdit,
-  onDelete,
-}: {
-  list: Responsible[];
-  onEdit: (r: Responsible) => void;
-  onDelete: (r: Responsible) => void;
-}) {
+function MetricCard({ value, label, tone = "primary" }: { value: number; label: string; tone?: "primary" | "warning" }) {
   return (
-    <div className="surface-card overflow-hidden shadow-card">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-card/50">
-              <th className="label-caps p-4">Responsável</th>
-              <th className="label-caps p-4">Área / Posto</th>
-              <th className="label-caps p-4 hidden md:table-cell">Setor</th>
-              <th className="label-caps p-4 hidden sm:table-cell">Contato</th>
-              <th className="label-caps p-4 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {list.map((r) => (
-              <tr key={r.id} className="hover:bg-card-hover transition-colors group">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={r.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="font-bold text-sm truncate">{r.name || "Não definido"}</p>
-                      <PersonStatusBadge status={r.status} className="mt-0.5 scale-90 origin-left" />
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-primary">{r.area}</p>
-                    {r.description && <p className="text-[10px] text-muted-foreground truncate">{r.description}</p>}
-                  </div>
-                </td>
-                <td className="p-4 hidden md:table-cell">
-                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border">
-                    {r.sector || "Geral"}
-                  </span>
-                </td>
-                <td className="p-4 hidden sm:table-cell">
-                  <WhatsappButton number={r.whatsapp} label={r.whatsapp ? r.whatsapp.replace(/^55/, "") : "N/A"} />
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="size-8" onClick={() => onEdit(r)}>
-                      <Pencil className="size-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(r)}>
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {list.length === 0 && (
-        <div className="p-12 text-center text-muted-foreground">Nenhum responsável encontrado para este filtro.</div>
-      )}
+    <div className="surface-card p-4 flex flex-col items-center justify-center text-center">
+      <p className={cn(
+        "text-2xl font-display font-black",
+        tone === "primary" ? "text-primary" : "text-warning"
+      )}>{value}</p>
+      <p className="text-[10px] label-caps text-muted-foreground mt-1">{label}</p>
     </div>
   );
 }
+
 
 function ColumnView({
   responsibles,
