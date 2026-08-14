@@ -585,6 +585,11 @@ export function useForjaMetrics() {
     const testedEquipment = equipment.filter((e: Equipment) => e.test === "aprovado");
     const confirmedTeam = [...responsibles, ...staff].filter((p: Responsible | StaffMember) => p.status === "confirmado");
     const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
+
+    const totalTeams = new Set(responsibles.map(r => r.teamId || r.sector)).size;
+    const leadersCount = responsibles.filter(r => r.isLeader && r.name).length;
+    const openSlots = responsibles.filter(r => !r.name).length;
+
     const categories = [
       { label: "Equipe", value: pct(confirmedTeam.length, responsibles.length + staff.length) },
       { label: "Estrutura", value: pct(testedEquipment.length, equipment.length) },
@@ -604,7 +609,10 @@ export function useForjaMetrics() {
       purchasesWithoutOwner,
       undefinedAreas,
       unconfirmedSpeakers,
-      teamSize: (responsibles?.filter((r: Responsible) => r?.name).length ?? 0) + (staff?.length ?? 0),
+      teamSize: (responsibles?.length ?? 0) + (staff?.length ?? 0),
+      totalTeams,
+      leadersCount,
+      openSlots,
       confirmedTeam: confirmedTeam.length,
       spent,
       estimated,

@@ -4,7 +4,7 @@ import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, La
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
-import { useForja } from "@/components/forja/store";
+import { useForja, useForjaMetrics } from "@/components/forja/store";
 import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import { Avatar, EmptyState, FieldRow, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
