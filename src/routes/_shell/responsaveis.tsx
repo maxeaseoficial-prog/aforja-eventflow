@@ -221,12 +221,16 @@ function ResponsiblesPage() {
             </article>
           ))}
         </div>
-      ) : (
+      ) : view === "organograma" ? (
         <OrganogramaTree 
           responsibles={responsibles} 
           onEdit={setEditing} 
           onDelete={setDeleting} 
         />
+      ) : view === "lista" ? (
+        <div className="surface-card p-6">Visualização de Lista em desenvolvimento</div>
+      ) : (
+        <div className="surface-card p-6">Visualização de Colunas em desenvolvimento</div>
       )}
 
       <TeamBuilderWizard open={wizardOpen} onOpenChange={setWizardOpen} />
