@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout, Phone, Briefcase, MapPin } from "lucide-react";
+import { Pencil, Plus, UserPlus, Trash2, XCircle, LayoutGrid, Network, Users, Layout, Phone, Briefcase, MapPin, Menu, MoreVertical, CheckCircle2 } from "lucide-react";
+
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
-import { useForja } from "@/components/forja/store";
+import { useForja, useForjaMetrics } from "@/components/forja/store";
 import { ConfirmDeleteDialog } from "@/components/forja/ConfirmDeleteDialog";
 import { Avatar, EmptyState, FieldRow, PersonStatusBadge, WhatsappButton } from "@/components/forja/ui-kit";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
 import { RESPONSIBLE_SECTORS } from "@/lib/forja-data";
 import { OrganogramaTree } from "@/components/forja/OrganogramaTree";
@@ -32,17 +34,15 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView, setPreferredTeamView } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView } = useForja();
+  const metrics = useForjaMetrics();
+
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
   
-  // We handle the view state locally but initialize it from store and sync back when changed
-  const [view, setView] = useState<"grid" | "organograma" | "lista" | "colunas">(preferredTeamView || "grid");
-  
-  const handleViewChange = (newView: "grid" | "organograma" | "lista" | "colunas") => {
-    setView(newView);
-    setPreferredTeamView(newView);
-  };
+  // Only Columns view is supported now
+  const view = "colunas";
+
 
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -60,50 +60,11 @@ function ResponsiblesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-border bg-card p-0.5">
-            <button
-              type="button"
-              onClick={() => handleViewChange("grid")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "grid" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <LayoutGrid className="size-3.5" /> Cards
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("organograma")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "organograma" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Network className="size-3.5" /> Organograma
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("lista")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "lista" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Users className="size-3.5" /> Lista
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewChange("colunas")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
-                view === "colunas" ? "bg-primary-soft text-primary" : "text-muted-foreground"
-              )}
-            >
-              <Layout className="size-3.5" /> Colunas
-            </button>
-          </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold">Responsáveis e Times</h1>
+          <p className="text-sm text-muted-foreground">Organize os líderes e integrantes de cada time do evento.</p>
         </div>
+
         
         <div className="flex min-w-0 flex-wrap gap-2">
           {(["todos", "confirmado", "pendente", "indefinido"] as const).map((option) => (
@@ -135,7 +96,7 @@ function ResponsiblesPage() {
           )}
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setNewAreaOpen(true)}>
             <Plus className="size-4" />
-            <span className="hidden sm:inline">Nova área</span>
+            <span className="hidden sm:inline">Novo time</span>
           </Button>
         </div>
       </div>
@@ -158,80 +119,10 @@ function ResponsiblesPage() {
                 Usar Team Builder
               </Button>
               <Button onClick={() => setNewAreaOpen(true)} variant="outline">
-                Manual: Nova área
+                Manual: Novo time
               </Button>
             </div>
           }
-        />
-      ) : view === "grid" ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((responsible) => (
-            <article
-              key={responsible.id}
-              className="surface-card surface-card-hover animate-fade-up p-5 shadow-card"
-            >
-              <div className="flex items-start gap-3">
-                <Avatar name={responsible.name} size="lg" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col">
-                    <p className="label-caps">{responsible.area}</p>
-                    {responsible.description && (
-                      <p className="text-[10px] text-muted-foreground/80 leading-tight italic mt-0.5">
-                        {responsible.description}
-                      </p>
-                    )}
-                  </div>
-                  {responsible.name ? (
-                    <>
-                      <h3 className="truncate font-display text-base font-bold">{responsible.name}</h3>
-                      <p className="truncate text-sm text-muted-foreground">{responsible.role}</p>
-                    </>
-                  ) : (
-                    <p className="mt-1 font-display text-sm font-bold text-destructive">
-                      RESPONSÁVEL NÃO DEFINIDO
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-1 border-t border-border pt-3">
-                <FieldRow
-                  label="WhatsApp"
-                  value={responsible.whatsapp ? responsible.whatsapp.replace(/^55/, "") : "—"}
-                />
-                <FieldRow label="Status" value={<PersonStatusBadge status={responsible.status} />} />
-                {responsible.notes && <FieldRow label="Obs." value={responsible.notes} />}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setEditing(responsible)}>
-                  {responsible.name ? <Pencil className="size-3.5" /> : <UserPlus className="size-3.5" />}
-                  {responsible.name ? "Editar" : "Adicionar responsável"}
-                </Button>
-                <WhatsappButton number={responsible.whatsapp} />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="ml-auto text-muted-foreground hover:text-destructive"
-                  onClick={() => setDeleting(responsible)}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : view === "organograma" ? (
-        <OrganogramaTree 
-          responsibles={responsibles} 
-          onEdit={setEditing} 
-          onDelete={setDeleting} 
-        />
-      ) : view === "lista" ? (
-        <ListView
-          list={list}
-          onEdit={setEditing}
-          onDelete={setDeleting}
         />
       ) : (
         <ColumnView
@@ -247,6 +138,7 @@ function ResponsiblesPage() {
         responsible={editing}
         allResponsibles={responsibles}
         onClose={() => setEditing(null)}
+        addResponsible={addResponsible}
         onSave={(patch) => {
           if (!editing) return;
           updateResponsible(editing.id, patch);
@@ -258,7 +150,7 @@ function ResponsiblesPage() {
       <Dialog open={newAreaOpen} onOpenChange={setNewAreaOpen}>
         <DialogContent className="bg-surface sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="font-display">Nova área</DialogTitle>
+            <DialogTitle className="font-display">Novo time</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -346,7 +238,7 @@ function ResponsiblesPage() {
                 setNewAreaOpen(false);
               }}
             >
-              Criar área
+              Criar time
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -362,13 +254,13 @@ function ResponsiblesPage() {
             setDeleting(null);
           }
         }}
-        title="Excluir área?"
+        title="Excluir time?"
         description={
           deleting?.name 
             ? `Tem certeza que deseja excluir a área "${deleting.area}"? Esta ação também removerá os dados do responsável (${deleting.name}) vinculados a esta área.`
             : `Tem certeza que deseja excluir a área "${deleting?.area}"? Esta ação não pode ser desfeita.`
         }
-        confirmLabel="Excluir área"
+        confirmLabel="Excluir time"
       />
 
       <ConfirmDeleteDialog
@@ -387,75 +279,18 @@ function ResponsiblesPage() {
   );
 }
 
-function ListView({
-  list,
-  onEdit,
-  onDelete,
-}: {
-  list: Responsible[];
-  onEdit: (r: Responsible) => void;
-  onDelete: (r: Responsible) => void;
-}) {
+function MetricCard({ value, label, tone = "primary" }: { value: number; label: string; tone?: "primary" | "warning" }) {
   return (
-    <div className="surface-card overflow-hidden shadow-card">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-border bg-card/50">
-              <th className="label-caps p-4">Responsável</th>
-              <th className="label-caps p-4">Área / Posto</th>
-              <th className="label-caps p-4 hidden md:table-cell">Setor</th>
-              <th className="label-caps p-4 hidden sm:table-cell">Contato</th>
-              <th className="label-caps p-4 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {list.map((r) => (
-              <tr key={r.id} className="hover:bg-card-hover transition-colors group">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={r.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="font-bold text-sm truncate">{r.name || "Não definido"}</p>
-                      <PersonStatusBadge status={r.status} className="mt-0.5 scale-90 origin-left" />
-                    </div>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-primary">{r.area}</p>
-                    {r.description && <p className="text-[10px] text-muted-foreground truncate">{r.description}</p>}
-                  </div>
-                </td>
-                <td className="p-4 hidden md:table-cell">
-                  <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-md border border-border">
-                    {r.sector || "Geral"}
-                  </span>
-                </td>
-                <td className="p-4 hidden sm:table-cell">
-                  <WhatsappButton number={r.whatsapp} label={r.whatsapp ? r.whatsapp.replace(/^55/, "") : "N/A"} />
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="size-8" onClick={() => onEdit(r)}>
-                      <Pencil className="size-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(r)}>
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {list.length === 0 && (
-        <div className="p-12 text-center text-muted-foreground">Nenhum responsável encontrado para este filtro.</div>
-      )}
+    <div className="surface-card p-4 flex flex-col items-center justify-center text-center">
+      <p className={cn(
+        "text-2xl font-display font-black",
+        tone === "primary" ? "text-primary" : "text-warning"
+      )}>{value}</p>
+      <p className="text-[10px] label-caps text-muted-foreground mt-1">{label}</p>
     </div>
   );
 }
+
 
 function ColumnView({
   responsibles,
@@ -467,65 +302,174 @@ function ColumnView({
   onDelete: (r: Responsible) => void;
 }) {
   const groups = useMemo(() => {
-    const map: Record<string, Responsible[]> = {};
-    RESPONSIBLE_SECTORS.forEach((s) => (map[s] = []));
+    const map: Record<string, { leader: Responsible | null; members: Responsible[]; teamSize: number }> = {};
+
     
     responsibles.forEach((r) => {
       const s = r.sector || "Outro";
-      if (!map[s]) map[s] = [];
-      map[s].push(r);
+      if (!map[s]) map[s] = { leader: null, members: [], teamSize: 0 };
+      
+      if (r.isLeader) {
+        map[s].leader = r;
+      } else {
+        map[s].members.push(r);
+      }
+      
+      // Calculate team size: either from the first responsible we find or sum
+      // But based on recommendation engine, we should check if teamId matches
+      // For now, let's use the unique count of positions in this sector
+      map[s].teamSize = (map[s].leader ? 1 : 0) + map[s].members.length;
     });
     
     return Object.entries(map)
-      .filter(([_, items]) => items.length > 0)
-      .sort((a, b) => b[1].length - a[1].length);
+      .filter(([_, data]) => data.leader || data.members.length > 0)
+      .sort((a, b) => b[1].teamSize - a[1].teamSize);
   }, [responsibles]);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-6 -mx-6 px-6 forja-scroll snap-x">
-      {groups.map(([sector, items]) => (
-        <div key={sector} className="min-w-[300px] max-w-[320px] flex flex-col gap-3 snap-start">
-          <div className="flex items-center justify-between p-2 sticky top-0 bg-background/80 backdrop-blur-sm z-10 rounded-lg">
-            <h3 className="label-caps truncate max-w-[200px]" title={sector}>{sector}</h3>
-            <span className="text-[10px] font-bold bg-primary-soft text-primary px-2 py-0.5 rounded-full">
-              {items.length}
+    <div className="flex gap-6 overflow-x-auto pb-6 -mx-6 px-6 forja-scroll snap-x">
+      {groups.map(([sector, data]) => (
+        <div key={sector} className="min-w-[320px] max-w-[340px] flex flex-col gap-4 snap-start">
+          <div className="flex items-center justify-between p-3 sticky top-0 bg-background/90 backdrop-blur-md z-10 rounded-xl border border-border/50 shadow-sm">
+            <h3 className="label-caps truncate font-bold text-xs" title={sector}>{sector}</h3>
+            <span className="text-[10px] font-black bg-primary text-primary-foreground px-2 py-0.5 rounded-full min-w-[20px] text-center">
+              {data.teamSize}
             </span>
           </div>
           
-          <div className="flex flex-col gap-3">
-            {items.map((r) => (
-              <div 
-                key={r.id} 
-                className="surface-card p-3 shadow-sm hover:shadow-md transition-shadow group relative"
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <Avatar name={r.name} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold truncate leading-tight">{r.name || "NÃO DEFINIDO"}</p>
-                    <p className="text-[9px] label-caps text-primary/70 truncate">{r.area}</p>
+          <div className="flex flex-col gap-5">
+            {/* LÍDER DO TIME */}
+            <div className="space-y-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Líder do Time</p>
+              {data.leader ? (
+                <div 
+                  className="surface-card p-4 shadow-md border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors group relative cursor-pointer"
+                  onClick={() => onEdit(data.leader!)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Avatar name={data.leader.name} size="md" />
+                      <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground p-0.5 rounded-full border-2 border-background">
+                        <CheckCircle2 className="size-2.5" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black truncate leading-tight text-primary">
+                        {data.leader.name || "NOME NÃO DEFINIDO"}
+                      </p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase truncate mt-0.5">
+                        {data.leader.role || "Coordenador"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 flex items-center justify-between">
+                    <PersonStatusBadge status={data.leader.status} className="scale-75 origin-left" />
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" variant="ghost" className="size-7" onClick={(e) => { e.stopPropagation(); onEdit(data.leader!); }}>
+                        <Pencil className="size-3.5" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="size-7 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(data.leader!); }}>
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center justify-between gap-2">
-                  <PersonStatusBadge status={r.status} className="scale-75 origin-left" />
-                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" className="size-6" onClick={() => onEdit(r)}>
-                      <Pencil className="size-3" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="size-6 text-destructive/70 hover:text-destructive" onClick={() => onDelete(r)}>
-                      <Trash2 className="size-3" />
-                    </Button>
-                  </div>
-                </div>
+              ) : (
+                <button 
+                  onClick={() => onEdit({ 
+                    id: `new-leader-${sector}`, 
+                    area: sector, 
+                    sector, 
+                    isLeader: true, 
+                    status: 'indefinido', 
+                    name: null, 
+                    role: 'Líder do Time',
+                    whatsapp: '',
+                    notes: ''
+                  } as Responsible)}
+                  className="w-full border-2 border-dashed border-primary/20 rounded-xl p-4 text-center hover:bg-primary/5 hover:border-primary/40 transition-all group"
+                >
+                  <UserPlus className="size-5 mx-auto mb-2 text-primary/40 group-hover:text-primary/60 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60 group-hover:text-primary transition-colors">
+                    Definir Líder
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* INTEGRANTES */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Integrantes</p>
+                <span className="text-[9px] font-bold text-muted-foreground/60">{data.members.length}</span>
               </div>
-            ))}
+              
+              <div className="flex flex-col gap-2">
+                {data.members.map((r) => (
+                  <div 
+                    key={r.id} 
+                    className="surface-card p-3 shadow-sm hover:shadow-md transition-shadow group relative cursor-pointer"
+                    onClick={() => onEdit(r)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar name={r.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold truncate leading-tight">
+                          {r.name || "Definir Integrante"}
+                        </p>
+                        <p className="text-[9px] text-muted-foreground truncate font-medium">
+                          {r.role || "Membro"}
+                        </p>
+                      </div>
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="size-6" onClick={(e) => { e.stopPropagation(); onEdit(r); }}>
+                          <Pencil className="size-3" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="size-6 text-destructive/70 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(r); }}>
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                <button 
+                  onClick={() => onEdit({ 
+                    id: `new-member-${sector}-${Date.now()}`, 
+                    area: sector, 
+                    sector, 
+                    isLeader: false, 
+                    status: 'indefinido', 
+                    name: null, 
+                    role: 'Integrante',
+                    whatsapp: '',
+                    notes: ''
+                  } as Responsible)}
+                  className="w-full border border-dashed border-border rounded-lg p-2.5 text-center hover:bg-card-hover hover:border-border-strong transition-all flex items-center justify-center gap-2 group"
+                >
+                  <Plus className="size-3 text-muted-foreground/60" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 group-hover:text-foreground">
+                    Adicionar Integrante
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* MÉTRICA DA COLUNA */}
+            <div className="mt-2 pt-2 border-t border-border flex items-center justify-between text-[9px] font-bold text-muted-foreground/50 uppercase tracking-widest">
+              <span>{data.leader && data.members.filter(m => m.name).length + 1} / {data.teamSize} definidos</span>
+              <span>
+                {data.teamSize - (data.leader && data.leader.name ? 1 : 0) - data.members.filter(m => m.name).length} vagas
+              </span>
+            </div>
           </div>
         </div>
       ))}
       {groups.length === 0 && (
         <div className="w-full p-20 text-center surface-card border-dashed">
           <Layout className="size-8 mx-auto mb-3 text-muted-foreground opacity-20" />
-          <p className="text-muted-foreground text-sm">Nenhum setor com responsáveis cadastrados.</p>
+          <p className="text-muted-foreground text-sm">Nenhum time cadastrado.</p>
         </div>
       )}
     </div>
@@ -537,14 +481,20 @@ function EditResponsibleDialog({
   responsible,
   onClose,
   onSave,
+  addResponsible,
   allResponsibles,
 }: {
   responsible: Responsible | null;
   onClose: () => void;
   onSave: (patch: Partial<Responsible>) => void;
+  addResponsible: (r: Responsible) => void;
   allResponsibles: Responsible[];
 }) {
+  const isContextual = responsible?.id?.startsWith('new-');
+  const title = responsible?.isLeader ? "Definir líder do time" : "Adicionar integrante";
+  
   const [name, setName] = useState("");
+
   const [area, setArea] = useState("");
   const [description, setDescription] = useState("");
   const [role, setRole] = useState("");
@@ -575,8 +525,12 @@ function EditResponsibleDialog({
     <Dialog open={!!responsible} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-surface sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="font-display">Editar Área</DialogTitle>
+          <DialogTitle className="font-display">{title}</DialogTitle>
+          {isContextual && (
+            <p className="text-xs text-primary font-bold uppercase tracking-widest">{sector}</p>
+          )}
         </DialogHeader>
+
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -584,9 +538,9 @@ function EditResponsibleDialog({
               <Input id="resp-area" maxLength={60} value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="resp-sector">Setor / Time</Label>
-              <Select value={sector} onValueChange={setSector}>
-                <SelectTrigger id="resp-sector">
+              <Label htmlFor="resp-sector">Time / Setor</Label>
+              <Select value={sector} onValueChange={setSector} disabled={!!isContextual}>
+                <SelectTrigger id="resp-sector" className={cn(isContextual && "opacity-80 bg-secondary/50")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -598,6 +552,7 @@ function EditResponsibleDialog({
                 </SelectContent>
               </Select>
             </div>
+
           </div>
           <div className="space-y-2">
             <Label htmlFor="resp-desc">Subtítulo / Descrição</Label>
@@ -668,8 +623,12 @@ function EditResponsibleDialog({
             Cancelar
           </Button>
           <Button
-            onClick={() =>
-              onSave({
+            onClick={() => {
+              if (name.trim().length === 0) {
+                toast.error("Informe o nome.");
+                return;
+              }
+              const patch: Partial<Responsible> = {
                 area: area.trim(),
                 description: description.trim() || null,
                 name: name.trim() || null,
@@ -679,11 +638,25 @@ function EditResponsibleDialog({
                 notes: notes.trim(),
                 sector,
                 parentId,
-              })
-            }
+                isLeader: responsible?.isLeader || false,
+              };
+              
+              if (responsible?.id?.startsWith('new-')) {
+                addResponsible({
+                  ...patch,
+                  id: `r-${Date.now()}`,
+                } as Responsible);
+                toast.success(responsible.isLeader ? "Líder definido" : "Integrante adicionado");
+                onClose();
+              } else {
+                onSave(patch);
+              }
+            }}
           >
             Salvar
           </Button>
+
+
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -60,7 +60,7 @@ interface ForjaState {
     postEvent: ChecklistGroup;
     opening: ChecklistGroup;
     learnings: Learning[];
-    preferredTeamView?: "grid" | "organograma" | "lista" | "colunas";
+    preferredTeamView: "colunas";
   }>;
 }
 
@@ -80,7 +80,7 @@ const emptyEventData = () => ({
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
   learnings: seedLearnings,
-  preferredTeamView: "grid" as "grid" | "organograma" | "lista" | "colunas",
+  preferredTeamView: "colunas" as const,
 });
 
 const initialState: ForjaState = {
@@ -162,8 +162,8 @@ interface ForjaContextValue {
   addConnection: (sourceId: string, targetId: string) => void;
   removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
-  preferredTeamView: "grid" | "organograma" | "lista" | "colunas";
-  setPreferredTeamView: (view: "grid" | "organograma" | "lista" | "colunas") => void;
+  preferredTeamView: "colunas";
+  setPreferredTeamView: (view: "colunas") => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
   syncNow: () => Promise<void>;
@@ -220,6 +220,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
             events: [eventEntry],
             eventData: {
               [eventId]: {
+                ...emptyEventData(),
                 event: oldData.event || seedEvent,
                 tasks: oldData.tasks || seedTasks,
                 responsibles: oldData.responsibles || seedResponsibles,
@@ -381,8 +382,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       ...activeData,
       currentEventId: state.currentEventId,
       events: state.events || [],
-      preferredTeamView: activeData.preferredTeamView || "grid",
-      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
+      preferredTeamView: "colunas" as const,
+      setPreferredTeamView: () => {},
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
@@ -584,6 +585,11 @@ export function useForjaMetrics() {
     const testedEquipment = equipment.filter((e: Equipment) => e.test === "aprovado");
     const confirmedTeam = [...responsibles, ...staff].filter((p: Responsible | StaffMember) => p.status === "confirmado");
     const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
+
+    const totalTeams = new Set(responsibles.map(r => r.teamId || r.sector)).size;
+    const leadersCount = responsibles.filter(r => r.isLeader && r.name).length;
+    const openSlots = responsibles.filter(r => !r.name).length;
+
     const categories = [
       { label: "Equipe", value: pct(confirmedTeam.length, responsibles.length + staff.length) },
       { label: "Estrutura", value: pct(testedEquipment.length, equipment.length) },
@@ -603,7 +609,10 @@ export function useForjaMetrics() {
       purchasesWithoutOwner,
       undefinedAreas,
       unconfirmedSpeakers,
-      teamSize: (responsibles?.filter((r: Responsible) => r?.name).length ?? 0) + (staff?.length ?? 0),
+      teamSize: (responsibles?.length ?? 0) + (staff?.length ?? 0),
+      totalTeams,
+      leadersCount,
+      openSlots,
       confirmedTeam: confirmedTeam.length,
       spent,
       estimated,

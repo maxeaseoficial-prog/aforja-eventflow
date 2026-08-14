@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTeamBuilderWizard } from "./useTeamBuilderWizard";
@@ -52,9 +54,9 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                 <p className="text-xs text-muted-foreground mt-0.5">Configuração inteligente de equipe de evento</p>
               </div>
               <div className="text-right">
-                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 5</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">Passo {wizard.step} de 4</span>
                 <div className="flex gap-1 mt-1.5">
-                  {[1, 2, 3, 4, 5].map(s => (
+                  {[1, 2, 3, 4].map(s => (
                     <div 
                       key={s} 
                       className={cn(
@@ -316,10 +318,14 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                         Reiniciar
                       </Button>
                       <Button 
-                        onClick={wizard.nextStep} 
+                        onClick={() => {
+                          wizard.applyRecommendations();
+                          onOpenChange(false);
+                          toast.success("Time criado com sucesso!");
+                        }} 
                         className="flex-1 h-12 text-base font-bold gap-2 bg-primary shadow-lg shadow-primary/30"
                       >
-                        Próximo <ChevronRight className="size-4" />
+                        Confirmar e Criar <ChevronRight className="size-4" />
                       </Button>
                     </div>
                   </>
