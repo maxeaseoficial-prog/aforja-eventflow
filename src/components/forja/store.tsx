@@ -125,6 +125,7 @@ interface ForjaContextValue {
   updateResponsible: (id: string, patch: Partial<Responsible>) => void;
   addResponsible: (responsible: Responsible) => void;
   removeResponsible: (id: string) => void;
+  addResponsiblesBulk: (responsibles: Responsible[]) => void;
   updatePurchase: (id: string, patch: Partial<Purchase>) => void;
   addPurchase: (purchase: Purchase) => void;
   removePurchase: (id: string) => void;
@@ -452,6 +453,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         patchData({ responsibles: [...others, newResponsible] });
       },
       removeResponsible: (id) => patchData({ responsibles: activeData.responsibles.filter((r) => r.id !== id) }),
+      addResponsiblesBulk: (list) => patchData({ responsibles: [...activeData.responsibles, ...list] }),
       updatePurchase: (id, patch) => patchData({ purchases: patchList(activeData.purchases, id, patch) }),
       addPurchase: (purchase) => patchData({ purchases: [purchase, ...activeData.purchases] }),
       removePurchase: (id) => patchData({ purchases: activeData.purchases.filter((p) => p.id !== id) }),

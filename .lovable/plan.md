@@ -1,53 +1,45 @@
-# Plan - Responsáveis e Times Evolution
+# Plano de Implementação: Responsáveis e Times (Team Builder)
 
-Transform the "Responsáveis" module into a guided "Team Builder" experience and a professional hierarchical management center.
+Evolução do módulo de Responsáveis para um sistema de gestão de equipes com assistente de configuração inteligente (Team Builder).
 
-## User Review Required
+## 1. Alterações no Modelo de Dados (Schema)
 
-> [!IMPORTANT]
-> This plan involves adding a guided onboarding for new events and evolving the data model for teams (adding leader/member relationships). Existing data will be preserved.
+*   **Arquivo:** `src/lib/forja-data.ts`
+*   **Mudança:** Adicionar `teamId` (string) e `isLeader` (boolean) à interface `Responsible`. Isso permitirá agrupar responsáveis em times e identificar quem é o líder sem criar novas tabelas.
+*   **Setores:** Expansão da constante `RESPONSIBLE_SECTORS` para incluir os ~70 setores do Mapa-Mestre (já realizado).
 
-- **Visual Style**: High-end dark theme (black/graphite) with gold accents. No generic AI aesthetics (no robots, no purple gradients, no emojis).
-- **Recommendation Engine**: Deterministic logic based on event size and features.
+## 2. Recommendation Engine (Lógica de Negócio)
 
-## Proposed Changes
+*   **Arquivo:** `src/lib/team-builder.ts`
+*   **Função:** `generateTeamRecommendation(profile: EventProfile): TeamRecommendation[]`
+*   **Lógica:** Determinística, baseada no número de convidados e complexidade (palcos, palestrantes, alimentação, etc.).
+*   **Agrupamento:** Funções serão agrupadas em times (ex: Som, Luz e Vídeo em "Técnica / AV" para eventos pequenos).
 
-### 1. Data Model & Storage Evolution
-- Update `Responsible` interface in `src/lib/forja-data.ts` to explicitly support `leaderId` or a `isLeader` flag within teams, and `expectedHeadcount`.
-- Ensure `forja-sync` functions support the new fields.
-- **Data Safety**: Reuse existing `responsibles` array. Areas will be grouped into "Teams" visually.
+## 3. Team Builder Wizard (UI/UX)
 
-### 2. Team Builder (Onboarding Wizard)
-- Create `src/components/forja/TeamBuilderWizard.tsx`.
-- Implement a 5-step guided flow:
-    1. **Event Size**: Attendee count shortcuts + manual input.
-    2. **Features**: Multi-select cards (Stage, Speakers, Sound, Catering, etc.).
-    3. **Complexity**: Conditional questions based on step 2 (e.g., "How many stages?").
-    4. **Analysis**: 2-second deterministic "calculation" animation.
-    5. **Suggestion**: Review recommended teams, headcount, and external providers.
-- Implement the `recommendationEngine` utility in `src/lib/team-engine.ts`.
+*   **Componentes:** Criar `src/components/forja/TeamBuilder/`
+    *   `Wizard.tsx`: Container principal com stepper.
+    *   `Step1Attendee.tsx`: Pergunta sobre público.
+    *   `Step2Features.tsx`: Seleção de o que haverá no evento.
+    *   `Step3Complexity.tsx`: Perguntas condicionais.
+    *   `Step4Recommendation.tsx`: Exibição e edição da estrutura sugerida.
+    *   `AnalysisScreen.tsx`: Tela de transição com feedbacks progressivos.
 
-### 3. New "Responsáveis e Times" Interface
-- Update `src/routes/_shell/responsaveis.tsx`.
-- Add View Switcher: **Cards**, **Organograma**, **Lista**, **Times**.
-- **Cards View**: Detailed team cards showing Leader (name/role/whatsapp) and Members (confirmed/vancant slots).
-- **Organograma**: Enhance the `@xyflow/react` tree to support the new team structure.
-- **Times View**: Focused view for individual team building.
+## 4. Visualizações da Central
 
-### 4. Logic & Interactions
-- Implement team editing: move members between teams, promote to leader.
-- "Revisar Estrutura": Allow users to run the wizard again without overwriting existing assignments.
-- "Smart Align": Auto-positioning in the Org Chart to prevent overlaps.
+*   A página de Responsáveis (`src/routes/_shell/responsaveis.tsx`) será atualizada para oferecer 4 modos:
+    1.  **Cards:** (Novo) Visualização por times com líderes em destaque.
+    2.  **Organograma:** (Atualizado) Reutilizar o engine `@xyflow/react` existente.
+    3.  **Lista:** (Novo) Tabela compacta para visão operacional.
+    4.  **Times:** (Novo) Foco em preenchimento de vagas por núcleo.
 
-## Technical Details
+## 5. Compatibilidade e Migração
 
-- **Deterministic Engine**: Logic based on presets (e.g., 1 Receptionist per 50 guests, 1 Stage Manager if Stage > 0).
-- **Views**: All 4 views consume the same `responsibles` array from `ForjaProvider`.
-- **Performance**: Use `memo` for Org Chart nodes and heavy list rendering.
+*   Dados existentes serão preservados. O Wizard só aparecerá se não houver dados ou via botão "Revisar estrutura".
+*   O campo `parentId` continuará sendo usado para a hierarquia visual do Organograma, garantindo que a visualização atual não quebre.
 
-## Verification Plan
+## Detalhes Técnicos
 
-- **Preservation Test**: Ensure manual entries created before this update appear in the new "Responsáveis e Times" page.
-- **Engine Coverage**: Test with 20, 100, and 500 guest scenarios via simulated wizard inputs.
-- **Responsive Audit**: Check wizard and Org Chart on mobile viewports.
-- **Persistence**: Verify that team groupings and manual positions survive a page reload.
+*   **Engine:** Funções puras em TypeScript para facilidade de teste.
+*   **Estado:** Utilização do `useForja` (Zustand/Context) para persistência em nuvem.
+*   **Design:** Dourado queimado (#E6BC63), grafite e tipografia premium.
