@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { Plus, Calendar, Settings, ArrowRight, Clock, MapPin, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useForja } from "@/components/forja/store";
