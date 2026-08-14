@@ -251,7 +251,7 @@ export function AppShell() {
                     {syncStatus === "syncing" && (
                       <div className="flex items-center gap-1.5 text-primary animate-pulse">
                         <RefreshCw className="size-3 animate-spin" />
-                        <span>Salvando...</span>
+                        <span className="sr-only">Salvando...</span>
                       </div>
                     )}
                     {syncStatus === "offline" && (
