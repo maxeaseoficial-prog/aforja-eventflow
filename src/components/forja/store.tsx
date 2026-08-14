@@ -360,6 +360,7 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
     });
 
+
     return {
       currentEventId: state.currentEventId,
       events: state.events,
