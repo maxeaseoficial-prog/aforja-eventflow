@@ -60,7 +60,7 @@ interface ForjaState {
     postEvent: ChecklistGroup;
     opening: ChecklistGroup;
     learnings: Learning[];
-    preferredTeamView?: "cards" | "organograma" | "lista" | "colunas";
+    preferredTeamView?: "grid" | "organograma" | "lista" | "colunas";
   }>;
 }
 
@@ -80,7 +80,7 @@ const emptyEventData = () => ({
   postEvent: seedPostEvent,
   opening: seedOpeningChecklist,
   learnings: seedLearnings,
-  preferredTeamView: "grid" as const,
+  preferredTeamView: "grid" as "grid" | "organograma" | "lista" | "colunas",
 });
 
 const initialState: ForjaState = {
