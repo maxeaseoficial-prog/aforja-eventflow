@@ -32,10 +32,18 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView, setPreferredTeamView } = useForja();
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
+  
+  // We handle the view state locally but initialize it from store and sync back when changed
   const [view, setView] = useState<"grid" | "organograma" | "lista" | "colunas">(preferredTeamView || "grid");
+  
+  const handleViewChange = (newView: "grid" | "organograma" | "lista" | "colunas") => {
+    setView(newView);
+    setPreferredTeamView(newView);
+  };
+
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [newArea, setNewArea] = useState("");
@@ -56,7 +64,7 @@ function ResponsiblesPage() {
           <div className="flex rounded-lg border border-border bg-card p-0.5">
             <button
               type="button"
-              onClick={() => setView("grid")}
+              onClick={() => handleViewChange("grid")}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
                 view === "grid" ? "bg-primary-soft text-primary" : "text-muted-foreground"
@@ -66,13 +74,33 @@ function ResponsiblesPage() {
             </button>
             <button
               type="button"
-              onClick={() => setView("organograma")}
+              onClick={() => handleViewChange("organograma")}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
                 view === "organograma" ? "bg-primary-soft text-primary" : "text-muted-foreground"
               )}
             >
               <Network className="size-3.5" /> Organograma
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange("lista")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                view === "lista" ? "bg-primary-soft text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Users className="size-3.5" /> Lista
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewChange("colunas")}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                view === "colunas" ? "bg-primary-soft text-primary" : "text-muted-foreground"
+              )}
+            >
+              <Layout className="size-3.5" /> Colunas
             </button>
           </div>
         </div>
