@@ -32,17 +32,13 @@ export const Route = createFileRoute("/_shell/responsaveis")({
 });
 
 function ResponsiblesPage() {
-  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView, setPreferredTeamView } = useForja();
+  const { responsibles, updateResponsible, addResponsible, removeResponsible, clearResponsibles, preferredTeamView } = useForja();
   const [editing, setEditing] = useState<Responsible | null>(null);
   const [filter, setFilter] = useState<"todos" | PersonStatus>("todos");
   
-  // We handle the view state locally but initialize it from store and sync back when changed
-  const [view, setView] = useState<"grid" | "organograma" | "lista" | "colunas">(preferredTeamView || "grid");
-  
-  const handleViewChange = (newView: "grid" | "organograma" | "lista" | "colunas") => {
-    setView(newView);
-    setPreferredTeamView(newView);
-  };
+  // Only Columns view is supported now
+  const view = "colunas";
+
 
   const [newAreaOpen, setNewAreaOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);

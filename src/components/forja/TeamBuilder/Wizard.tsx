@@ -316,10 +316,14 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                         Reiniciar
                       </Button>
                       <Button 
-                        onClick={wizard.nextStep} 
+                        onClick={() => {
+                          wizard.applyRecommendations();
+                          onOpenChange(false);
+                          toast.success("Time criado com sucesso!");
+                        }} 
                         className="flex-1 h-12 text-base font-bold gap-2 bg-primary shadow-lg shadow-primary/30"
                       >
-                        Próximo <ChevronRight className="size-4" />
+                        Confirmar e Criar <ChevronRight className="size-4" />
                       </Button>
                     </div>
                   </>
