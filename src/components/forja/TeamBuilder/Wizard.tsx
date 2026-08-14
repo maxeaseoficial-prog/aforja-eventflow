@@ -297,11 +297,11 @@ export function TeamBuilderWizard({ open, onOpenChange }: { open: boolean; onOpe
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
                           <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
                             <span className="text-[10px] font-medium text-muted-foreground uppercase">{r.leaderRole}</span>
-                            {r.memberRoles.length > 0 && (
+                            {r.memberRoles.length > 0 && r.memberRoles[0] && (
                               <div className="flex -space-x-2">
                                 {[...Array(Math.min(3, r.memberRoles[0].count))].map((_, i) => (
                                   <div key={i} className="size-6 rounded-full bg-secondary border border-background flex items-center justify-center text-[10px] font-bold">
-                                    {i === 2 && r.memberRoles[0].count > 3 ? `+${r.memberRoles[0].count - 2}` : ""}
+                                    {i === 2 && r.memberRoles[0] && r.memberRoles[0].count > 3 ? `+${r.memberRoles[0].count - 2}` : ""}
                                   </div>
                                 ))}
                               </div>
