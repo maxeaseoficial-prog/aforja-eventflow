@@ -379,10 +379,10 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
 
     return {
       ...activeData,
-      preferredTeamView: activeData.preferredTeamView || "grid",
-      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       currentEventId: state.currentEventId,
       events: state.events || [],
+      preferredTeamView: activeData.preferredTeamView || "grid",
+      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
