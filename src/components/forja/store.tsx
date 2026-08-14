@@ -609,7 +609,7 @@ export function useForjaMetrics() {
       purchasesWithoutOwner,
       undefinedAreas,
       unconfirmedSpeakers,
-      teamSize: responsibles.filter((r) => r.name).length + staff.length,
+      teamSize: (responsibles?.filter((r) => r?.name).length ?? 0) + (staff?.length ?? 0),
       confirmedTeam: confirmedTeam.length,
       spent,
       estimated,
