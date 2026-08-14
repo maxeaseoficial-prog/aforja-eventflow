@@ -461,13 +461,17 @@ export const seedLearnings: Learning[] = [];
 
 export const seedNotifications = [];
 
-export const brl = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+export const brl = (value: number | null | undefined) => {
+  if (value === null || value === undefined) return "R$ 0";
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+};
 
-export const formatDate = (iso: string) =>
-  new Date(iso + (iso.length === 10 ? "T12:00:00" : "")).toLocaleDateString("pt-BR", {
+export const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return "—";
+  return new Date(iso + (iso.length === 10 ? "T12:00:00" : "")).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "short",
   });
+};
 
 export const whatsappLink = (number: string) => `https://wa.me/${number.replace(/\D/g, "")}`;

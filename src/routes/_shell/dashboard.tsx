@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCountdown } from "@/hooks/use-countdown";
-import { brl, formatDate } from "@/lib/forja-data";
+import { brl, formatDate, type Responsible } from "@/lib/forja-data";
 
 export const Route = createFileRoute("/_shell/dashboard")({
 
@@ -380,7 +380,7 @@ function Dashboard() {
               <AlertCard
                 tone="destructive"
                 label={`${metrics.undefinedAreas.length} áreas sem responsável`}
-                detail={metrics.undefinedAreas.map((a) => a.area).join(", ")}
+                detail={metrics.undefinedAreas.map((a: Responsible) => a.area).join(", ")}
               />
             )}
             {metrics.late.length === 0 &&

@@ -162,7 +162,7 @@ interface ForjaContextValue {
   addConnection: (sourceId: string, targetId: string) => void;
   removeConnection: (edgeId: string) => void;
   updateConnection: (edgeId: string, newSourceId: string, newTargetId: string) => void;
-  preferredTeamView?: "grid" | "organograma" | "lista" | "colunas";
+  preferredTeamView: "grid" | "organograma" | "lista" | "colunas";
   setPreferredTeamView: (view: "grid" | "organograma" | "lista" | "colunas") => void;
   syncStatus: SyncStatus;
   cloudRevision: number;
@@ -239,7 +239,11 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
             }
           });
         } else {
-          setState({ ...initialState, ...savedData });
+          const mergedState = { ...initialState, ...savedData };
+          // Ensure events and eventData exist
+          if (!mergedState.events) mergedState.events = [];
+          if (!mergedState.eventData) mergedState.eventData = {};
+          setState(mergedState);
         }
       }
       setIsHydrated(true);
@@ -274,10 +278,10 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       const cloudRev = cloudData.revision;
       
       // Critical: Ensure cloudState has the required structure before merging
-      if (cloudState && Array.isArray(cloudState.events)) {
+      if (cloudState && Array.isArray(cloudState.events) && cloudState.events.length > 0) {
         setState(cloudState);
         setCloudRevision(cloudRev);
-      } else if (localState.events.length > 0) {
+      } else if (localState.events && Array.isArray(localState.events) && localState.events.length > 0) {
         // If cloud is empty but local has data, try to push local
         const result = await updateAppState({ data: { state: localState, revision: cloudRev } });
         setCloudRevision(result.revision);
@@ -347,7 +351,6 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
     const currentData = state.currentEventId ? state.eventData[state.currentEventId] : null;
     const activeData = (currentData || emptyEventData()) as ReturnType<typeof emptyEventData>;
 
-
     const patchData = (patch: Partial<ReturnType<typeof emptyEventData>>) => {
       if (!state.currentEventId) return;
       setState((s) => {
@@ -366,23 +369,20 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       });
     };
 
-
-
-
-
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
       list.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry));
 
     const toggleItems = (group: ChecklistGroup, itemId: string): ChecklistGroup => ({
       ...group,
-      items: group.items.map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
+      items: (group?.items || []).map((item) => (item.id === itemId ? { ...item, done: !item.done } : item)),
     });
 
-
-
     return {
+      ...activeData,
       currentEventId: state.currentEventId,
       events: state.events || [],
+      preferredTeamView: activeData.preferredTeamView || "grid",
+      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       addEvent: (evt) => {
         const id = (evt as any).id || crypto.randomUUID();
         const entry: EventEntry = { ...evt, id, createdAt: new Date().toISOString() };
@@ -412,9 +412,6 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         };
       }),
 
-      ...activeData,
-      preferredTeamView: activeData.preferredTeamView,
-      setPreferredTeamView: (view) => patchData({ preferredTeamView: view }),
       addTask: (task) => patchData({ tasks: [task, ...activeData.tasks] }),
       updateEvent: (patch) => {
 
@@ -568,30 +565,31 @@ export function useForja() {
 }
 
 export function useForjaMetrics() {
-  const { tasks, purchases, responsibles, speakers, staff, equipment } = useForja();
+  const context = useForja();
+  const { tasks = [], purchases = [], responsibles = [], speakers = [], staff = [], equipment = [] } = context || {};
   return useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const parse = (iso: string) => new Date(`${iso}T12:00:00`);
-    const done = tasks.filter((t) => t.status === "concluido");
-    const late = tasks.filter((t) => t.status !== "concluido" && parse(t.dueDate) < today);
-    const dueToday = tasks.filter((t) => t.status !== "concluido" && parse(t.dueDate).toDateString() === new Date().toDateString());
-    const pending = tasks.filter((t) => t.status !== "concluido");
-    const pendingPurchases = purchases.filter((p) => p.status === "precisa-comprar" || p.status === "cotando");
-    const undefinedAreas = responsibles.filter((r) => !r.name);
-    const unconfirmedSpeakers = speakers.filter((s) => s.status !== "confirmado");
-    const purchasesWithoutOwner = purchases.filter((p) => !p.owner && p.status !== "cancelado");
-    const spent = purchases.reduce((sum, p) => sum + (p.actual ?? 0), 0);
-    const estimated = purchases.reduce((sum, p) => sum + p.estimated, 0);
-    const testedEquipment = equipment.filter((e) => e.test === "aprovado");
-    const confirmedTeam = [...responsibles, ...staff].filter((p) => p.status === "confirmado");
+    const done = tasks.filter((t: Task) => t?.status === "concluido");
+    const late = tasks.filter((t: Task) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate) < today);
+    const dueToday = tasks.filter((t: Task) => t?.status !== "concluido" && t?.dueDate && parse(t.dueDate).toDateString() === new Date().toDateString());
+    const pending = tasks.filter((t: Task) => t?.status !== "concluido");
+    const pendingPurchases = purchases.filter((p: Purchase) => p?.status === "precisa-comprar" || p?.status === "cotando");
+    const undefinedAreas = responsibles.filter((r: Responsible) => !r?.name);
+    const unconfirmedSpeakers = speakers.filter((s: Speaker) => s?.status !== "confirmado");
+    const purchasesWithoutOwner = purchases.filter((p: Purchase) => !p?.owner && p?.status !== "cancelado");
+    const spent = purchases.reduce((sum: number, p: Purchase) => sum + (p?.actual ?? 0), 0);
+    const estimated = purchases.reduce((sum: number, p: Purchase) => sum + (p?.estimated ?? 0), 0);
+    const testedEquipment = equipment.filter((e: Equipment) => e.test === "aprovado");
+    const confirmedTeam = [...responsibles, ...staff].filter((p: Responsible | StaffMember) => p.status === "confirmado");
     const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 100));
     const categories = [
       { label: "Equipe", value: pct(confirmedTeam.length, responsibles.length + staff.length) },
       { label: "Estrutura", value: pct(testedEquipment.length, equipment.length) },
-      { label: "Mídia", value: pct(tasks.filter((t) => t.category === "Mídia" && t.status === "concluido").length, tasks.filter((t) => t.category === "Mídia").length) },
-      { label: "Palestrantes", value: pct(speakers.reduce((sum, s) => sum + s.checklist.filter(Boolean).length, 0), speakers.length * 14) },
-      { label: "Compras", value: pct(purchases.filter((p) => p.status === "comprado" || p.status === "recebido").length, purchases.length) },
+      { label: "Mídia", value: pct(tasks.filter((t: Task) => t.category === "Mídia" && t.status === "concluido").length, tasks.filter((t: Task) => t.category === "Mídia").length) },
+      { label: "Palestrantes", value: pct(speakers.reduce((sum: number, s: Speaker) => sum + s.checklist.filter(Boolean).length, 0), speakers.length * 14) },
+      { label: "Compras", value: pct(purchases.filter((p: Purchase) => p.status === "comprado" || p.status === "recebido").length, purchases.length) },
       { label: "Programação", value: 0 },
     ];
     const health = Math.max(0, Math.min(100, Math.round(pct(done.length, tasks.length) * 0.3 + categories[0]!.value * 0.2 + categories[1]!.value * 0.2 + categories[4]!.value * 0.15 + categories[3]!.value * 0.15 - late.length * 2)));
@@ -605,7 +603,7 @@ export function useForjaMetrics() {
       purchasesWithoutOwner,
       undefinedAreas,
       unconfirmedSpeakers,
-      teamSize: responsibles.filter((r) => r.name).length + staff.length,
+      teamSize: (responsibles?.filter((r: Responsible) => r?.name).length ?? 0) + (staff?.length ?? 0),
       confirmedTeam: confirmedTeam.length,
       spent,
       estimated,
