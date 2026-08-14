@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Plus, Calendar, Settings, ArrowRight, Clock, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useForja } from "@/components/forja/store";
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useAuth } from "@/hooks/useAuth";
+
 import forjaLogo from "@/assets/forja-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
