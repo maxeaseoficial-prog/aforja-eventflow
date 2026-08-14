@@ -536,7 +536,7 @@ function EditResponsibleDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="resp-sector">Time / Setor</Label>
-              <Select value={sector} onValueChange={setSector} disabled={isContextual}>
+              <Select value={sector} onValueChange={setSector} disabled={!!isContextual}>
                 <SelectTrigger id="resp-sector" className={cn(isContextual && "opacity-80 bg-secondary/50")}>
                   <SelectValue />
                 </SelectTrigger>
@@ -620,7 +620,11 @@ function EditResponsibleDialog({
             Cancelar
           </Button>
           <Button
-            onClick={() =>
+            onClick={() => {
+              if (name.trim().length === 0) {
+                toast.error("Informe o nome.");
+                return;
+              }
               onSave({
                 area: area.trim(),
                 description: description.trim() || null,
@@ -631,11 +635,14 @@ function EditResponsibleDialog({
                 notes: notes.trim(),
                 sector,
                 parentId,
-              })
-            }
+                isLeader: responsible?.isLeader || false,
+                id: responsible?.id?.startsWith('new-') ? `r-${Date.now()}` : responsible?.id
+              });
+            }}
           >
             Salvar
           </Button>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>
