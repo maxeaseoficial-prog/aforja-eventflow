@@ -9,6 +9,7 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -48,29 +49,56 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground uppercase italic font-display">
-          Ops! Algo deu errado
+      <div className="max-w-md w-full surface-card p-8 border border-border shadow-2xl animate-in fade-in zoom-in duration-300">
+        <div className="flex justify-center mb-6">
+          <div className="size-16 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+        </div>
+        <h1 className="text-2xl font-display font-black tracking-tight text-foreground uppercase italic text-center">
+          Erro Operacional
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Não foi possível carregar esta página. Tente atualizar ou volte para o início.
+        <p className="mt-4 text-sm text-muted-foreground text-center leading-relaxed">
+          Ocorreu um erro ao carregar os dados do centro de comando. 
+          Isso pode ser causado por uma falha na conexão ou dados corrompidos.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
+        
+        {error.message && (
+          <div className="mt-4 p-3 bg-destructive/5 border border-destructive/10 rounded-md">
+            <p className="text-[10px] font-mono text-destructive/70 break-all uppercase tracking-tighter">
+              LOG: {error.message}
+            </p>
+          </div>
+        )}
+
+        <div className="mt-8 flex flex-col gap-3">
+          <Button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 uppercase italic"
+            className="w-full h-12 text-sm font-bold uppercase italic tracking-widest"
           >
-            Tentar novamente
+            Tentar Restaurar
+          </Button>
+          <Button
+            variant="outline"
+            asChild
+            className="w-full h-12 text-sm font-bold uppercase italic tracking-widest"
+          >
+            <a href="/">Voltar ao Início</a>
+          </Button>
+          
+          <button 
+            onClick={() => {
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = '/';
+            }}
+            className="mt-4 text-[10px] text-muted-foreground hover:text-destructive uppercase tracking-[0.2em] transition-colors"
+          >
+            Limpar Cache e Reiniciar
           </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-accent uppercase italic"
-          >
-            Voltar ao Início
-          </a>
         </div>
       </div>
     </div>
