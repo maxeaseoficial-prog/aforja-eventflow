@@ -282,6 +282,7 @@ function ResponsiblesPage() {
                   notes: "",
                   sector: newSector,
                   parentId: newParentId,
+                  position: { x: 0, y: 0 } // store handle overlapping
                 });
                 toast.success("Área criada");
                 setNewArea("");
