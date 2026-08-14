@@ -124,22 +124,13 @@ function ResponsiblesPage() {
             </div>
           }
         />
-      {responsibles.length === 0 ? (
-        <EmptyState
-          icon={UserPlus}
-          title="Nenhum time definido"
-          description="Comece definindo os times do evento usando o Team Builder ou manualmente."
-          action={
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button onClick={() => setWizardOpen(true)} variant="default" className="bg-primary hover:bg-primary/90">
-                Usar Team Builder
-              </Button>
-              <Button onClick={() => setNewAreaOpen(true)} variant="outline">
-                Manual: Novo time
-              </Button>
-            </div>
-          }
+      ) : (
+        <ColumnView
+          responsibles={responsibles}
+          onEdit={setEditing}
+          onDelete={setDeleting}
         />
+      )}
 
       <TeamBuilderWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
