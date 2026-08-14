@@ -432,7 +432,8 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
         if (sameSector.length > 0) {
           // Find the rightmost node in this sector
           const maxX = Math.max(...sameSector.map(r => r.position?.x ?? 0));
-          const sectorY = sameSector[0].position?.y ?? 0;
+          const firstPos = sameSector[0].position;
+          const sectorY = firstPos ? firstPos.y : 0;
           x = maxX + 320;
           y = sectorY;
         } else if (others.length > 0) {
