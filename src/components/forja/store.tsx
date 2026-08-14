@@ -333,18 +333,20 @@ export function ForjaProvider({ children }: { children: ReactNode }) {
       if (!state.currentEventId) return;
       setState((s) => {
         const currentEventData = s.eventData[s.currentEventId!] || emptyEventData();
+        const updatedEventData = {
+          ...currentEventData,
+          ...patch,
+        };
         return {
           ...s,
           eventData: {
             ...s.eventData,
-            [s.currentEventId!]: {
-              ...currentEventData,
-              ...patch,
-            },
+            [s.currentEventId!]: updatedEventData as any,
           },
         };
       });
     };
+
 
 
     const patchList = <T extends { id: string }>(list: T[], id: string, patch: Partial<T>) =>
