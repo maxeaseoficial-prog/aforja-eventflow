@@ -297,7 +297,9 @@ function ColumnView({
   onDelete,
 }: {
   responsibles: Responsible[];
-  const groups = useMemo(() => {
+  onEdit: (r: Responsible) => void;
+  onDelete: (r: Responsible) => void;
+}) {
     const map: Record<string, { leader: Responsible | null; members: Responsible[]; teamSize: number }> = {};
     
     responsibles.forEach((r) => {
