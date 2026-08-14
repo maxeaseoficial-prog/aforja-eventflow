@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import type { PersonStatus, Responsible } from "@/lib/forja-data";
 import { RESPONSIBLE_SECTORS } from "@/lib/forja-data";
 import { OrganogramaTree } from "@/components/forja/OrganogramaTree";
+import { TeamBuilderWizard } from "@/components/forja/TeamBuilder/Wizard";
+
 
 export const Route = createFileRoute("/_shell/responsaveis")({
   head: () => ({
